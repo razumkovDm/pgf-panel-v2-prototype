@@ -1349,7 +1349,19 @@
                   <button class="seg-btn" onclick="filterLicenses('TRIAL', this)">Триал</button>
                   <button class="seg-btn" onclick="filterLicenses('EXPIRED', this)">Истекшие</button>
                 </div>
-                <input type="text" class="input" id="licSearchInput" placeholder="Поиск по названию или LIC-..." oninput="renderLicensesList()" style="min-width:240px;" />
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <select class="input" id="licRightFilter" onchange="renderLicensesList()">
+                    <option value="ALL">Права: Все</option>
+                    <option value="SEO">С модулем SEO</option>
+                    <option value="DESKTOP_ONLY">Только Desktop</option>
+                  </select>
+                  <select class="input" id="licAutoFilter" onchange="renderLicensesList()">
+                    <option value="ALL">Автопродление: Все</option>
+                    <option value="ON">Включено</option>
+                    <option value="OFF">Выключено</option>
+                  </select>
+                  <input type="text" class="input" id="licSearchInput" placeholder="Поиск по названию или LIC-..." oninput="renderLicensesList()" style="min-width:210px;" />
+                </div>
               </div>
 
               <div id="licensesListContainer">
@@ -1904,49 +1916,53 @@
 
             <!-- 2. Статистика (/admin/analytics) -->
             <div class="adm-tab" id="adm-analytics" style="display:none;">
-              <h1 class="page-title" style="margin-bottom:12px;">Подробная статистика (/admin/analytics)</h1>
-              <div class="callout callout-info"><span>📊</span><div>Без двойного учёта (§13): внешние поступления, списания с ранее внесённого баланса, бонусы, возвраты и ручные корректировки учитываются в раздельных рядах.</div></div>
-              <div class="grid-2">
-                <div class="card card-pad">
-                  <div style="font-weight:700;margin-bottom:10px;">Финансовые ряды (Ноябрь 2026)</div>
-                  <div style="font-size:13px;line-height:1.9;">
-                    <div>Внешние поступления (<code class="mono">REAL_EXTERNAL_INFLOW</code>): <strong>412 000 ₽</strong></div>
-                    <div>Списания с ранее внесённого баланса: <strong>94 000 ₽</strong></div>
-                    <div>Применено бонусов: <strong>38 000 ₽</strong></div>
-                    <div>Возвраты (реселлерам / по спорам): <strong style="color:var(--danger);">−11 400 ₽</strong></div>
-                  </div>
-                </div>
-                <div class="card card-pad">
-                  <div style="font-weight:700;margin-bottom:10px;">Когортная конверсия триала (D+14 / D+30)</div>
-                  <div style="font-size:13px;line-height:1.9;">
-                    <div>Когорта 01.11–10.11 (завершена): 42 триала → <strong>13 оплат (31.0%)</strong></div>
-                    <div>Когорта 15.11–26.11: 19 триалов · <span class="badge badge-info">in_progress</span></div>
-                  </div>
+              <div class="page-header">
+                <h1 class="page-title">Подробная статистика (/admin/analytics)</h1>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <select class="input" id="admPeriodFilter" onchange="renderAdminAnalytics()">
+                    <option value="nov">Ноябрь 2026</option>
+                    <option value="7d">Последние 7 дней</option>
+                    <option value="oct">Октябрь 2026</option>
+                  </select>
+                  <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                    <input type="checkbox" id="admCompareToggle" checked onchange="renderAdminAnalytics()" /> Сравнить с пред. периодом
+                  </label>
                 </div>
               </div>
+              <div class="callout callout-info"><span>📊</span><div>Без двойного учёта (§13): внешние поступления, списания с ранее внесённого баланса, бонусы, возвраты и ручные корректировки учитываются в раздельных рядах.</div></div>
+              <div class="grid-2" id="admAnalyticsCards"></div>
             </div>
 
             <!-- 3. Пользователи (/admin/users) -->
             <div class="adm-tab" id="adm-users" style="display:none;">
               <h1 class="page-title" style="margin-bottom:12px;">Пользователи (/admin/users)</h1>
-              <div class="card card-pad" style="margin-bottom:14px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-                  <div>
-                    <strong style="font-size:16px;">alex.k@example.com</strong> <span class="badge badge-neutral">USER</span>
-                    <div class="mono" style="font-size:12px;color:var(--text-muted);">ID: U-1024 · Telegram: @alex_pgf · Скидка: 10% · Право приглашать: ВКЛ</div>
-                  </div>
-                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="showToast('Персональная скидка обновлена (демо)')">Изм. скидку</button>
-                    <button class="btn btn-secondary btn-sm" onclick="showToast('Назначен статус RESELLER (демо)')">Сделать реселлером</button>
-                  </div>
+              <div class="card card-pad" style="margin-bottom:14px;background:var(--surface-muted);">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                  <input class="input" id="admUserSearch" placeholder="Поиск: ID, email, @telegram или ключ PGF-..." oninput="renderAdminUsers()" style="flex:1;min-width:220px;" />
+                  <select class="input" id="admUserRole" onchange="renderAdminUsers()">
+                    <option value="ALL">Роль: Все</option>
+                    <option value="USER">USER</option>
+                    <option value="RESELLER">RESELLER</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                  <select class="input" id="admUserStatus" onchange="renderAdminUsers()">
+                    <option value="ALL">Статус: Все</option>
+                    <option value="ACTIVE">Активен</option>
+                    <option value="BANNED">Заблокирован</option>
+                  </select>
+                  <select class="input" id="admUserLic" onchange="renderAdminUsers()">
+                    <option value="ALL">Лицензии: Все</option>
+                    <option value="HAS_ACTIVE">Есть активные</option>
+                    <option value="NONE">Без активных</option>
+                  </select>
+                  <select class="input" id="admUserBal" onchange="renderAdminUsers()">
+                    <option value="ALL">Баланс: Любой</option>
+                    <option value="POSITIVE">Баланс &gt; 0 ₽</option>
+                  </select>
                 </div>
-                <div style="padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                  <span style="font-size:12px;font-weight:700;color:var(--text-muted);">3 раздельных блокировки (§13):</span>
-                  <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирован только вход в кабинет (authEpoch+1)')">1. Блок. кабинет</button>
-                  <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирована конкретная лицензия LIC-A1B2C3D4E5F6')">2. Блок. лицензию</button>
-                  <button class="btn btn-danger-solid btn-sm" onclick="showToast('Полная блокировка аккаунта и всех лицензий')">3. Полный бан</button>
-                </div>
+                <div style="font-size:11px;color:var(--text-muted);">Ключ используется только как предикат поиска и никогда не возвращается в таблице (§3.4).</div>
               </div>
+              <div id="admUsersList"></div>
             </div>
 
             <!-- 4. Лицензии и диагностика (/admin/licenses) -->
@@ -1999,27 +2015,17 @@
             <!-- 6. Платежи, счета и балансы (/admin/billing) -->
             <div class="adm-tab" id="adm-billing" style="display:none;">
               <h1 class="page-title" style="margin-bottom:12px;">Очередь ручных счетов (/admin/billing)</h1>
-              <div class="card card-pad" style="margin-bottom:12px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                  <div>
-                    <strong class="mono">#INV-2026-000142</strong> · <span class="badge badge-warning">UNDER_REVIEW</span>
-                    <div style="font-size:13px;margin-top:4px;">alex.k@example.com · Сумма зафиксирована: <strong>7 000 ₽</strong> · tx: <code class="mono">0x8f4c...92b1e4</code></div>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <button class="btn btn-primary btn-sm" onclick="showToast('Счёт #INV-2026-000142 подтверждён! Лицензия активирована.')">✓ Подтвердить</button>
-                    <button class="btn btn-danger btn-sm" onclick="showToast('Счёт отклонён с указанием причины')">✕ Отклонить</button>
-                  </div>
-                </div>
+              <div class="filter-bar">
+                <select class="input" id="admBillStatus" onchange="renderAdminBilling()">
+                  <option value="ALL">Статус: Все в очереди</option>
+                  <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+                  <option value="LATE_PAYMENT_REVIEW">LATE_PAYMENT_REVIEW</option>
+                  <option value="UNDERPAID_REVIEW">UNDERPAID_REVIEW</option>
+                  <option value="DUPLICATE_PROOF_DETECTED">DUPLICATE_PROOF_DETECTED</option>
+                </select>
+                <input class="input" id="admBillSearch" placeholder="Поиск по #INV-... или email" oninput="renderAdminBilling()" style="min-width:220px;" />
               </div>
-              <div class="card card-pad">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                  <div>
-                    <strong class="mono">#INV-2026-000139</strong> · <span class="badge badge-danger">DUPLICATE_PROOF_DETECTED</span>
-                    <div style="font-size:13px;margin-top:4px;">user99@example.com · Повторно отправлен чужой tx_hash</div>
-                  </div>
-                  <button class="btn btn-danger btn-sm" onclick="showToast('Отклонено: дубликат перевода')">Разобрать</button>
-                </div>
-              </div>
+              <div id="admBillingList"></div>
             </div>
 
             <!-- 7. Тикеты (/admin/tickets) -->
@@ -2040,7 +2046,7 @@
             <!-- 8. Настройки, контент, аудит и бэкапы (/admin/settings) -->
             <div class="adm-tab" id="adm-settings" style="display:none;">
               <h1 class="page-title" style="margin-bottom:12px;">Настройки доступа, контент и аудит</h1>
-              <div class="grid-2">
+              <div class="grid-2" style="margin-bottom:16px;">
                 <div class="card card-pad">
                   <div style="font-weight:700;margin-bottom:10px;">Независимые настройки доступа (§3.1)</div>
                   <div style="display:grid;gap:10px;font-size:13px;">
@@ -2052,14 +2058,29 @@
                   </div>
                 </div>
                 <div class="card card-pad">
-                  <div style="font-weight:700;margin-bottom:10px;">Контент, релизы, аудит и бэкапы</div>
+                  <div style="font-weight:700;margin-bottom:10px;">Контент, релизы и бэкапы</div>
                   <div style="display:grid;gap:8px;font-size:13px;">
                     <div><button class="btn btn-secondary btn-sm" onclick="showToast('Редактор статей Docs/Wiki + API-ключи content:*')">📘 Управление Docs / Wiki</button></div>
                     <div><button class="btn btn-secondary btn-sm" onclick="showToast('Публикация и YANK версий pgF + ключи releases:*')">📦 Релизы pgF (v0.1.0)</button></div>
-                    <div><button class="btn btn-secondary btn-sm" onclick="showToast('Append-only журнал аудита (неизменяемый)')">📜 Журнал аудита</button></div>
                     <div><button class="btn btn-secondary btn-sm" onclick="showToast('Резервная копия БД V2 создана и проверена')">💾 Бэкап БД V2</button></div>
                   </div>
                 </div>
+              </div>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                  <div style="font-weight:700;">Append-only журнал аудита (/admin/audit, §14)</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <select class="input" id="admAuditEvent" onchange="renderAdminAudit()">
+                      <option value="ALL">Событие: Все</option>
+                      <option value="INVOICE_APPROVE">INVOICE_APPROVE</option>
+                      <option value="UNBIND">UNBIND</option>
+                      <option value="PLAN_UPDATE">PLAN_UPDATE</option>
+                      <option value="BAN">BAN</option>
+                    </select>
+                    <input class="input" id="admAuditSearch" placeholder="Пользователь / LIC-..." oninput="renderAdminAudit()" />
+                  </div>
+                </div>
+                <div id="admAuditList" style="font-size:12px;"></div>
               </div>
             </div>
           </main>
@@ -2468,6 +2489,10 @@
       document.querySelectorAll('#s7 .cab-sidebar .nav-item').forEach(n => n.classList.remove('active'));
       const btn = document.getElementById('anav-' + tabId);
       if (btn) btn.classList.add('active');
+      if (tabId === 'adm-analytics') renderAdminAnalytics();
+      if (tabId === 'adm-users') renderAdminUsers();
+      if (tabId === 'adm-billing') renderAdminBilling();
+      if (tabId === 'adm-settings') renderAdminAudit();
     }
 
     function goScreen(screenId, opts = {}) {
@@ -2502,6 +2527,7 @@
       if (screenId === 's4') renderDevicesScreen();
       if (screenId === 's5') renderInvoiceScreen();
       if (screenId === 's6') renderHelpArticle();
+      if (screenId === 's7') { renderAdminAnalytics(); renderAdminUsers(); renderAdminBilling(); renderAdminAudit(); }
 
       if (opts.scroll) {
         setTimeout(() => scrollToEl(opts.scroll), 50);
@@ -2622,8 +2648,14 @@
 
     function renderLicensesList() {
       const q = (document.getElementById('licSearchInput').value || '').trim().toLowerCase();
+      const rightF = document.getElementById('licRightFilter') ? document.getElementById('licRightFilter').value : 'ALL';
+      const autoF = document.getElementById('licAutoFilter') ? document.getElementById('licAutoFilter').value : 'ALL';
       const filtered = state.licenses.filter(l => {
         if (state.licFilter !== 'ALL' && l.status !== state.licFilter) return false;
+        if (rightF === 'SEO' && !l.rights.includes('SEO')) return false;
+        if (rightF === 'DESKTOP_ONLY' && l.rights.includes('SEO')) return false;
+        if (autoF === 'ON' && !l.autoRenew) return false;
+        if (autoF === 'OFF' && l.autoRenew) return false;
         if (q && !l.name.toLowerCase().includes(q) && !l.publicId.toLowerCase().includes(q)) return false;
         return true;
       });
@@ -3484,6 +3516,147 @@
         setTimeout(() => document.getElementById('helpSearchInput').focus(), 50);
       }
     });
+
+    // ================= ADMIN FILTER RENDERERS (§3.4, §13, §14) =================
+    const adminAnalyticsData = {
+      nov: { label: 'Ноябрь 2026', inflow: '412 000 ₽', balSpend: '94 000 ₽', bonuses: '38 000 ₽', refunds: '−11 400 ₽', diff: '+14.2% к Октябрю' },
+      '7d': { label: 'Последние 7 дней', inflow: '108 000 ₽', balSpend: '22 000 ₽', bonuses: '9 500 ₽', refunds: '0 ₽', diff: '+6.8% к пред. 7 дн.' },
+      oct: { label: 'Октябрь 2026', inflow: '360 700 ₽', balSpend: '81 000 ₽', bonuses: '31 000 ₽', refunds: '−4 200 ₽', diff: '+9.1% к Сентябрю' }
+    };
+
+    function renderAdminAnalytics() {
+      const p = document.getElementById('admPeriodFilter').value;
+      const cmp = document.getElementById('admCompareToggle').checked;
+      const d = adminAnalyticsData[p] || adminAnalyticsData.nov;
+      document.getElementById('admAnalyticsCards').innerHTML = `
+        <div class="card card-pad">
+          <div style="font-weight:700;margin-bottom:10px;">Финансовые ряды (${d.label})</div>
+          <div style="font-size:13px;line-height:1.9;">
+            <div>Внешние поступления (<code class="mono">REAL_EXTERNAL_INFLOW</code>): <strong>${d.inflow}</strong> ${cmp ? `<span class="badge badge-active">${d.diff}</span>` : ''}</div>
+            <div>Списания с ранее внесённого баланса: <strong>${d.balSpend}</strong></div>
+            <div>Применено бонусов: <strong>${d.bonuses}</strong></div>
+            <div>Возвраты (реселлерам / по спорам): <strong style="color:var(--danger);">${d.refunds}</strong></div>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div style="font-weight:700;margin-bottom:10px;">Когортная конверсия триала (D+14 / D+30)</div>
+          <div style="font-size:13px;line-height:1.9;">
+            <div>Когорта 01.11–10.11 (завершена): 42 триала → <strong>13 оплат (31.0%)</strong></div>
+            <div>Когорта 15.11–26.11: 19 триалов · <span class="badge badge-info">in_progress</span></div>
+          </div>
+        </div>`;
+    }
+
+    const adminUsersData = [
+      { id: 'U-1024', email: 'alex.k@example.com', tg: '@alex_pgf', role: 'USER', status: 'ACTIVE', balance: 6000, hasActiveLic: true, discount: '10%', invite: 'ВКЛ', keyMatch: 'pgf-7k9m' },
+      { id: 'U-1088', email: 'reseller_msk@example.com', tg: '@rsl_msk', role: 'RESELLER', status: 'ACTIVE', balance: 45000, hasActiveLic: true, discount: '25% (рес.)', invite: 'ВКЛ', keyMatch: 'pgf-rsl' },
+      { id: 'U-1102', email: 'blocked_user@example.com', tg: '@blk99', role: 'USER', status: 'BANNED', balance: 0, hasActiveLic: false, discount: '0%', invite: 'ВЫКЛ', keyMatch: '' },
+      { id: 'U-0001', email: 'admin@pgf.local', tg: '@pgf_admin', role: 'ADMIN', status: 'ACTIVE', balance: 0, hasActiveLic: false, discount: '0%', invite: 'ВКЛ', keyMatch: '' }
+    ];
+
+    function renderAdminUsers() {
+      const q = (document.getElementById('admUserSearch').value || '').trim().toLowerCase();
+      const role = document.getElementById('admUserRole').value;
+      const status = document.getElementById('admUserStatus').value;
+      const lic = document.getElementById('admUserLic').value;
+      const bal = document.getElementById('admUserBal').value;
+
+      const list = adminUsersData.filter(u => {
+        if (role !== 'ALL' && u.role !== role) return false;
+        if (status !== 'ALL' && u.status !== status) return false;
+        if (lic === 'HAS_ACTIVE' && !u.hasActiveLic) return false;
+        if (lic === 'NONE' && u.hasActiveLic) return false;
+        if (bal === 'POSITIVE' && u.balance <= 0) return false;
+        if (q && !u.id.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q) && !u.tg.toLowerCase().includes(q) && !(u.keyMatch && u.keyMatch.includes(q))) return false;
+        return true;
+      });
+
+      const el = document.getElementById('admUsersList');
+      if (!list.length) {
+        el.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-muted);">Пользователи по заданным фильтрам не найдены.</div>`;
+        return;
+      }
+      el.innerHTML = list.map(u => `
+        <div class="card card-pad" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div>
+              <strong style="font-size:15px;">${u.email}</strong>
+              <span class="badge ${u.role==='ADMIN'?'badge-info':u.role==='RESELLER'?'badge-warning':'badge-neutral'}">${u.role}</span>
+              <span class="badge ${u.status==='ACTIVE'?'badge-active':'badge-danger'}">${u.status}</span>
+              <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:3px;">
+                ID: ${u.id} · Telegram: ${u.tg} · Баланс: ${u.balance.toLocaleString('ru-RU')} ₽ · Скидка: ${u.discount} · Приглашать: ${u.invite}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Персональная скидка обновлена (демо)')">Изм. скидку</button>
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Права обновлены (демо)')">Роль / права</button>
+            </div>
+          </div>
+          <div style="padding-top:8px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <span style="font-size:12px;font-weight:700;color:var(--text-muted);">3 раздельных блокировки (§13):</span>
+            <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирован только вход в кабинет (${u.id})')">1. Блок. кабинет</button>
+            <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирована выбранная лицензия (${u.id})')">2. Блок. лицензию</button>
+            <button class="btn btn-danger-solid btn-sm" onclick="showToast('Полная блокировка аккаунта ${u.id}')">3. Полный бан</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const adminBillingData = [
+      { id: '#INV-2026-000142', status: 'UNDER_REVIEW', email: 'alex.k@example.com', sum: '7 000 ₽', note: 'tx: 0x8f4c...92b1e4', badge: 'badge-warning' },
+      { id: '#INV-2026-000140', status: 'LATE_PAYMENT_REVIEW', email: 'oleg.v@example.com', sum: '10 000 ₽', note: 'Оплата поступила после истечения 24 ч', badge: 'badge-warning' },
+      { id: '#INV-2026-000139', status: 'DUPLICATE_PROOF_DETECTED', email: 'user99@example.com', sum: '8 000 ₽', note: 'Повторно отправлен чужой tx_hash', badge: 'badge-danger' }
+    ];
+
+    function renderAdminBilling() {
+      const st = document.getElementById('admBillStatus').value;
+      const q = (document.getElementById('admBillSearch').value || '').trim().toLowerCase();
+      const list = adminBillingData.filter(b =>
+        (st === 'ALL' || b.status === st) &&
+        (!q || b.id.toLowerCase().includes(q) || b.email.toLowerCase().includes(q))
+      );
+      const el = document.getElementById('admBillingList');
+      if (!list.length) {
+        el.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-muted);">Счета не найдены.</div>`;
+        return;
+      }
+      el.innerHTML = list.map(b => `
+        <div class="card card-pad" style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div>
+              <strong class="mono">${b.id}</strong> · <span class="badge ${b.badge}">${b.status}</span>
+              <div style="font-size:13px;margin-top:4px;">${b.email} · Сумма: <strong>${b.sum}</strong> · ${b.note}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary btn-sm" onclick="showToast('Счёт ${b.id} подтверждён!')">✓ Подтвердить</button>
+              <button class="btn btn-danger btn-sm" onclick="showToast('Счёт ${b.id} отклонён')">✕ Отклонить</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const adminAuditData = [
+      { ts: '26.11.2026 01:05', actor: 'admin@pgf.local', event: 'INVOICE_APPROVE', target: '#INV-2026-000142 (alex.k@example.com)' },
+      { ts: '20.11.2026 14:12', actor: 'alex.k@example.com', event: 'UNBIND', target: 'LIC-A1B2C3D4E5F6 · PC-77aa88bb' },
+      { ts: '19.11.2026 18:30', actor: 'admin@pgf.local', event: 'PLAN_UPDATE', target: 'pgF Pro: цена 8 000 ₽ (без влияния на счета)' },
+      { ts: '18.11.2026 11:02', actor: 'admin@pgf.local', event: 'BAN', target: 'U-1102 (blocked_user@example.com)' }
+    ];
+
+    function renderAdminAudit() {
+      const ev = document.getElementById('admAuditEvent').value;
+      const q = (document.getElementById('admAuditSearch').value || '').trim().toLowerCase();
+      const list = adminAuditData.filter(a =>
+        (ev === 'ALL' || a.event === ev) &&
+        (!q || a.actor.toLowerCase().includes(q) || a.target.toLowerCase().includes(q))
+      );
+      document.getElementById('admAuditList').innerHTML = list.length ? list.map(a => `
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid var(--border);">
+          <div><span class="mono" style="color:var(--text-muted);margin-right:8px;">${a.ts}</span><strong>${a.event}</strong> · ${a.actor}</div>
+          <span class="mono" style="color:var(--text-secondary);">${a.target}</span>
+        </div>
+      `).join('') : `<div style="color:var(--text-muted);">Записей не найдено.</div>`;
+    }
 
     // Init
     document.getElementById('previewBody').innerHTML = previewTabsData['tab-projects'];
