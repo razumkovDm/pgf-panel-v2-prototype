@@ -1312,7 +1312,7 @@
           <aside class="cab-sidebar">
             <button class="nav-item" id="nav-s2-home" onclick="goScreen('s2-home')">🏠 Главная кабинета</button>
             <button class="nav-item" id="nav-s2" onclick="goScreen('s2')">🔑 Мои лицензии</button>
-            <button class="nav-item" id="nav-s5" onclick="goScreen('s5')">💳 Баланс и счета</button>
+            <button class="nav-item" id="nav-s5-list" onclick="goScreen('s5-list')">💳 Баланс и счета</button>
             <button class="nav-item" id="nav-s2-referrals" onclick="goScreen('s2-referrals')">🎁 Рефералы</button>
             <button class="nav-item" id="nav-s2-support" onclick="goScreen('s2-support')">💬 Поддержка</button>
             <button class="nav-item" id="nav-s2-downloads" onclick="goScreen('s2-downloads')">⬇️ Скачать pgF</button>
@@ -1531,7 +1531,7 @@
                  ЭКРАН 5: РУЧНОЙ СЧЁТ (/app/billing/invoices/[id])
                  =============================================================== -->
             <section class="screen" id="s5">
-              <button class="breadcrumb" onclick="goScreen('s2')">← Назад к «Моим лицензиям»</button>
+              <button class="breadcrumb" onclick="goScreen('s5-list')">← Баланс и платежи (/app/billing)</button>
 
               <div class="page-header">
                 <div>
@@ -1574,13 +1574,21 @@
                 <!-- Реквизиты и статус подтверждения -->
                 <div style="display:flex;flex-direction:column;gap:16px;">
                   <div class="card card-pad">
-                    <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Реквизиты оплаты</div>
-                    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
-                      Способ: <strong>Криптовалюта USDT (сеть TRC-20)</strong>
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                      <div style="font-weight:700;font-size:15px;">Реквизиты оплаты</div>
+                      <div class="seg-control" id="s5PayMethodSwitch">
+                        <button class="seg-btn active" onclick="setPayMethod('USDT', this)">USDT TRC-20</button>
+                        <button class="seg-btn" onclick="setPayMethod('BANK', this)">Банк. перевод</button>
+                      </div>
                     </div>
-                    <div class="lic-key-row" style="margin-bottom:8px;">
-                      <code class="mono" style="font-size:12px;word-break:break-all;">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>
-                      <button class="btn btn-secondary btn-sm" onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','Адрес кошелька скопирован')">Копировать</button>
+                    <div id="s5RequisitesBox">
+                      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+                        Способ: <strong>Криптовалюта USDT (сеть TRC-20)</strong>
+                      </div>
+                      <div class="lic-key-row" style="margin-bottom:8px;">
+                        <code class="mono" style="font-size:12px;word-break:break-all;">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>
+                        <button class="btn btn-secondary btn-sm" onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','Адрес кошелька скопирован')">Копировать</button>
+                      </div>
                     </div>
                     <div style="font-size:12px;color:var(--text-muted);" id="s5TransferSum">
                       Сумма к переводу: <strong>7 000 ₽</strong> (эквивалент 72.50 USDT на момент выставления).
@@ -1590,6 +1598,69 @@
                   <div class="card card-pad" id="s5ProofCard">
                     <!-- Rendered by JS based on state -->
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Кабинет: Баланс и платежи (/app/billing — §3.3) -->
+            <section class="screen" id="s5-list">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Баланс и платежи (/app/billing)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Раздельный учёт основных и бонусных средств, пополнение баланса и активные ручные счета.</p>
+                </div>
+              </div>
+
+              <div class="cards-3" style="margin-bottom:16px;">
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ОСНОВНОЙ БАЛАНС</div>
+                  <div style="font-size:24px;font-weight:800;margin-top:4px;">4 000 ₽</div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">БОНУСНЫЙ БАЛАНС</div>
+                  <div style="font-size:24px;font-weight:800;margin-top:4px;color:var(--info);">2 000 ₽</div>
+                  <div style="font-size:11px;color:var(--text-muted);">Списывается в первую очередь</div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ИТОГО ДОСТУПНО</div>
+                  <div style="font-size:24px;font-weight:800;margin-top:4px;color:var(--success);">6 000 ₽</div>
+                </div>
+              </div>
+
+              <div class="grid-2" style="margin-bottom:16px;align-items:start;">
+                <div class="card card-pad">
+                  <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Пополнить основной баланс</div>
+                  <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <input class="input mono" id="topupAmountInput" value="5000" style="flex:1;" />
+                    <button class="btn btn-primary" onclick="submitTopupToInvoice()">Выставить счёт →</button>
+                  </div>
+                  <div class="callout callout-warning" style="margin-bottom:0;">
+                    <span>⚠️</span>
+                    <div>После зачисления на баланс будут автоматически продлены просроченные лицензии с включённым автопродлением (по очереди <code class="mono">period_end ASC</code>).</div>
+                  </div>
+                </div>
+
+                <div class="card card-pad">
+                  <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Активные ручные счета</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px;background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;">
+                    <div>
+                      <strong class="mono">#INV-2026-000142</strong> · <span class="badge badge-warning">Подтверждение на проверке</span>
+                      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">7 000 ₽ · Действует до 27.11.2026 10:30</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="goScreen('s5')">Открыть счёт →</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card card-pad">
+                <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Финансовая история</div>
+                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+                  <span>18.11.2026 · Реферальное начисление (заказ #U-4082)</span>
+                  <strong style="color:var(--info);" class="mono">+2 000 ₽ (Бонусы)</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;font-size:13px;">
+                  <span>01.11.2026 · Пополнение основного баланса (#INV-2026-000091)</span>
+                  <strong style="color:var(--success);" class="mono">+4 000 ₽ (Основные)</strong>
                 </div>
               </div>
             </section>
@@ -2427,7 +2498,7 @@
           </div>
           <button class="nav-item ${state.currentScreen==='s2-home'?'active':''}" onclick="closeMobileMenus();goScreen('s2-home')">🏠 Главная кабинета</button>
           <button class="nav-item ${['s2','s3','s4'].includes(state.currentScreen)?'active':''}" onclick="closeMobileMenus();goScreen('s2')">🔑 Мои лицензии</button>
-          <button class="nav-item ${state.currentScreen==='s5'?'active':''}" onclick="closeMobileMenus();goScreen('s5')">💳 Баланс и счета</button>
+          <button class="nav-item ${['s5','s5-list'].includes(state.currentScreen)?'active':''}" onclick="closeMobileMenus();goScreen('s5-list')">💳 Баланс и счета</button>
           <button class="nav-item ${state.currentScreen==='s2-referrals'?'active':''}" onclick="closeMobileMenus();goScreen('s2-referrals')">🎁 Рефералы</button>
           <button class="nav-item ${state.currentScreen==='s2-support'?'active':''}" onclick="closeMobileMenus();goScreen('s2-support')">💬 Поддержка</button>
           <button class="nav-item ${state.currentScreen==='s2-downloads'?'active':''}" onclick="closeMobileMenus();goScreen('s2-downloads')">⬇️ Скачать pgF</button>
@@ -2502,11 +2573,11 @@
       document.getElementById(screenId).classList.add('active');
 
       // Show/hide cabinet shell
-      const isCabinet = ['s2', 's2-home', 's2-referrals', 's2-support', 's2-downloads', 's2-settings', 's3', 's4', 's5'].includes(screenId);
+      const isCabinet = ['s2', 's2-home', 's2-referrals', 's2-support', 's2-downloads', 's2-settings', 's3', 's4', 's5', 's5-list'].includes(screenId);
       document.getElementById('cabinetShell').style.display = isCabinet ? 'block' : 'none';
 
       // Update top proto tabs
-      const tabKey = screenId.startsWith('s2-') ? 's2' : screenId;
+      const tabKey = screenId.startsWith('s2-') ? 's2' : screenId === 's5-list' ? 's5' : screenId;
       document.querySelectorAll('.proto-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.screen === tabKey);
       });
@@ -2648,14 +2719,8 @@
 
     function renderLicensesList() {
       const q = (document.getElementById('licSearchInput').value || '').trim().toLowerCase();
-      const rightF = document.getElementById('licRightFilter') ? document.getElementById('licRightFilter').value : 'ALL';
-      const autoF = document.getElementById('licAutoFilter') ? document.getElementById('licAutoFilter').value : 'ALL';
       const filtered = state.licenses.filter(l => {
         if (state.licFilter !== 'ALL' && l.status !== state.licFilter) return false;
-        if (rightF === 'SEO' && !l.rights.includes('SEO')) return false;
-        if (rightF === 'DESKTOP_ONLY' && l.rights.includes('SEO')) return false;
-        if (autoF === 'ON' && !l.autoRenew) return false;
-        if (autoF === 'OFF' && l.autoRenew) return false;
         if (q && !l.name.toLowerCase().includes(q) && !l.publicId.toLowerCase().includes(q)) return false;
         return true;
       });
@@ -3363,6 +3428,46 @@
       btns.forEach((b, i) => b.classList.toggle('active', i === 1));
       renderInvoiceScreen();
       showToast('Подтверждение отправлено. Статус: Подтверждение на проверке.');
+    }
+
+    function setPayMethod(method, btn) {
+      document.querySelectorAll('#s5PayMethodSwitch .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const box = document.getElementById('s5RequisitesBox');
+      if (method === 'BANK') {
+        box.innerHTML = `
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+            Способ: <strong>Банковский перевод (СБП / карта, из админки)</strong>
+          </div>
+          <div class="lic-key-row" style="margin-bottom:8px;">
+            <code class="mono" style="font-size:12px;">2200 7001 0042 8891 (СБП +7 900 000-00-00)</code>
+            <button class="btn btn-secondary btn-sm" onclick="copyText('2200700100428891','Реквизиты скопированы')">Копировать</button>
+          </div>`;
+      } else {
+        box.innerHTML = `
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+            Способ: <strong>Криптовалюта USDT (сеть TRC-20)</strong>
+          </div>
+          <div class="lic-key-row" style="margin-bottom:8px;">
+            <code class="mono" style="font-size:12px;word-break:break-all;">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>
+            <button class="btn btn-secondary btn-sm" onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','Адрес кошелька скопирован')">Копировать</button>
+          </div>`;
+      }
+    }
+
+    function submitTopupToInvoice() {
+      const amt = Math.max(100, parseInt(document.getElementById('topupAmountInput').value || '5000', 10) || 5000);
+      state.invoiceData = {
+        purpose: 'Пополнение основного баланса',
+        total: amt,
+        rows: [
+          { label: 'Пополнение основного баланса (на счёт аккаунта)', amount: `${amt.toLocaleString('ru-RU')} ₽`, color: '' },
+          { label: '⚠️ После зачисления будут автоматически продлены просроченные лицензии с автопродлением', amount: '—', color: 'var(--warning)' }
+        ]
+      };
+      state.invoiceState = 'AWAITING';
+      goScreen('s5');
+      showToast('Счёт на пополнение баланса выставлен');
     }
 
     // ================= SCREEN 6: DOCS & WIKI =================
