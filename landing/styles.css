@@ -1073,6 +1073,27 @@ input {
   background: var(--status-info-bg);
   color: var(--status-info-text);
   border: 1px solid var(--status-info-border);
+  white-space: nowrap;
+}
+
+.feature-card__tag--planned {
+  background: var(--status-warn-bg);
+  color: var(--status-warn-text);
+  border-color: var(--status-warn-border);
+  font-weight: 700;
+}
+
+.feature-card--planned {
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcfd 100%);
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+
+.feature-card--planned .feature-card__list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 18px;
 }
 
 .feature-card__title {
@@ -1088,6 +1109,13 @@ input {
   font-size: 15px;
   line-height: 1.55;
   color: var(--text-secondary);
+}
+
+.feature-card__note {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .feature-card__list {
@@ -1232,19 +1260,19 @@ input {
 }
 
 /* ==========================================================================
-   Pricing & Trial Overview (#pricing-overview)
+   Pricing & Trial Overview (#pricing)
    ========================================================================== */
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.42fr 1fr;
   gap: 20px;
   align-items: stretch;
 }
 
 .pricing-grid--single {
   grid-template-columns: 1fr;
-  max-width: 760px;
+  max-width: 780px;
 }
 
 .plan-card {
@@ -1254,7 +1282,7 @@ input {
   padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   box-shadow: var(--shadow-xs);
 }
 
@@ -1298,10 +1326,97 @@ input {
 }
 
 .plan-price-block {
-  padding: 16px;
+  padding: 18px;
   border-radius: var(--radius-md);
   background: var(--bg-page);
   border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.plan-calc-prompt {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Period selector pills */
+.period-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.period-group__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.period-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.period-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.period-pill:hover {
+  border-color: var(--brand-primary);
+}
+
+.period-pill.is-active {
+  background: var(--bg-dark);
+  border-color: var(--bg-dark);
+  color: #ffffff;
+}
+
+.period-pill__hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.period-pill.is-active .period-pill__hint {
+  color: #9be8c3;
+}
+
+/* Total bar with Buy button right next to total */
+.plan-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  flex-wrap: nowrap;
+}
+
+.plan-total-bar__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .plan-price-row {
@@ -1312,22 +1427,37 @@ input {
 }
 
 .plan-price__amount {
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
   line-height: 1.1;
 }
 
+.plan-price__strike {
+  font-size: 16px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
 .plan-price__unit {
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--text-secondary);
 }
 
 .plan-price__note {
-  margin: 6px 0 0;
+  margin: 0;
   font-size: 12.5px;
+  line-height: 1.45;
   color: var(--text-muted);
+}
+
+.plan-total-bar__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 /* Interactive demo options inside pricing overview */
@@ -1335,9 +1465,6 @@ input {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 12px;
-  margin-top: 12px;
-  border-top: 1px solid var(--border-subtle);
 }
 
 .plan-option-row {
@@ -1355,6 +1482,46 @@ input {
   cursor: pointer;
   color: var(--text-primary);
   font-weight: 500;
+}
+
+.plan-option-row--disabled label {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.plan-option__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.seo-state-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.seo-state-badge--included {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-text);
+  border-color: var(--status-ok-border);
+}
+
+.seo-state-badge--disabled {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+}
+
+.plan-option-hint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .stepper {
@@ -1380,11 +1547,110 @@ input {
   background: var(--bg-surface-alt);
 }
 
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .stepper span {
   min-width: 30px;
   text-align: center;
   font-size: 13.5px;
   font-weight: 700;
+}
+
+/* Authenticated user benefits (personal discount, promo code, bonuses) */
+.user-benefits {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--brand-primary-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-benefits__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.user-benefits__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  flex-wrap: wrap;
+}
+
+.promo-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 210px;
+}
+
+.promo-inline input {
+  flex: 1;
+  min-width: 110px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  font-size: 13px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.promo-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--status-ok-text);
+}
+
+.promo-status--err {
+  color: var(--status-err-text);
+}
+
+.guest-benefits-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-strong);
+}
+
+.calc-error {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--status-err-bg);
+  border: 1px solid var(--status-err-border);
+  color: var(--status-err-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.invoice-lock-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--status-info-bg);
+  border: 1px solid var(--status-info-border);
+  color: #1c4a73;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 /* Auth-only price gate */
@@ -2141,6 +2407,157 @@ input {
   color: #8ce3b9;
 }
 
+/* Planned policy badge inside FAQ */
+.faq-policy-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--status-warn-bg);
+  color: var(--status-warn-text);
+  border: 1px solid var(--status-warn-border);
+}
+
+/* ==========================================================================
+   Checkout / Login / Register Interactive Flow Simulator Modal (K2 / K3)
+   ========================================================================== */
+
+.flow-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(14, 25, 28, 0.56);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.flow-modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-window);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.flow-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.flow-modal__route {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.flow-modal__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.flow-modal__close {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.flow-modal__close:hover {
+  background: var(--bg-surface-alt);
+}
+
+.flow-cfg-summary {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  font-size: 13.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flow-cfg-summary__title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.flow-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.flow-tab {
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.flow-tab.is-active {
+  background: var(--bg-dark);
+  border-color: var(--bg-dark);
+  color: #ffffff;
+}
+
+.flow-tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.flow-box-info {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--status-info-bg);
+  border: 1px solid var(--status-info-border);
+  color: #174368;
+  font-size: 13px;
+  line-height: 1.48;
+}
+
+.flow-box-ok {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--status-ok-bg);
+  border: 1px solid var(--status-ok-border);
+  color: #144d35;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
 /* ==========================================================================
    Responsive Breakpoints (1024px, 768px, 390px)
    ========================================================================== */
@@ -2190,6 +2607,7 @@ input {
 
   .showcase__captions,
   .features-grid,
+  .feature-card--planned .feature-card__list,
   .roles-grid,
   .steps-grid,
   .reviews-grid,
@@ -2335,6 +2753,33 @@ input {
     padding: 18px;
   }
 
+  .plan-price-block {
+    padding: 14px;
+  }
+
+  .period-pills {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .plan-total-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plan-total-bar__cta {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .plan-total-bar__cta .btn {
+    width: 100%;
+  }
+
+  .plan-option-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .plan-price__amount {
     font-size: 28px;
   }
@@ -2389,7 +2834,8 @@ input {
     gap: 22px;
   }
 
-  .private-card {
-    padding: 20px;
+  .private-card,
+  .flow-modal {
+    padding: 18px;
   }
 }
