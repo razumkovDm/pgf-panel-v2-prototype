@@ -57,14 +57,14 @@
         <nav class="site-nav" aria-label="Основная навигация">
           <a class="site-nav__link" href="#features">Возможности</a>
           <a class="site-nav__link" href="#pricing" data-pricing-nav-link>Тариф</a>
-          <a class="site-nav__link" href="#trial" data-trial-cta>Пробный период</a>
+          <a class="site-nav__link btn--disabled" aria-disabled="true" tabindex="-1" data-trial-cta>Пробный период</a>
           <a class="site-nav__link" href="/docs">Документация</a>
           <a class="site-nav__link" href="/wiki">Wiki</a>
         </nav>
 
         <div class="site-header__actions">
           <a class="btn btn--ghost" href="/login" data-auth-link>Войти</a>
-          <a class="btn btn--primary site-header__cta-desktop" href="#pricing" data-primary-pricing-cta>Рассчитать стоимость</a>
+          <a class="btn btn--primary site-header__cta-desktop btn--disabled" aria-disabled="true" tabindex="-1" data-primary-pricing-cta>Рассчитать стоимость</a>
           <button id="nav-toggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Открыть меню">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -84,8 +84,8 @@
         <a class="mobile-drawer__link" href="#faq">Частые вопросы</a>
       </nav>
       <div class="mobile-drawer__actions">
-        <a class="btn btn--primary btn--lg" href="#pricing" data-primary-pricing-cta>Рассчитать стоимость</a>
-        <a class="btn btn--secondary btn--lg" href="#trial" data-trial-cta>Пробный период 14 дней*</a>
+        <a class="btn btn--primary btn--lg btn--disabled" aria-disabled="true" tabindex="-1" data-primary-pricing-cta>Рассчитать стоимость</a>
+        <a class="btn btn--secondary btn--lg btn--disabled" aria-disabled="true" tabindex="-1" data-trial-cta>Пробный период 14 дней*</a>
         <a class="btn btn--secondary btn--lg" href="/login" data-auth-link>Войти</a>
       </div>
       <div class="mobile-drawer__meta">
@@ -107,8 +107,8 @@
             </p>
 
             <div class="hero__actions">
-              <a class="btn btn--primary btn--lg" href="#pricing" data-primary-pricing-cta>Рассчитать стоимость</a>
-              <a class="btn btn--secondary btn--lg" href="#trial" data-trial-cta>Пробный период 14 дней*</a>
+              <a class="btn btn--primary btn--lg btn--disabled" aria-disabled="true" tabindex="-1" data-primary-pricing-cta>Рассчитать стоимость</a>
+              <a class="btn btn--secondary btn--lg btn--disabled" aria-disabled="true" tabindex="-1" data-trial-cta>Пробный период 14 дней*</a>
               <a class="btn btn--ghost btn--lg" href="/docs/getting-started">Документация</a>
             </div>
 
@@ -815,7 +815,7 @@
               </p>
               <div class="step-card__links">
                 <a class="step-card__link" href="#pricing" data-pricing-nav-link>Перейти к калькулятору →</a>
-                <a class="step-card__link" href="#trial" data-trial-cta>Пробный период →</a>
+                <a class="step-card__link btn--disabled" aria-disabled="true" tabindex="-1" data-trial-cta>Пробный период →</a>
               </div>
             </article>
 
@@ -948,6 +948,11 @@
 
                 <!-- 4. Unavailable configuration explanation -->
                 <div id="calc-error-box" class="calc-error is-hidden" role="alert"></div>
+                <noscript>
+                  <p class="calc-error" role="status">
+                    Для проверки режима витрины, расчёта стоимости и оформления подписки или пробного периода требуется JavaScript. Справка (/docs) и Wiki (/wiki) доступны без ограничений.
+                  </p>
+                </noscript>
 
                 <!-- 5. Total & Buy Subscription button right next to total -->
                 <div class="plan-total-bar">
@@ -963,7 +968,7 @@
                   </div>
 
                   <div class="plan-total-bar__cta">
-                    <button id="buy-subscription-btn" type="button" class="btn btn--primary btn--lg">
+                    <button id="buy-subscription-btn" type="button" class="btn btn--primary btn--lg btn--disabled" disabled aria-disabled="true">
                       Купить подписку
                     </button>
                     <span id="buy-route-hint" class="dv2-mono" style="font-size: 11px; color: var(--text-muted);">
@@ -1052,7 +1057,7 @@
               </ul>
 
               <div class="plan-card__actions">
-                <button id="trial-start-btn" type="button" class="btn btn--secondary btn--lg" data-trial-cta>
+                <button id="trial-start-btn" type="button" class="btn btn--secondary btn--lg btn--disabled" data-trial-cta disabled aria-disabled="true">
                   Оформить пробный период
                 </button>
               </div>
@@ -1371,7 +1376,7 @@
             </p>
           </div>
           <div class="final-cta__actions">
-            <a class="btn btn--on-dark-primary btn--lg" href="#pricing" data-primary-pricing-cta>Рассчитать стоимость</a>
+            <a class="btn btn--on-dark-primary btn--lg btn--disabled" aria-disabled="true" tabindex="-1" data-primary-pricing-cta>Рассчитать стоимость</a>
             <a class="btn btn--on-dark-secondary btn--lg" href="/docs/getting-started">Документация</a>
             <a class="btn btn--on-dark-secondary btn--lg" href="/login" data-auth-link>Войти</a>
           </div>
@@ -1401,7 +1406,7 @@
             <ul class="footer-col__list">
               <li><a href="#features">Возможности</a></li>
               <li><a href="#pricing" data-pricing-nav-link>Тариф и расчёт</a></li>
-              <li id="footer-trial-item"><a href="#trial" data-trial-cta>Пробный период</a></li>
+              <li id="footer-trial-item"><a class="btn--disabled" aria-disabled="true" tabindex="-1" data-trial-cta>Пробный период</a></li>
               <li><a href="#trust">Системные требования</a></li>
               <li><a href="#faq">Частые вопросы</a></li>
             </ul>

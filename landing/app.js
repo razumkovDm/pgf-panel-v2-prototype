@@ -396,6 +396,11 @@
     if (buyBtn) {
       var buyDisabled = !!errMsg;
       buyBtn.disabled = buyDisabled;
+      if (buyDisabled) {
+        buyBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        buyBtn.removeAttribute('aria-disabled');
+      }
       buyBtn.classList.toggle('btn--disabled', buyDisabled);
       buyBtn.textContent = state.salesPaused ? 'Покупки на паузе' : 'Купить подписку';
     }
@@ -556,6 +561,12 @@
       el.classList.toggle('is-hidden', !canShowTrial);
       if (el.tagName === 'BUTTON') {
         el.disabled = !canShowTrial;
+        if (canShowTrial) {
+          el.removeAttribute('aria-disabled');
+        } else {
+          el.setAttribute('aria-disabled', 'true');
+        }
+        el.classList.toggle('btn--disabled', !canShowTrial);
       } else {
         setAnchorEnabled(el, canShowTrial, '#trial');
       }
