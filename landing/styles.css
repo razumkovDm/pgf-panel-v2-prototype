@@ -1280,13 +1280,13 @@ input {
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: 1.42fr 1fr;
+  grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr);
   gap: 20px;
   align-items: stretch;
 }
 
 .pricing-grid--single {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   max-width: 780px;
 }
 
@@ -1299,6 +1299,8 @@ input {
   flex-direction: column;
   gap: 16px;
   box-shadow: var(--shadow-xs);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .plan-card--trial {
@@ -1583,6 +1585,8 @@ input {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .user-benefits__head {
@@ -1604,19 +1608,23 @@ input {
   font-size: 13px;
   color: var(--text-primary);
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .promo-inline {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
-  min-width: 210px;
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .promo-inline input {
-  flex: 1;
-  min-width: 110px;
+  flex: 1 1 160px;
+  min-width: 0;
+  width: 100%;
   height: 32px;
   padding: 0 10px;
   border-radius: var(--radius-sm);
@@ -2577,6 +2585,32 @@ input {
    Responsive Breakpoints (1024px, 768px, 390px)
    ========================================================================== */
 
+@media (max-width: 1240px) {
+  .site-header__inner {
+    gap: 14px;
+  }
+
+  .site-nav {
+    gap: 2px;
+  }
+
+  .site-nav__link {
+    padding: 8px 9px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 1140px) {
+  .site-nav,
+  .site-header__cta-desktop {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+}
+
 @media (max-width: 1024px) {
   .workflow-strip {
     grid-template-columns: repeat(3, 1fr);
@@ -2590,7 +2624,7 @@ input {
 
   .pricing-grid,
   .trust-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .footer-grid {
@@ -2599,17 +2633,6 @@ input {
 
   .dv2-kpis {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 980px) {
-  .site-nav,
-  .site-header__cta-desktop {
-    display: none;
-  }
-
-  .nav-toggle {
-    display: inline-flex;
   }
 }
 
@@ -2773,6 +2796,17 @@ input {
 
   .plan-price-block {
     padding: 14px;
+  }
+
+  .promo-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .promo-inline input,
+  .promo-inline .btn {
+    flex: 0 0 auto;
+    width: 100%;
   }
 
   .period-pills {
