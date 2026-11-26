@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scenor — Оформление подписки (Макет #609)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Перейти к основному содержимому</a>
+
+  <!-- Top Demo Controls Bar (for K1–K4 interactive verification) -->
+  <div class="demo-bar" role="region" aria-label="Панель демонстрационных сценариев макета">
+    <div class="demo-bar__inner">
+      <span class="demo-bar__title">Демо-макет #609</span>
+
+      <div class="demo-bar__group" role="group" aria-label="Срез реализации">
+        <span class="demo-bar__label">Срез:</span>
+        <button type="button" class="demo-chip" id="demo-slice-3" data-action="set-slice" data-value="3" aria-pressed="true">Срез 3 · Прямой счёт</button>
+        <button type="button" class="demo-chip" id="demo-slice-4" data-action="set-slice" data-value="4" aria-pressed="false">Срез 4 · Баланс и скидки</button>
+      </div>
+
+      <div class="demo-bar__group" role="group" aria-label="Конфигурация из #604">
+        <span class="demo-bar__label">cfg:</span>
+        <button type="button" class="demo-chip" id="demo-cfg-1" data-action="set-cfg" data-value="30d-2pc-seo1" aria-pressed="true">30 дн · 2 ПК · SEO</button>
+        <button type="button" class="demo-chip" id="demo-cfg-2" data-action="set-cfg" data-value="90d-1pc-seo0" aria-pressed="false">90 дн · 1 ПК</button>
+        <button type="button" class="demo-chip demo-chip--warn" id="demo-cfg-bad" data-action="set-cfg" data-value="unavailable-seo" aria-pressed="false">Недоступная</button>
+      </div>
+
+      <div class="demo-bar__group" id="demo-balance-group" role="group" aria-label="Состояние баланса (Срез 4)">
+        <span class="demo-bar__label">Баланс:</span>
+        <button type="button" class="demo-chip" id="demo-bal-ok" data-action="set-balance" data-value="sufficient" aria-pressed="true">Хватает (4 500 ₽)</button>
+        <button type="button" class="demo-chip demo-chip--warn" id="demo-bal-low" data-action="set-balance" data-value="insufficient" aria-pressed="false">Не хватает (2 000 ₽)</button>
+      </div>
+
+      <div class="demo-bar__group" role="group" aria-label="Проверка изменения цены тарифа">
+        <span class="demo-bar__label">Каталог:</span>
+        <button type="button" class="demo-chip demo-chip--warn" id="demo-price-bump" data-action="toggle-price-bump" aria-pressed="false">Цена тарифа +20%</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Cabinet Header (<= 1024px) -->
+  <header class="mobile-header">
+    <div class="mobile-header__brand">
+      <span class="brand-mark" aria-hidden="true">Sc</span>
+      <div>
+        <span class="brand-name">Scenor</span>
+        <span class="brand-sub">Кабинет клиента</span>
+      </div>
+    </div>
+    <nav class="mobile-header__nav" aria-label="Навигация кабинета">
+      <a class="mobile-nav-link" href="../landing/index.html#pricing" id="mobile-pricing-link">Тариф</a>
+      <a class="mobile-nav-link" href="#licenses-anchor" id="mobile-licenses-link">Лицензии</a>
+    </nav>
+  </header>
+
+  <div class="app-shell">
+    <!-- Desktop Cabinet Sidebar (minimal context around checkout) -->
+    <aside class="sidebar" aria-label="Навигация кабинета клиента">
+      <div class="sidebar__brand">
+        <span class="brand-mark" aria-hidden="true">Sc</span>
+        <div>
+          <span class="brand-name">Scenor</span>
+          <span class="brand-sub">Кабинет клиента · pgF</span>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav">
+        <span class="sidebar__section">Подписки и оплата</span>
+        <a class="sidebar__link" href="#licenses-anchor" id="nav-licenses" data-nav="licenses">Мои лицензии</a>
+        <a class="sidebar__link sidebar__link--active" href="#checkout-anchor" id="nav-checkout" data-nav="checkout" aria-current="page">Оформление подписки</a>
+        <a class="sidebar__link" href="#billing-anchor" id="nav-billing" data-nav="billing">Баланс и счета</a>
+
+        <span class="sidebar__section">Справка (открыта всегда)</span>
+        <a class="sidebar__link" href="../landing/index.html#pricing" id="nav-pricing">Калькулятор на главной</a>
+        <a class="sidebar__link" href="#docs-anchor" data-route-preview="/docs">Документация (/docs)</a>
+        <a class="sidebar__link" href="#wiki-anchor" data-route-preview="/wiki">Wiki (/wiki)</a>
+      </nav>
+
+      <div class="sidebar__account">
+        <div class="sidebar__user-email">client@example.com</div>
+        <div class="sidebar__user-role">Обычный клиент (USER) · Демо</div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace" id="main-content" tabindex="-1">
+      <div class="workspace-top">
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+          <a href="#billing-anchor" data-nav="billing">Баланс и счета</a>
+          <span aria-hidden="true">/</span>
+          <span class="breadcrumbs__current" id="breadcrumb-current">Оформление подписки</span>
+        </nav>
+        <span class="route-pill" id="active-route-pill" title="Канонический маршрут в Panel V2">/app/billing/checkout?cfg=30d-2pc-seo1</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="page-title">Оформление подписки</h1>
+          <p class="page-subtitle" id="page-subtitle">Проверьте перенесённую конфигурацию из калькулятора и выберите способ оплаты новой лицензии.</p>
+        </div>
+        <span class="slice-badge" id="slice-badge">Срез 3 · Прямой ручной счёт</span>
+      </div>
+
+      <noscript>
+        <div class="alert alert--warn" style="margin-bottom: 16px;">
+          <p class="alert__title">Для интерактивных сценариев макета требуется JavaScript</p>
+          <p>В статическом режиме показан базовый состав заказа. Включите JavaScript, чтобы проверить переключение срезов, фиксацию счёта и оплату с баланса.</p>
+        </div>
+      </noscript>
+
+      <!-- Live status announcer for screen readers -->
+      <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <!-- ================================================================
+           VIEW 1: CHECKOUT (/app/billing/checkout?cfg=...)
+           ================================================================ -->
+      <section id="view-checkout" aria-label="Экран оформления подписки">
+        <!-- Unavailable Configuration Alert (shown when cfg is invalid/disabled) -->
+        <div id="unavailable-alert" class="alert alert--err is-hidden" role="alert" style="margin-bottom: 18px;">
+          <p class="alert__title" id="unavailable-title">Выбранная конфигурация недоступна</p>
+          <p id="unavailable-text"></p>
+          <div class="alert__actions">
+            <a id="unavailable-edit-link" class="btn btn--secondary btn--sm" href="../landing/index.html#pricing">Изменить конфигурацию в калькуляторе</a>
+            <button type="button" class="btn btn--primary btn--sm" id="unavailable-reset-btn">Выбрать доступную (30 дн · 2 ПК · без SEO)</button>
+          </div>
+        </div>
+
+        <!-- Catalog Price Changed Notice (before invoice is issued) -->
+        <div id="checkout-price-bump-alert" class="alert alert--warn is-hidden" role="status" style="margin-bottom: 18px;">
+          <p class="alert__title">Демо: цена тарифа в каталоге увеличена на 20%</p>
+          <p>Счёт ещё не выставлен, поэтому предварительный расчёт ниже пересчитан по новой актуальной цене. После нажатия «Выставить счёт» сумма и состав будут зафиксированы на 24 часа.</p>
+        </div>
+
+        <div class="checkout-grid">
+          <!-- Left Column: Payment Options & Conditions -->
+          <div class="checkout-col">
+            <!-- Slice 3 Notice -->
+            <div id="slice3-info-box" class="alert alert--info">
+              <p class="alert__title">Срез 3 (R1-Dev): прямая оплата по ручному счёту</p>
+              <p>Оплата по выставленному счёту относится строго к этому заказу. Внутренний баланс, промокоды, персональные скидки и автопродление подключаются в Срезе 4 (Commercial R1).</p>
+            </div>
+
+            <!-- Slice 4 Balance & Discounts Card -->
+            <div id="slice4-conditions-card" class="card is-hidden">
+              <div class="card__head">
+                <h2 class="card__title">Баланс, скидки и промокод (Срез 4)</h2>
+                <span class="badge badge--ok">Персональная скидка 10%</span>
+              </div>
+              <div class="card__body">
+                <div class="balance-grid" aria-label="Остатки внутреннего баланса">
+                  <div class="balance-tile balance-tile--bonus">
+                    <div class="balance-tile__label">Бонусный баланс (списывается первым)</div>
+                    <div class="balance-tile__amount tabular" id="bonus-balance-val">500 ₽</div>
+                  </div>
+                  <div class="balance-tile">
+                    <div class="balance-tile__label">Основной баланс</div>
+                    <div class="balance-tile__amount tabular" id="main-balance-val">4 000 ₽</div>
+                  </div>
+                </div>
+                <p class="form-hint" style="margin: 8px 0 14px;">
+                  Доступно всего: <strong class="tabular" id="total-balance-val">4 500 ₽</strong>. При оплате с баланса или комбинированной оплате сначала списываются бонусные средства, затем основные.
+                </p>
+
+                <!-- Promo code for new license -->
+                <div class="form-field" style="margin-bottom: 0;">
+                  <label for="promo-input">Промокод для новой лицензии (не более одного, суммируется с персональной скидкой)</label>
+                  <form id="promo-form" class="promo-form" novalidate>
+                    <input type="text" id="promo-input" class="input" value="PGF500" placeholder="Например: PGF500 или START5" autocomplete="off">
+                    <button type="submit" class="btn btn--secondary" id="promo-apply-btn">Применить</button>
+                    <button type="button" class="btn btn--ghost" id="promo-clear-btn">Сбросить</button>
+                  </form>
+                  <div id="promo-status" class="form-hint" role="status" style="margin-top: 6px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Method Selection Card -->
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Способ оплаты</h2>
+                <span class="badge badge--neutral" id="payment-currency-badge">Валюта: RUB (₽)</span>
+              </div>
+              <div class="card__body">
+                <div class="method-list" role="radiogroup" aria-label="Выбор способа оплаты">
+                  <!-- Option 1: Pay from Balance (Slice 4 only) -->
+                  <label class="method-option is-hidden" id="method-balance-card">
+                    <input type="radio" name="payment-method" id="method-balance-radio" value="balance">
+                    <div class="method-option__content">
+                      <div class="method-option__top">
+                        <span class="method-option__title">Оплата с внутреннего баланса</span>
+                        <span class="badge badge--ok" id="method-balance-badge">Мгновенная выдача</span>
+                      </div>
+                      <p class="method-option__desc" id="method-balance-desc">
+                        Списание по приоритету: сначала бонусные средства, затем основные. Лицензия активируется сразу.
+                      </p>
+                      <div id="balance-shortfall-box" class="alert alert--warn is-hidden" style="margin-top: 10px;">
+                        <p class="alert__title" id="balance-shortfall-title">Недостаточно средств на балансе</p>
+                        <p id="balance-shortfall-text"></p>
+                        <div class="alert__actions">
+                          <button type="button" class="btn btn--secondary btn--sm" id="switch-to-direct-btn">Перейти к прямому счёту</button>
+                          <button type="button" class="btn btn--secondary btn--sm" id="switch-to-combined-btn">Оформить комбинированно</button>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <!-- Option 2: Combined Payment (Slice 4 only, §5.1-5.2 #590) -->
+                  <label class="method-option is-hidden" id="method-combined-card">
+                    <input type="radio" name="payment-method" id="method-combined-radio" value="combined">
+                    <div class="method-option__content">
+                      <div class="method-option__top">
+                        <span class="method-option__title">Комбинированная оплата (резерв баланса + ручной счёт)</span>
+                        <span class="badge badge--info">§5.1–5.2</span>
+                      </div>
+                      <p class="method-option__desc" id="method-combined-desc">
+                        Доступный остаток баланса (бонусы + основные) резервируется за этим счётом (<code>held_minor</code>), а на остаток выставляется прямой ручной счёт на 24 часа. При истечении или отклонении счёта резерв возвращается.
+                      </p>
+                    </div>
+                  </label>
+
+                  <!-- Option 3: Direct Manual Invoice (Slice 3 & Slice 4) -->
+                  <label class="method-option method-option--selected" id="method-direct-card">
+                    <input type="radio" name="payment-method" id="method-direct-radio" value="direct" checked>
+                    <div class="method-option__content">
+                      <div class="method-option__top">
+                        <span class="method-option__title">Прямой ручной счёт (на этот заказ)</span>
+                        <span class="badge badge--neutral">Фиксация цены на 24 ч</span>
+                      </div>
+                      <p class="method-option__desc">
+                        Фиксирует валюту, сумму и состав заказа на 24 часа. После перевода прикрепите чек — администратор подтвердит оплату, и ключ появится в «Моих лицензиях». Прямая оплата не перехватывается автопродлением других лицензий.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Manual Payment Channel Selector (shown when direct or combined is selected) -->
+                <div id="channel-selector-wrap" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                  <div class="form-field" style="margin-bottom: 0;">
+                    <label for="payment-channel-select">Реквизиты перевода (настраиваются в /admin/billing)</label>
+                    <select id="payment-channel-select" class="input">
+                      <option value="usdt_trc20">Криптовалюта USDT (сеть TRC-20)</option>
+                      <option value="bank_rub">Банковский перевод (СБП / карта, RUB)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slice 4 Auto-renewal Default Notice -->
+            <div id="slice4-autorenew-card" class="autorenew-box is-hidden">
+              <div class="autorenew-box__tag">
+                <span class="autorenew-dot" aria-hidden="true"></span>
+                <span>Автопродление включено (по умолчанию для новой лицензии)</span>
+              </div>
+              <p style="margin: 0; color: var(--text-secondary);">
+                В Срезе 4 для новой лицензии обычного клиента автопродление с внутреннего баланса включено по умолчанию. Отключить или снова включить его можно независимо для каждой лицензии в разделе <strong>«Мои лицензии»</strong> (<code class="mono">/app/licenses</code>) или в карточке лицензии (<code class="mono">/app/licenses/[id]</code>) — отключение не прерывает оплаченный период.
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column: Order Summary & Primary Action -->
+          <div class="checkout-col checkout-col--summary">
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Состав заказа</h2>
+                <a id="edit-config-link" class="btn btn--ghost btn--sm" href="../landing/index.html?cfg=30d-2pc-seo1#pricing">Изменить конфигурацию</a>
+              </div>
+              <div class="card__body">
+                <div class="config-pills" id="order-config-pills" aria-label="Параметры выбранной конфигурации"></div>
+
+                <div class="kv-list" id="order-breakdown-rows"></div>
+
+                <div class="kv-divider"></div>
+
+                <div class="total-row">
+                  <span class="total-row__label" id="order-total-label">К оплате по счёту</span>
+                  <div>
+                    <span class="total-row__strike tabular is-hidden" id="order-total-strike"></span>
+                    <span class="total-row__amount tabular" id="order-total-amount">4 800 ₽</span>
+                  </div>
+                </div>
+
+                <p class="form-hint" id="order-precalc-note" style="margin: 10px 0 16px;">
+                  Сумма до выставления счёта — предварительный расчёт по текущим настройкам тарифа. Демонстрационные значения.
+                </p>
+
+                <button type="button" class="btn btn--primary btn--lg btn--full" id="primary-checkout-btn">
+                  Выставить счёт
+                </button>
+
+                <p class="form-hint" id="edit-config-route-hint" style="margin: 10px 0 0; text-align: center;">
+                  Возврат в калькулятор: <code class="mono">/#pricing?cfg=30d-2pc-seo1</code>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW 2: MANUAL INVOICE (/app/billing/invoices/INV-2026-000142)
+           ================================================================ -->
+      <section id="view-invoice" class="is-hidden" aria-label="Экран ручного счёта">
+        <!-- Lifecycle Stepper -->
+        <ol class="stepper" id="invoice-stepper" aria-label="Этапы оплаты счёта" style="list-style: none; padding: 0; margin: 0 0 18px;">
+          <li class="step step--done" data-step="created">
+            <div class="step__num">Шаг 1</div>
+            <div class="step__label">Счёт выставлен</div>
+          </li>
+          <li class="step step--active" data-step="awaiting">
+            <div class="step__num">Шаг 2</div>
+            <div class="step__label">Ожидает оплаты</div>
+          </li>
+          <li class="step" data-step="review">
+            <div class="step__num">Шаг 3</div>
+            <div class="step__label">На проверке</div>
+          </li>
+          <li class="step" data-step="paid">
+            <div class="step__num">Шаг 4</div>
+            <div class="step__label">Оплачено · Лицензии</div>
+          </li>
+        </ol>
+
+        <!-- Dynamic Status Banner -->
+        <div id="invoice-status-banner" class="alert alert--info" role="status" style="margin-bottom: 16px;">
+          <p class="alert__title" id="invoice-status-title"></p>
+          <p id="invoice-status-desc"></p>
+        </div>
+
+        <!-- Price Snapshot Protection Banner (shown when catalog price changes after invoice creation) -->
+        <div id="invoice-price-lock-banner" class="alert alert--ok is-hidden" role="status" style="margin-bottom: 16px;">
+          <p class="alert__title">Цена и состав счёта защищены снимком (price_snapshot)</p>
+          <p id="invoice-price-lock-text"></p>
+        </div>
+
+        <div class="checkout-grid">
+          <!-- Left Column: Requisites & Proof Submission -->
+          <div class="checkout-col">
+            <!-- Requisites Card -->
+            <div class="card" id="invoice-requisites-card">
+              <div class="card__head">
+                <h2 class="card__title">Счёт <span class="mono" id="invoice-number-label">#INV-2026-000142</span></h2>
+                <span class="badge badge--info" id="invoice-status-badge">Ожидает оплаты</span>
+              </div>
+              <div class="card__body">
+                <div class="kv-list" style="margin-bottom: 14px;">
+                  <div class="kv-row">
+                    <span class="kv-row__label">Назначение</span>
+                    <span class="kv-row__value">Покупка новой лицензии pgF (прямая оплата заказа)</span>
+                  </div>
+                  <div class="kv-row">
+                    <span class="kv-row__label">Срок действия счёта</span>
+                    <span class="kv-row__value tabular" id="invoice-timer-value">24 ч (осталось 23 ч 59 мин)</span>
+                  </div>
+                  <div class="kv-row">
+                    <span class="kv-row__label">Способ перевода</span>
+                    <span class="kv-row__value" id="invoice-channel-name">Криптовалюта USDT (сеть TRC-20)</span>
+                  </div>
+                </div>
+
+                <div class="requisites-box">
+                  <div>
+                    <div class="form-hint" id="invoice-req-label">Адрес кошелька USDT (TRC-20)</div>
+                    <div class="copy-row" style="margin-top: 4px;">
+                      <span class="copy-row__code" id="invoice-req-address">TScenorDemoWallet7x9K2mP4qR8vN3wJ1</span>
+                      <button type="button" class="btn btn--secondary btn--sm" data-copy-target="invoice-req-address">Копировать</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="form-hint">Код платежа (укажите в комментарии к переводу)</div>
+                    <div class="copy-row" style="margin-top: 4px;">
+                      <span class="copy-row__code" id="invoice-payment-code">PGF-2026-0142</span>
+                      <button type="button" class="btn btn--secondary btn--sm" data-copy-target="invoice-payment-code">Копировать</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="form-hint">Точная сумма перевода по счёту</div>
+                    <div class="copy-row" style="margin-top: 4px;">
+                      <span class="copy-row__code tabular" id="invoice-req-amount">4 800 ₽</span>
+                      <button type="button" class="btn btn--secondary btn--sm" data-copy-target="invoice-req-amount">Копировать</button>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="form-hint" style="margin: 12px 0 0;">
+                  Прямая оплата относится только к этому заказу и не перехватывается автопродлением других лицензий. Скриншот сам по себе не зачисляет оплату — поступление проверяет администратор.
+                </p>
+              </div>
+            </div>
+
+            <!-- Proof Upload Form (AWAITING_PAYMENT / REJECTED before expiry) -->
+            <div class="card" id="invoice-proof-card">
+              <div class="card__head">
+                <h2 class="card__title">Подтверждение перевода</h2>
+                <span class="badge badge--neutral">До истечения 24 ч</span>
+              </div>
+              <div class="card__body">
+                <form id="proof-form" novalidate>
+                  <div class="form-field">
+                    <label for="proof-tx-input">Хэш транзакции или номер перевода</label>
+                    <input type="text" id="proof-tx-input" class="input mono" value="0x9a4f7c21b8e30d6f1200demo" placeholder="Введите TXID или номер платежа">
+                  </div>
+                  <div class="form-field">
+                    <label for="proof-file-input">Чек или скриншот перевода (PNG, JPG, PDF)</label>
+                    <input type="text" id="proof-file-input" class="input" value="receipt_PGF-2026-0142.png" placeholder="Имя файла чека (демо)">
+                    <span class="form-hint">После отправки в срок счёт перейдёт в «На проверке», а зафиксированная цена сохранится даже если таймер 24 ч истечёт во время проверки.</span>
+                  </div>
+                  <div id="proof-form-error" class="alert alert--err is-hidden" role="alert" style="margin-bottom: 12px;"></div>
+                  <button type="submit" class="btn btn--primary btn--lg btn--full" id="submit-proof-btn">
+                    Отправить чек на проверку администратору
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Under Review Info Card -->
+            <div class="card is-hidden" id="invoice-under-review-card">
+              <div class="card__head">
+                <h2 class="card__title">Подтверждение отправлено в срок</h2>
+                <span class="badge badge--warn">На проверке</span>
+              </div>
+              <div class="card__body">
+                <div class="kv-list">
+                  <div class="kv-row">
+                    <span class="kv-row__label">Хэш / номер перевода</span>
+                    <span class="kv-row__value mono" id="submitted-tx-val">—</span>
+                  </div>
+                  <div class="kv-row">
+                    <span class="kv-row__label">Файл подтверждения</span>
+                    <span class="kv-row__value mono" id="submitted-file-val">—</span>
+                  </div>
+                  <div class="kv-row">
+                    <span class="kv-row__label">Подано до истечения срока</span>
+                    <span class="kv-row__value" style="color: var(--status-ok-text);">Да · цена и состав зафиксированы до решения администратора</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Expired Without Proof Card -->
+            <div class="card is-hidden" id="invoice-expired-card">
+              <div class="card__head">
+                <h2 class="card__title">Срок действия счёта истёк (EXPIRED)</h2>
+                <span class="badge badge--err">Истёк без чека</span>
+              </div>
+              <div class="card__body">
+                <p style="margin: 0 0 12px;">
+                  Подтверждение оплаты не было отправлено в течение 24 часов. Счёт закрыт, старая фиксация цены снята<span id="expired-reserve-note"></span>.
+                </p>
+                <p style="margin: 0 0 14px; color: var(--text-secondary);">
+                  Если вы ещё не переводили деньги — оформите новый счёт по актуальной цене каталога. Если перевод всё-таки был отправлен после истечения срока — отправьте его на ручную проверку поздней оплаты.
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button type="button" class="btn btn--primary" id="expired-new-invoice-btn">Новый расчёт по актуальной цене</button>
+                  <button type="button" class="btn btn--secondary" id="expired-late-payment-btn">Я уже перевёл деньги позже срока</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Late Payment Manual Review Card -->
+            <div class="card is-hidden" id="invoice-late-card">
+              <div class="card__head">
+                <h2 class="card__title">Поздняя оплата — ручная проверка (LATE_PAYMENT_REVIEW)</h2>
+                <span class="badge badge--warn">Ручная сверка</span>
+              </div>
+              <div class="card__body">
+                <p style="margin: 0 0 10px;">
+                  Чек или перевод поступили после истечения срока действия счёта. <strong>Автоматическая выдача лицензии по старой цене не выполняется.</strong>
+                </p>
+                <p style="margin: 0 0 14px; color: var(--text-secondary);">
+                  Администратор вручную сверит фактическое поступление и зафиксирует одно итоговое решение: зачисление на основной баланс, доплата до актуальной цены или возврат (по правилам §5.1 ТЗ #590).
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button type="button" class="btn btn--secondary" id="late-new-invoice-btn">Вернуться к новому расчёту</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Simulation Controls for K2 -->
+            <div class="sim-panel" role="region" aria-label="Демо-симуляция событий счёта">
+              <p class="sim-panel__title">Демо-симуляция событий счёта (K2)</p>
+              <div class="sim-panel__actions">
+                <button type="button" class="btn btn--secondary btn--sm" id="sim-expire-timer-btn">Истечение таймера 24 ч</button>
+                <button type="button" class="btn btn--secondary btn--sm" id="sim-bump-price-btn">Изменить цену тарифа (+20%)</button>
+                <button type="button" class="btn btn--primary btn--sm" id="sim-admin-approve-btn">Подтвердить оплату (админ)</button>
+                <button type="button" class="btn btn--secondary btn--sm" id="sim-admin-reject-btn">Отклонить чек (админ)</button>
+                <button type="button" class="btn btn--ghost btn--sm" id="sim-back-checkout-btn">← Назад к оформлению</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Frozen Price Snapshot Summary -->
+          <div class="checkout-col checkout-col--summary">
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Зафиксированный состав</h2>
+                <span class="badge badge--ok">price_snapshot</span>
+              </div>
+              <div class="card__body">
+                <div class="config-pills" id="invoice-config-pills"></div>
+                <div class="kv-list" id="invoice-breakdown-rows"></div>
+                <div class="kv-divider"></div>
+                <div class="total-row">
+                  <span class="total-row__label">Зафиксировано к оплате</span>
+                  <span class="total-row__amount tabular" id="invoice-total-amount">4 800 ₽</span>
+                </div>
+                <p class="form-hint" id="invoice-snapshot-note" style="margin: 10px 0 0;">
+                  Условия, валюта и сумма зафиксированы в момент выставления счёта.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW 3: PAID & TRANSITION TO MY LICENSES (/app/licenses)
+           ================================================================ -->
+      <section id="view-paid" class="is-hidden" aria-label="Подтверждение оплаты и переход в Мои лицензии">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Оплата подтверждена — лицензия активирована</h2>
+            <span class="badge badge--ok">Оплачено (PAID)</span>
+          </div>
+          <div class="card__body">
+            <div class="alert alert--ok" role="status" style="margin-bottom: 16px;">
+              <p class="alert__title" id="paid-headline">Заказ оплачен и исполнен по зафиксированным условиям</p>
+              <p id="paid-subtext">Новая лицензия добавлена в раздел «Мои лицензии». Ключ готов к активации в настольном приложении pgF.</p>
+            </div>
+
+            <div class="license-issued-box">
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center;">
+                <div>
+                  <strong>Лицензия <span class="mono">LIC-2026-0142</span></strong>
+                  <span class="form-hint" id="paid-config-summary" style="margin-left: 8px;">30 дней · 2 ПК · SEO вкл.</span>
+                </div>
+                <span class="badge badge--ok is-hidden" id="paid-autorenew-badge">Автопродление включено</span>
+              </div>
+
+              <div class="form-hint" style="margin-top: 10px;">Лицензионный ключ (демо, в боевой панели выдаётся в /app/licenses):</div>
+              <div class="copy-row" style="margin-top: 6px;">
+                <span class="copy-row__code" id="paid-license-key">SCNR-DEMO-94F2-K81M-2026</span>
+                <button type="button" class="btn btn--secondary btn--sm" data-copy-target="paid-license-key">Копировать ключ</button>
+              </div>
+            </div>
+
+            <div class="kv-list" id="paid-summary-rows" style="margin-bottom: 18px;"></div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <button type="button" class="btn btn--primary btn--lg" id="goto-licenses-btn">
+                Перейти в «Мои лицензии» (/app/licenses)
+              </button>
+              <button type="button" class="btn btn--secondary btn--lg" id="restart-demo-btn">
+                Оформить ещё одну подписку (демо)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast feedback -->
+  <div id="toast" class="toast is-hidden" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
