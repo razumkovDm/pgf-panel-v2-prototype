@@ -561,6 +561,11 @@
       }
     });
 
+    var footerTrialItem = qs('#footer-trial-item');
+    if (footerTrialItem) {
+      footerTrialItem.classList.toggle('is-hidden', !canShowTrial);
+    }
+
     var trialCard = qs('#trial');
     var pricingGrid = qs('#pricing-grid');
     if (trialCard && pricingGrid) {
