@@ -1541,6 +1541,119 @@ input {
 }
 
 /* ==========================================================================
+   Testimonials Template Section (#reviews-template — verified data slots)
+   ========================================================================== */
+
+.reviews-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--status-warn-bg);
+  border: 1px solid var(--status-warn-border);
+  color: var(--status-warn-text);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.review-card {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.review-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.review-card__slot-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.review-card__quote {
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-page);
+  border-left: 3px solid var(--brand-primary-border);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.review-card__author {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-surface-alt);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.review-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.review-card__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.review-card__role {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.review-card__proof {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
    Open Docs & Wiki Hub (#help)
    ========================================================================== */
 
@@ -2038,7 +2151,8 @@ input {
   }
 
   .roles-grid,
-  .steps-grid {
+  .steps-grid,
+  .reviews-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -2078,6 +2192,7 @@ input {
   .features-grid,
   .roles-grid,
   .steps-grid,
+  .reviews-grid,
   .help-grid,
   .facts-grid,
   .dv2-grid-2 {

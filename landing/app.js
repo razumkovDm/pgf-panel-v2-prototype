@@ -15,6 +15,7 @@
     trialEnabled: true,
     salesPaused: false,
     maintenance: false,
+    showReviewsTemplate: true,
     // Demo pricing estimator (clearly marked as demonstration values)
     demoBasePrice: 2900,
     demoExtraDevicePrice: 700,
@@ -279,6 +280,12 @@
       privRegLink.classList.toggle('is-hidden', isInviteOnly);
       privInviteNote.classList.toggle('is-hidden', !isInviteOnly);
     }
+
+    // 5.9 Testimonials template section toggle (for design review)
+    var reviewsSection = qs('#reviews-template');
+    if (reviewsSection) {
+      reviewsSection.classList.toggle('is-hidden', !state.showReviewsTemplate);
+    }
   }
 
   function initPreviewControls() {
@@ -288,6 +295,9 @@
     var params = new URLSearchParams(window.location.search);
     if (params.get('clean') === '1') {
       root.classList.add('is-hidden');
+    }
+    if (params.get('reviews') === '0') {
+      state.showReviewsTemplate = false;
     }
 
     // URL presets for automated verification & clean state screenshots
@@ -315,6 +325,7 @@
     var trialChk = qs('#ctrl-trial');
     var pausedChk = qs('#ctrl-paused');
     var maintChk = qs('#ctrl-maintenance');
+    var reviewsChk = qs('#ctrl-reviews');
 
     if (visSelect) visSelect.value = state.visibility;
     if (authSelect) authSelect.value = state.auth;
@@ -322,6 +333,7 @@
     if (trialChk) trialChk.checked = state.trialEnabled;
     if (pausedChk) pausedChk.checked = state.salesPaused;
     if (maintChk) maintChk.checked = state.maintenance;
+    if (reviewsChk) reviewsChk.checked = state.showReviewsTemplate;
 
     if (toggleBtn) {
       toggleBtn.addEventListener('click', function () {
@@ -367,11 +379,17 @@
         applyStorefrontState();
       });
     }
+    if (reviewsChk) {
+      reviewsChk.addEventListener('change', function () {
+        state.showReviewsTemplate = !!reviewsChk.checked;
+        applyStorefrontState();
+      });
+    }
 
     applyStorefrontState();
   }
 
-  // --- 6. Local Route Preview Toast (for file:// clicks on /pricing, /docs, etc.) ---
+  // --- 6. Local Route Preview Toast (for file:// & GitHub Pages clicks on /pricing, /docs, etc.) ---
   function initRoutePreviewToast() {
     var toast = qs('#route-toast');
     var timer = null;
