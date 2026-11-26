@@ -1334,8 +1334,9 @@
                   </p>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                  <button class="btn btn-primary" onclick="goScreen('s5')">+ Купить лицензию</button>
-                  <button class="btn btn-secondary" onclick="showToast('Запрос переноса лицензии от реселлера')">Перенести от реселлера</button>
+                  <button class="btn btn-primary" onclick="openBuyNewModal()">+ Купить лицензию</button>
+                  <button class="btn btn-secondary" onclick="openTrialModal()">Пробный период</button>
+                  <button class="btn btn-secondary" onclick="openTransferModal()">Перенести от реселлера</button>
                 </div>
               </div>
 
@@ -1439,7 +1440,7 @@
                   <button class="btn btn-primary" onclick="goScreen('s4')" id="s3DevicesBtn">
                     Устройства этой лицензии (2 / 2) →
                   </button>
-                  <button class="btn btn-secondary" onclick="goScreen('s5')">
+                  <button class="btn btn-secondary" onclick="openRenewModal()">
                     Продлить / изменить опции
                   </button>
                   <button class="btn btn-secondary" onclick="openUpsellModal()">
@@ -1447,6 +1448,9 @@
                   </button>
                   <button class="btn btn-ghost" onclick="goScreen('s6',{article:'activation'})">
                     Как активировать ключ ↗
+                  </button>
+                  <button class="btn btn-ghost" onclick="openSupportModal()">
+                    Написать в поддержку
                   </button>
                 </div>
               </div>
@@ -1761,6 +1765,84 @@
       <div style="display:flex;justify-content:flex-end;gap:10px;">
         <button class="btn btn-secondary" onclick="closeUpsellModal()">Отмена</button>
         <button class="btn btn-primary" id="upsellSubmitBtn" onclick="submitUpsellToInvoice()">Выставить счёт →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Renew & Change Options Modal (Next Period: increase/decrease devices, toggle modules) -->
+  <div class="modal-backdrop" id="renewModalBackdrop">
+    <div class="modal-card" style="max-width:520px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
+        <h3 style="margin:0;font-size:18px;font-weight:800;">Продление и смена опций</h3>
+        <span class="badge badge-info" id="renewLicBadge">LIC-...</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;" id="renewLicInfo">
+        Изменения вступят в силу со следующего оплаченного периода.
+      </div>
+
+      <div class="opt-group" style="margin-bottom:14px;">
+        <span class="opt-label">Срок продления</span>
+        <div class="seg-control" id="renewPeriodControl">
+          <button class="seg-btn active" onclick="setRenewPeriod(30, this)">30 дней</button>
+          <button class="seg-btn" onclick="setRenewPeriod(90, this)">90 дней (-10%)</button>
+          <button class="seg-btn" onclick="setRenewPeriod(180, this)">180 дней (-15%)</button>
+        </div>
+      </div>
+
+      <div class="card card-pad" style="background:var(--surface-muted);margin-bottom:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;">Устройства со следующего периода (можно уменьшить или увеличить)</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="btn btn-secondary btn-sm" onclick="changeRenewDevices(-1)">−</button>
+            <strong class="mono" style="font-size:16px;min-width:96px;text-align:center;" id="renewDevCount">2 устр.</strong>
+            <button class="btn btn-secondary btn-sm" onclick="changeRenewDevices(1)">+</button>
+          </div>
+          <span style="font-size:12px;color:var(--text-secondary);" id="renewDevDiff">Без изменений</span>
+        </div>
+        <div id="renewDevWarn" style="display:none;margin-top:8px;font-size:12px;color:var(--warning);background:var(--warning-bg);border:1px solid var(--warning-border);padding:8px 10px;border-radius:6px;"></div>
+      </div>
+
+      <div class="card card-pad" style="background:var(--surface-muted);margin-bottom:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">Модули со следующего периода</div>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;margin-bottom:8px;">
+          <input type="checkbox" id="renewSeoCheck" onchange="recalcRenew()" style="margin-top:3px;width:16px;height:16px;accent-color:var(--primary);" />
+          <div>
+            <strong>Модуль SEO-аудитов (на всю лицензию)</strong>
+            <div style="font-size:12px;color:var(--text-muted);" id="renewSeoHint">+2 000 ₽ / 30 дн. · Можно отключить со следующего периода</div>
+          </div>
+        </label>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;opacity:0.65;">
+          <input type="checkbox" checked disabled style="margin-top:3px;width:16px;height:16px;" />
+          <div>
+            <strong>Базовый модуль Desktop</strong>
+            <div style="font-size:12px;color:var(--text-muted);">Обязательная база тарифа</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-bottom:14px;">
+        <div>
+          <span style="font-weight:600;font-size:14px;">Итого к продлению:</span>
+          <div style="font-size:11px;color:var(--text-muted);" id="renewDiscountNote">С учётом персональной скидки 10%</div>
+        </div>
+        <strong class="mono" style="font-size:20px;" id="renewTotalPrice">9 900 ₽</strong>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="closeRenewModal()">Отмена</button>
+        <button class="btn btn-primary" onclick="submitRenewToInvoice()">Выставить счёт на продление →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic Form Modal (Trial, Transfer, Support, Buy New) -->
+  <div class="modal-backdrop" id="formModalBackdrop">
+    <div class="modal-card" style="max-width:480px;">
+      <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;" id="formModalTitle">Заголовок</h3>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.55;" id="formModalBody"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="closeFormModal()">Закрыть</button>
+        <button class="btn btn-primary" id="formModalSubmitBtn">Продолжить</button>
       </div>
     </div>
   </div>
@@ -2576,6 +2658,240 @@
       closeUpsellModal();
       goScreen('s5');
       showToast('Счёт на доплату сформирован');
+    }
+
+    // ================= RENEW & CHANGE OPTIONS (NEXT PERIOD) =================
+    let renewPeriod = 30;
+    let renewDevices = 2;
+
+    function openRenewModal() {
+      const l = getSelectedLicense();
+      renewPeriod = 30;
+      renewDevices = l.deviceLimit;
+
+      document.getElementById('renewLicBadge').textContent = l.publicId;
+      document.getElementById('renewLicInfo').textContent = l.daysLeft > 0
+        ? `Лицензия «${l.name}» · Новая конфигурация вступит в силу с ${l.expiry}. Текущий оплаченный период не меняется.`
+        : `Продление истекшей лицензии «${l.name}» с момента подтверждения оплаты.`;
+
+      document.querySelectorAll('#renewPeriodControl .seg-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+      document.getElementById('renewSeoCheck').checked = l.rights.includes('SEO');
+      recalcRenew();
+      document.getElementById('renewModalBackdrop').classList.add('open');
+    }
+
+    function closeRenewModal() {
+      document.getElementById('renewModalBackdrop').classList.remove('open');
+    }
+
+    function setRenewPeriod(days, btn) {
+      renewPeriod = days;
+      document.querySelectorAll('#renewPeriodControl .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      recalcRenew();
+    }
+
+    function changeRenewDevices(delta) {
+      renewDevices = Math.max(1, Math.min(10, renewDevices + delta));
+      recalcRenew();
+    }
+
+    function recalcRenew() {
+      const l = getSelectedLicense();
+      const mult = renewPeriod / 30;
+      const periodDisc = renewPeriod === 90 ? 0.9 : renewPeriod === 180 ? 0.85 : 1;
+      const seoOn = document.getElementById('renewSeoCheck').checked;
+
+      const base = 8000 * mult;
+      const extraDev = (renewDevices - 1) * 1000 * mult;
+      const seoCost = seoOn ? 2000 * mult : 0;
+      const afterPeriodDisc = Math.round((base + extraDev + seoCost) * periodDisc);
+      const personalDisc = Math.round(afterPeriodDisc * 0.1);
+      const total = afterPeriodDisc - personalDisc;
+
+      document.getElementById('renewDevCount').textContent = `${renewDevices} устр.`;
+      const diffEl = document.getElementById('renewDevDiff');
+      if (renewDevices < l.deviceLimit) {
+        diffEl.textContent = `Уменьшение: ${l.deviceLimit} → ${renewDevices} устр.`;
+        diffEl.style.color = 'var(--warning)';
+      } else if (renewDevices > l.deviceLimit) {
+        diffEl.textContent = `Увеличение: ${l.deviceLimit} → ${renewDevices} устр.`;
+        diffEl.style.color = 'var(--primary)';
+      } else {
+        diffEl.textContent = 'Без изменений';
+        diffEl.style.color = 'var(--text-secondary)';
+      }
+
+      const warnEl = document.getElementById('renewDevWarn');
+      if (renewDevices < l.devices.length) {
+        warnEl.style.display = 'block';
+        warnEl.innerHTML = `⚠️ Сейчас привязано <strong>${l.devices.length} устр.</strong> Перед началом нового периода отвяжите лишнее устройство в разделе «Устройства», иначе сработает ошибка <code class="mono">NODE_LIMIT</code>.`;
+      } else {
+        warnEl.style.display = 'none';
+      }
+
+      document.getElementById('renewSeoHint').textContent = seoOn
+        ? `+${Math.round(2000 * mult * periodDisc).toLocaleString('ru-RU')} ₽ · Можно отключить со следующего периода`
+        : 'Отключён со следующего периода (текущий период не затрагивается)';
+
+      document.getElementById('renewTotalPrice').textContent = `${total.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('renewDiscountNote').textContent = `Персональная скидка −${personalDisc.toLocaleString('ru-RU')} ₽ (10%)`;
+    }
+
+    function submitRenewToInvoice() {
+      const l = getSelectedLicense();
+      const mult = renewPeriod / 30;
+      const periodDisc = renewPeriod === 90 ? 0.9 : renewPeriod === 180 ? 0.85 : 1;
+      const seoOn = document.getElementById('renewSeoCheck').checked;
+
+      const base = Math.round(8000 * mult * periodDisc);
+      const extraDev = Math.round((renewDevices - 1) * 1000 * mult * periodDisc);
+      const seoCost = seoOn ? Math.round(2000 * mult * periodDisc) : 0;
+      const subtotal = base + extraDev + seoCost;
+      const personalDisc = Math.round(subtotal * 0.1);
+      const total = subtotal - personalDisc;
+
+      const rows = [
+        { label: `Продление тарифа pgF (${renewPeriod} дн., 1 базовое устр.)`, amount: `${base.toLocaleString('ru-RU')} ₽`, color: '' }
+      ];
+      if (renewDevices > 1) {
+        rows.push({ label: `+ ${renewDevices - 1} доп. устройств(а) со след. периода`, amount: `${extraDev.toLocaleString('ru-RU')} ₽`, color: '' });
+      }
+      if (seoOn) {
+        rows.push({ label: '+ Модуль SEO-аудитов со след. периода', amount: `${seoCost.toLocaleString('ru-RU')} ₽`, color: '' });
+      } else if (l.rights.includes('SEO')) {
+        rows.push({ label: 'Модуль SEO-аудитов отключён со след. периода', amount: '0 ₽', color: 'var(--text-muted)' });
+      }
+      rows.push({ label: 'Персональная скидка клиента (10%)', amount: `−${personalDisc.toLocaleString('ru-RU')} ₽`, color: 'var(--success)' });
+
+      state.invoiceData = {
+        purpose: `Продление «${l.name}» (${renewPeriod} дн., ${renewDevices} устр., ${seoOn ? 'SEO вкл.' : 'без SEO'})`,
+        total,
+        rows
+      };
+      state.invoiceState = 'AWAITING';
+      closeRenewModal();
+      goScreen('s5');
+      showToast('Счёт на продление с новыми опциями сформирован');
+    }
+
+    // ================= BUY NEW, TRIAL, TRANSFER, SUPPORT MODALS =================
+    function closeFormModal() {
+      document.getElementById('formModalBackdrop').classList.remove('open');
+    }
+
+    function openFormModal(title, bodyHtml, btnLabel, onSubmit) {
+      document.getElementById('formModalTitle').textContent = title;
+      document.getElementById('formModalBody').innerHTML = bodyHtml;
+      const btn = document.getElementById('formModalSubmitBtn');
+      btn.textContent = btnLabel;
+      btn.style.display = btnLabel ? 'inline-flex' : 'none';
+      btn.onclick = onSubmit || closeFormModal;
+      document.getElementById('formModalBackdrop').classList.add('open');
+    }
+
+    function openBuyNewModal() {
+      openFormModal(
+        'Купить новую лицензию pgF',
+        `Выберите конфигурацию новой лицензии:<br/><br/>
+        <div class="card card-pad" style="background:var(--surface-muted);">
+          <div style="margin-bottom:10px;">
+            <label style="font-weight:600;font-size:12px;display:block;margin-bottom:4px;">Название лицензии</label>
+            <input id="newLicNameInput" class="input" style="width:100%;" value="Новая ферма #2" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-weight:600;font-size:12px;display:block;margin-bottom:4px;">Срок</label>
+              <select id="newLicDays" class="input" style="width:100%;">
+                <option value="30">30 дней</option>
+                <option value="90">90 дней (-10%)</option>
+                <option value="180">180 дней (-15%)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600;font-size:12px;display:block;margin-bottom:4px;">Устройства</label>
+              <select id="newLicDevs" class="input" style="width:100%;">
+                <option value="1">1 (базовое)</option>
+                <option value="2" selected>2 устройства</option>
+                <option value="3">3 устройства</option>
+                <option value="5">5 устройств</option>
+              </select>
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" id="newLicSeo" checked style="accent-color:var(--primary);" />
+            <span>Подключить модуль SEO-аудитов (+2 000 ₽ / 30 дн.)</span>
+          </label>
+        </div>`,
+        'Перейти к счёту →',
+        () => {
+          const name = (document.getElementById('newLicNameInput').value || 'Новая лицензия').trim();
+          const days = parseInt(document.getElementById('newLicDays').value, 10);
+          const devs = parseInt(document.getElementById('newLicDevs').value, 10);
+          const seo = document.getElementById('newLicSeo').checked;
+          const mult = days / 30;
+          const disc = days === 90 ? 0.9 : days === 180 ? 0.85 : 1;
+          const base = Math.round(8000 * mult * disc);
+          const extra = Math.round((devs - 1) * 1000 * mult * disc);
+          const seoCost = seo ? Math.round(2000 * mult * disc) : 0;
+          const sub = base + extra + seoCost;
+          const total = Math.max(0, sub - 2000);
+          const rows = [
+            { label: `Основной тариф pgF (${days} дн., 1 базовое устр.)`, amount: `${base.toLocaleString('ru-RU')} ₽`, color: '' }
+          ];
+          if (devs > 1) rows.push({ label: `+ ${devs - 1} доп. устройств(а)`, amount: `${extra.toLocaleString('ru-RU')} ₽`, color: '' });
+          if (seo) rows.push({ label: '+ Модуль SEO-аудитов (на всю лицензию)', amount: `${seoCost.toLocaleString('ru-RU')} ₽`, color: '' });
+          rows.push({ label: 'Списание бонусного баланса', amount: '−2 000 ₽', color: 'var(--info)' });
+          state.invoiceData = {
+            purpose: `Покупка «${name}» (${days} дн., ${devs} устр.${seo ? ', SEO' : ''})`,
+            total,
+            rows
+          };
+          state.invoiceState = 'AWAITING';
+          closeFormModal();
+          goScreen('s5');
+          showToast('Счёт на новую лицензию выставлен');
+        }
+      );
+    }
+
+    function openTrialModal() {
+      openFormModal(
+        'Пробный период pgF (14 дней)',
+        `Пробный период предоставляется <strong>один раз на аккаунт и устройство (HWID)</strong> при подтверждённом email.<br/><br/>
+        <div class="callout callout-info" style="margin-bottom:0;">
+          <span>ℹ️</span>
+          <div>При первой активации pgF проверяет возраст локальных проектов и профилей (порог 15 дней). Смена ПК на триале недоступна.</div>
+        </div>`,
+        'Понятно',
+        closeFormModal
+      );
+    }
+
+    function openTransferModal() {
+      openFormModal(
+        'Перенос лицензии от реселлера',
+        `Введите Public ID лицензии и одноразовый код подтверждения от вашего реселлера:<br/><br/>
+        <input class="input mono" style="width:100%;margin-bottom:10px;" placeholder="Public ID (например, LIC-XXXX...)" />
+        <input class="input mono" style="width:100%;" placeholder="Код подтверждения переноса" />`,
+        'Проверить и перенести',
+        () => { closeFormModal(); showToast('Запрос на перенос лицензии отправлен (демо)'); }
+      );
+    }
+
+    function openSupportModal() {
+      const l = getSelectedLicense();
+      openFormModal(
+        'Новое обращение в поддержку',
+        `<div style="margin-bottom:10px;">Привязанная лицензия: <strong class="mono">${l.publicId}</strong></div>
+        <div class="callout callout-warning" style="margin-bottom:12px;">
+          <span>⚠️</span>
+          <div><strong>Никогда не вставляйте секретный ключ PGF-...</strong> в текст обращения — используйте только Public ID.</div>
+        </div>
+        <textarea class="input" rows="3" style="width:100%;resize:vertical;" placeholder="Опишите проблему (например, ошибка NODE_LIMIT или вопрос по счёту)..."></textarea>`,
+        'Отправить тикет',
+        () => { closeFormModal(); showToast(`Тикет по ${l.publicId} создан`); }
+      );
     }
 
     function submitProofDemo() {
