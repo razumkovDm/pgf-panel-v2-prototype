@@ -56,6 +56,7 @@
     unavailableReason: '',
 
     priceBumpActive: false, // simulates +20% tariff change in /admin/plans
+    editorOpen: false,      // inline configuration editor panel
 
     // Slice 4 state
     balancePreset: 'sufficient', // sufficient | insufficient
@@ -326,7 +327,9 @@
     qs('#demo-bal-ok').setAttribute('aria-pressed', state.balancePreset === 'sufficient' ? 'true' : 'false');
     qs('#demo-bal-low').setAttribute('aria-pressed', state.balancePreset === 'insufficient' ? 'true' : 'false');
 
-    qs('#demo-price-bump').setAttribute('aria-pressed', state.priceBumpActive ? 'true' : 'false');
+    var bumpBtn = qs('#demo-price-bump');
+    bumpBtn.setAttribute('aria-pressed', state.priceBumpActive ? 'true' : 'false');
+    bumpBtn.textContent = state.priceBumpActive ? '✓ Цена тарифа +20% (сбросить)' : 'Цена тарифа +20%';
   }
 
   function renderHeader() {
@@ -376,6 +379,14 @@
     }
 
     qs('#checkout-price-bump-alert').classList.toggle('is-hidden', !state.priceBumpActive);
+    if (state.priceBumpActive) {
+      var pBase = DEMO_PLAN_CONFIG.periods[state.periodDays] || DEMO_PLAN_CONFIG.periods[30];
+      var baseGross = pBase.basePrice + state.extraDevices * pBase.extraDevicePrice + (state.includeSeo ? pBase.seoPrice : 0);
+      qs('#checkout-price-bump-text').textContent =
+        'Счёт ещё не выставлен, поэтому предварительный расчёт пересчитан: базовая сумма ' + formatRub(baseGross) +
+        ' → новая цена каталога (+20%) ' + formatRub(pr.grossTotal) +
+        '. После нажатия «Выставить счёт» сумма и состав фиксируются на 24 часа.';
+    }
 
     // Slice 3 vs Slice 4 blocks
     qs('#slice3-info-box').classList.toggle('is-hidden', state.slice !== 3);
@@ -448,7 +459,35 @@
     qs('#edit-config-link').setAttribute('href', editHref);
     qs('#mobile-pricing-link').setAttribute('href', editHref);
     qs('#nav-pricing').setAttribute('href', editHref);
-    qs('#edit-config-route-hint').innerHTML = 'Возврат в калькулятор: <code class="mono">/#pricing?cfg=' + state.cfgRaw + '</code>';
+    qs('#edit-config-route-hint').innerHTML = 'Калькулятор с выбранным cfg: <code class="mono">/#pricing?cfg=' + state.cfgRaw + '</code>';
+
+    // Inline Configuration Editor sync
+    var toggleBtn = qs('#edit-config-toggle-btn');
+    var editorPanel = qs('#inline-config-editor');
+    toggleBtn.setAttribute('aria-expanded', state.editorOpen ? 'true' : 'false');
+    toggleBtn.textContent = state.editorOpen ? 'Свернуть редактирование' : 'Изменить конфигурацию';
+    editorPanel.classList.toggle('is-hidden', !state.editorOpen);
+
+    qsa('[data-edit-period]').forEach(function (btn) {
+      var days = parseInt(btn.getAttribute('data-edit-period'), 10);
+      btn.setAttribute('aria-pressed', days === state.periodDays ? 'true' : 'false');
+    });
+    qs('#edit-devices-val').textContent =
+      pr.totalDevices + ' ПК' + (state.extraDevices > 0 ? ' (+' + state.extraDevices + ' доп.)' : ' (база)');
+    qs('#edit-devices-minus').disabled = state.extraDevices <= 0;
+    qs('#edit-devices-plus').disabled = state.extraDevices >= DEMO_PLAN_CONFIG.maxExtraDevices;
+
+    var seoCheckbox = qs('#edit-seo-checkbox');
+    var seoHint = qs('#edit-seo-hint');
+    seoCheckbox.checked = state.includeSeo;
+    if (state.seoDisabledByPlan) {
+      seoHint.textContent = state.includeSeo
+        ? 'Опция SEO отключена по тарифу — снимите галочку, чтобы разблокировать оформление.'
+        : 'Опция SEO отключена по текущим настройкам тарифа.';
+      seoHint.classList.remove('is-hidden');
+    } else {
+      seoHint.classList.add('is-hidden');
+    }
 
     renderPills(qs('#order-config-pills'), pr.periodLabel, pr.totalDevices, pr.extraDevices, pr.includeSeo, state.seoDisabledByPlan);
     renderBreakdown(qs('#order-breakdown-rows'), pr, { slice: state.slice, paymentMethod: state.paymentMethod });
@@ -617,6 +656,9 @@
     approveBtn.disabled = !(inv.status === 'UNDER_REVIEW' || inv.status === 'LATE_PAYMENT_REVIEW');
     rejectBtn.disabled = inv.status !== 'UNDER_REVIEW';
     expireBtn.disabled = inv.status === 'EXPIRED' || inv.status === 'LATE_PAYMENT_REVIEW';
+    qs('#sim-bump-price-btn').textContent = state.priceBumpActive
+      ? 'Вернуть базовую цену тарифа'
+      : 'Изменить цену тарифа (+20%)';
 
     // Frozen Snapshot Right Column
     renderPills(qs('#invoice-config-pills'), snap.periodLabel, snap.totalDevices, snap.extraDevices, snap.includeSeo, false);
@@ -756,11 +798,80 @@
       }
     });
 
-    // Unavailable config reset
+    // Unavailable config actions
+    qs('#unavailable-edit-btn').addEventListener('click', function () {
+      state.editorOpen = true;
+      render();
+      var ed = qs('#inline-config-editor');
+      if (ed && ed.scrollIntoView) ed.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
     qs('#unavailable-reset-btn').addEventListener('click', function () {
       applyCfgPreset('30d-2pc-seo0');
+      state.editorOpen = false;
       render();
       showToast('Выбрана доступная конфигурация: 30 дн · 2 ПК · без SEO.');
+    });
+
+    // Inline configuration editor controls
+    qs('#edit-config-toggle-btn').addEventListener('click', function () {
+      state.editorOpen = !state.editorOpen;
+      render();
+    });
+
+    qs('#inline-editor-close-btn').addEventListener('click', function () {
+      state.editorOpen = false;
+      render();
+    });
+
+    qs('#inline-editor-done-btn').addEventListener('click', function () {
+      state.editorOpen = false;
+      render();
+      showToast('Конфигурация обновлена: ' + state.cfgRaw);
+    });
+
+    qsa('[data-edit-period]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.periodDays = parseInt(btn.getAttribute('data-edit-period'), 10);
+        state.cfgRaw = encodeCfg();
+        if (!state.seoDisabledByPlan || !state.includeSeo) {
+          state.unavailableReason = '';
+        }
+        render();
+      });
+    });
+
+    qs('#edit-devices-minus').addEventListener('click', function () {
+      if (state.extraDevices > 0) {
+        state.extraDevices -= 1;
+        state.cfgRaw = encodeCfg();
+        if (!state.seoDisabledByPlan || !state.includeSeo) {
+          state.unavailableReason = '';
+        }
+        render();
+      }
+    });
+
+    qs('#edit-devices-plus').addEventListener('click', function () {
+      if (state.extraDevices < DEMO_PLAN_CONFIG.maxExtraDevices) {
+        state.extraDevices += 1;
+        state.cfgRaw = encodeCfg();
+        if (!state.seoDisabledByPlan || !state.includeSeo) {
+          state.unavailableReason = '';
+        }
+        render();
+      }
+    });
+
+    qs('#edit-seo-checkbox').addEventListener('change', function (e) {
+      state.includeSeo = !!e.target.checked;
+      state.cfgRaw = encodeCfg();
+      if (state.seoDisabledByPlan && state.includeSeo) {
+        state.unavailableReason = 'Выбранная опция SEO-аудита (seo1) отключена в текущих настройках тарифа. Снимите галочку SEO, чтобы продолжить оформление.';
+      } else {
+        state.unavailableReason = '';
+      }
+      render();
     });
 
     // Promo form (Slice 4)

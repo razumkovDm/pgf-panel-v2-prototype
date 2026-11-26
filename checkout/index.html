@@ -122,15 +122,16 @@
           <p class="alert__title" id="unavailable-title">Выбранная конфигурация недоступна</p>
           <p id="unavailable-text"></p>
           <div class="alert__actions">
-            <a id="unavailable-edit-link" class="btn btn--secondary btn--sm" href="../landing/index.html#pricing">Изменить конфигурацию в калькуляторе</a>
-            <button type="button" class="btn btn--primary btn--sm" id="unavailable-reset-btn">Выбрать доступную (30 дн · 2 ПК · без SEO)</button>
+            <button type="button" class="btn btn--primary btn--sm" id="unavailable-edit-btn">Изменить конфигурацию ниже</button>
+            <button type="button" class="btn btn--secondary btn--sm" id="unavailable-reset-btn">Сбросить на доступную (30 дн · 2 ПК · без SEO)</button>
+            <a id="unavailable-edit-link" class="btn btn--ghost btn--sm" href="../landing/index.html#pricing">Открыть калькулятор на главной</a>
           </div>
         </div>
 
         <!-- Catalog Price Changed Notice (before invoice is issued) -->
         <div id="checkout-price-bump-alert" class="alert alert--warn is-hidden" role="status" style="margin-bottom: 18px;">
           <p class="alert__title">Демо: цена тарифа в каталоге увеличена на 20%</p>
-          <p>Счёт ещё не выставлен, поэтому предварительный расчёт ниже пересчитан по новой актуальной цене. После нажатия «Выставить счёт» сумма и состав будут зафиксированы на 24 часа.</p>
+          <p id="checkout-price-bump-text">Счёт ещё не выставлен, поэтому предварительный расчёт ниже пересчитан по новой актуальной цене. После нажатия «Выставить счёт» сумма и состав будут зафиксированы на 24 часа.</p>
         </div>
 
         <div class="checkout-grid">
@@ -265,10 +266,50 @@
             <div class="card">
               <div class="card__head">
                 <h2 class="card__title">Состав заказа</h2>
-                <a id="edit-config-link" class="btn btn--ghost btn--sm" href="../landing/index.html?cfg=30d-2pc-seo1#pricing">Изменить конфигурацию</a>
+                <button type="button" id="edit-config-toggle-btn" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="inline-config-editor">Изменить конфигурацию</button>
               </div>
               <div class="card__body">
                 <div class="config-pills" id="order-config-pills" aria-label="Параметры выбранной конфигурации"></div>
+
+                <!-- Inline Configuration Editor (expands directly below without leaving checkout) -->
+                <div id="inline-config-editor" class="inline-editor is-hidden" role="region" aria-label="Редактирование конфигурации заказа">
+                  <div class="inline-editor__head">
+                    <h3 class="inline-editor__title">Редактирование конфигурации</h3>
+                    <button type="button" id="inline-editor-close-btn" class="btn btn--ghost btn--sm">Свернуть</button>
+                  </div>
+
+                  <div class="inline-editor__group">
+                    <span class="inline-editor__label">Срок подписки</span>
+                    <div class="period-grid" role="group" aria-label="Выбор срока подписки">
+                      <button type="button" class="period-btn" data-edit-period="30" aria-pressed="true">30 дней</button>
+                      <button type="button" class="period-btn" data-edit-period="90" aria-pressed="false">90 дней</button>
+                      <button type="button" class="period-btn" data-edit-period="180" aria-pressed="false">180 дней</button>
+                      <button type="button" class="period-btn" data-edit-period="365" aria-pressed="false">365 дней</button>
+                    </div>
+                  </div>
+
+                  <div class="inline-editor__group">
+                    <span class="inline-editor__label">Устройства (база 1 ПК + дополнительные)</span>
+                    <div class="qty-control">
+                      <button type="button" class="qty-btn" id="edit-devices-minus" aria-label="Уменьшить количество устройств">−</button>
+                      <span class="qty-val tabular" id="edit-devices-val">2 ПК (+1 доп.)</span>
+                      <button type="button" class="qty-btn" id="edit-devices-plus" aria-label="Увеличить количество устройств">+</button>
+                    </div>
+                  </div>
+
+                  <div class="inline-editor__group">
+                    <label class="checkbox-row" for="edit-seo-checkbox">
+                      <input type="checkbox" id="edit-seo-checkbox" checked>
+                      <span id="edit-seo-label">Включить модуль SEO-аудита (на всю лицензию)</span>
+                    </label>
+                    <span id="edit-seo-hint" class="form-hint is-hidden"></span>
+                  </div>
+
+                  <div class="inline-editor__footer">
+                    <button type="button" id="inline-editor-done-btn" class="btn btn--primary btn--sm">Готово</button>
+                    <a id="edit-config-link" class="btn btn--ghost btn--sm" href="../landing/index.html?cfg=30d-2pc-seo1#pricing">Открыть в калькуляторе на главной</a>
+                  </div>
+                </div>
 
                 <div class="kv-list" id="order-breakdown-rows"></div>
 
@@ -291,7 +332,7 @@
                 </button>
 
                 <p class="form-hint" id="edit-config-route-hint" style="margin: 10px 0 0; text-align: center;">
-                  Возврат в калькулятор: <code class="mono">/#pricing?cfg=30d-2pc-seo1</code>
+                  Калькулятор с выбранным cfg: <code class="mono">/#pricing?cfg=30d-2pc-seo1</code>
                 </p>
               </div>
             </div>
