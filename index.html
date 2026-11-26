@@ -1080,6 +1080,8 @@
       <button class="proto-tab" data-screen="s4" onclick="goScreen('s4')">4. Устройства</button>
       <button class="proto-tab" data-screen="s5" onclick="goScreen('s5')">5. Ручной счёт</button>
       <button class="proto-tab" data-screen="s6" onclick="goScreen('s6')">6. Docs &amp; Wiki</button>
+      <button class="proto-tab" data-screen="s7" onclick="goScreen('s7')">7. Админка (/admin)</button>
+      <button class="proto-tab" data-screen="s8" onclick="goScreen('s8')">8. Реселлер (/reseller)</button>
     </div>
     <div class="proto-viewport-toggle">
       <button class="vp-btn active" id="vpDesktop" onclick="setViewport('desktop')">Desktop</button>
@@ -1308,13 +1310,13 @@
 
         <div class="cab-layout">
           <aside class="cab-sidebar">
-            <button class="nav-item" onclick="goScreen('s2')">🏠 Главная кабинета</button>
+            <button class="nav-item" id="nav-s2-home" onclick="goScreen('s2-home')">🏠 Главная кабинета</button>
             <button class="nav-item" id="nav-s2" onclick="goScreen('s2')">🔑 Мои лицензии</button>
             <button class="nav-item" id="nav-s5" onclick="goScreen('s5')">💳 Баланс и счета</button>
-            <button class="nav-item" onclick="showToast('Реферальная программа: 10% бонусами')">🎁 Рефералы</button>
-            <button class="nav-item" onclick="showToast('Раздел тикетов поддержки (/app/support)')">💬 Поддержка</button>
-            <button class="nav-item" onclick="showToast('Актуальная версия pgF 0.1.0 для Windows x64')">⬇️ Скачать pgF</button>
-            <button class="nav-item" onclick="showToast('Настройки аккаунта и 2FA в Telegram')">⚙️ Настройки</button>
+            <button class="nav-item" id="nav-s2-referrals" onclick="goScreen('s2-referrals')">🎁 Рефералы</button>
+            <button class="nav-item" id="nav-s2-support" onclick="goScreen('s2-support')">💬 Поддержка</button>
+            <button class="nav-item" id="nav-s2-downloads" onclick="goScreen('s2-downloads')">⬇️ Скачать pgF</button>
+            <button class="nav-item" id="nav-s2-settings" onclick="goScreen('s2-settings')">⚙️ Настройки</button>
             <div class="nav-divider"></div>
             <button class="nav-item" onclick="goScreen('s6',{tab:'docs'})">📘 Документация</button>
             <button class="nav-item" onclick="goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки</button>
@@ -1580,6 +1582,145 @@
               </div>
             </section>
 
+            <!-- Кабинет: Главная (/app) -->
+            <section class="screen" id="s2-home">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Главная кабинета (/app)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Сводка баланса, лицензий, ближайших автопродлений и персональной скидки.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openBuyNewModal()">+ Купить лицензию</button>
+              </div>
+              <div class="cards-3" style="margin-bottom:16px;">
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ДОСТУПНЫЙ БАЛАНС</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;">6 000 ₽</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Основные: <strong>4 000 ₽</strong> · Бонусные: <strong style="color:var(--info);">2 000 ₽</strong></div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ЛИЦЕНЗИИ</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;">2 активны</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">1 триал · 1 истекшая · <a href="javascript:void(0)" onclick="goScreen('s2')">Открыть все →</a></div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ПЕРСОНАЛЬНАЯ СКИДКА</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;color:var(--success);">10%</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Применяется автоматически на покупки и продления</div>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Ближайшие автопродления</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--border);">
+                  <div>
+                    <strong>Рабочая ферма #1</strong> <span class="mono" style="font-size:12px;color:var(--text-muted);">LIC-A1B2C3D4E5F6</span>
+                    <div style="font-size:12px;color:var(--text-secondary);">Списание 25.12.2026 · Сумма: 9 900 ₽</div>
+                  </div>
+                  <span class="badge badge-warning">Не хватает 3 900 ₽</span>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-primary btn-sm" onclick="goScreen('s5')">Пополнить баланс / счета</button>
+                  <button class="btn btn-secondary btn-sm" onclick="goScreen('s2')">Управление лицензиями</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Кабинет: Рефералы (/app/referrals) -->
+            <section class="screen" id="s2-referrals">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Реферальная программа</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Вознаграждение 10% начисляется на бонусный баланс только с реально оплаченных заказов.</p>
+                </div>
+              </div>
+              <div class="card card-pad" style="margin-bottom:16px;">
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px;">Ваша реферальная ссылка</div>
+                <div class="lic-key-row">
+                  <code class="mono" style="font-size:13px;">https://pgf.example/register?ref=ALEX2026</code>
+                  <button class="btn btn-primary btn-sm" onclick="copyText('https://pgf.example/register?ref=ALEX2026','Реферальная ссылка скопирована')">Копировать</button>
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary);">Статус при закрытой регистрации (<code class="mono">INVITE_ONLY</code>): <span class="badge badge-active">Право приглашать включено</span></div>
+              </div>
+              <div class="card card-pad">
+                <div style="font-weight:700;font-size:14px;margin-bottom:10px;">Начисления и корректировки</div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+                  <span>18.11.2026 · Заказ пользователя #U-4082 (оплачено 20 000 ₽)</span>
+                  <strong style="color:var(--success);" class="mono">+2 000 ₽ (Бонусы)</strong>
+                </div>
+              </div>
+            </section>
+
+            <!-- Кабинет: Поддержка (/app/support) -->
+            <section class="screen" id="s2-support">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Поддержка (/app/support)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Обращения привязываются к Public ID (LIC-...). Никогда не отправляйте секретный ключ PGF-...</p>
+                </div>
+                <button class="btn btn-primary" onclick="openSupportModal()">+ Создать тикет</button>
+              </div>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--border);">
+                  <div>
+                    <strong>#TCK-1042 · Проверка оплаты по счёту #INV-2026-000142</strong>
+                    <div style="font-size:12px;color:var(--text-muted);">Категория: Биллинг · Обновлён: 26.11.2026 00:50</div>
+                  </div>
+                  <span class="badge badge-warning">IN_PROGRESS</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;">
+                  <div>
+                    <strong>#TCK-0988 · Перенос рабочего ПК (LIC-A1B2C3D4E5F6)</strong>
+                    <div style="font-size:12px;color:var(--text-muted);">Категория: Устройства · Закрыт: 12.11.2026</div>
+                  </div>
+                  <span class="badge badge-neutral">CLOSED</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Кабинет: Скачать pgF (/app/downloads) -->
+            <section class="screen" id="s2-downloads">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Скачать pgF (/app/downloads)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Актуальная подписанная сборка из контура обновлений (§7.2). Отозванные (YANKED) версии скрыты.</p>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                  <div>
+                    <strong style="font-size:18px;">pgF Desktop v0.1.0 (Windows 10/11 x64)</strong>
+                    <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:4px;">SHA-256: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</div>
+                  </div>
+                  <button class="btn btn-primary" onclick="showToast('Загрузка pgF-0.1.0-win64.exe (демо)')">⬇️ Скачать установщик</button>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);">
+                  Требуется PostgreSQL 17 · <a href="javascript:void(0)" onclick="goScreen('s6',{article:'activation'})">Инструкция по установке и активации →</a>
+                </div>
+              </div>
+            </section>
+
+            <!-- Кабинет: Настройки (/app/account) -->
+            <section class="screen" id="s2-settings">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Настройки аккаунта (/app/account)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Безопасность, привязка Telegram-бота, 2FA, резервные коды и сессии.</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="card card-pad">
+                  <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Telegram-бот и 2FA</div>
+                  <div style="font-size:13px;margin-bottom:10px;">Telegram: <span class="badge badge-active">Привязан (@alex_pgf)</span></div>
+                  <div style="font-size:13px;margin-bottom:12px;">Двухфакторная защита (2FA): <span class="badge badge-warning">Выключена</span></div>
+                  <button class="btn btn-primary btn-sm" onclick="showToast('2FA через Telegram-бота включена (демо)')">Включить 2FA в Telegram</button>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Пароль и удаление аккаунта</div>
+                  <button class="btn btn-secondary btn-sm" style="margin-bottom:10px;" onclick="showToast('Смена пароля сбросит все прочие сессии (authEpoch+1)')">Сменить пароль</button>
+                  <div style="font-size:12px;color:var(--text-muted);">Самостоятельное удаление аккаунта заблокировано при наличии активных лицензий или средств на балансе.</div>
+                </div>
+              </div>
+            </section>
+
           </main>
         </div>
       </div>
@@ -1693,6 +1834,273 @@
             <div>
               <strong>Нужна помощь оператора?</strong> Создайте тикет в кабинете (<a href="javascript:void(0)" onclick="goScreen('s2')">/app/support</a>) или через кнопку «Поддержка» в официальном Telegram-боте pgF.
               <strong>Никогда не присылайте секретный ключ <code>PGF-...</code></strong> — указывайте только <code>Public ID (LIC-...)</code>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ЭКРАН 7: КАБИНЕТ АДМИНИСТРАТОРА (/admin — §3.4)
+           ===================================================================== -->
+      <section class="screen" id="s7">
+        <header class="cab-topbar" style="background:#0f172a;color:#f8fafc;border-bottom-color:#1e293b;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="burger-btn" style="background:#1e293b;color:#f8fafc;border-color:#334155;" aria-label="Меню админки" onclick="toggleMobileMenu('admin')">☰</button>
+            <div class="logo-mark" style="color:#f8fafc;" onclick="switchAdminTab('adm-summary')">
+              <span class="logo-icon">pgF</span>
+              <span>Admin V2</span>
+            </div>
+            <span class="badge badge-active" style="font-size:11px;">2FA Telegram ✓</span>
+          </div>
+          <div class="cab-user-area">
+            <span style="font-size:12px;color:#94a3b8;" class="hide-sm">admin@pgf.local (ADMIN)</span>
+            <button class="btn btn-secondary btn-sm" onclick="goScreen('s2')">В клиентский кабинет</button>
+          </div>
+        </header>
+
+        <div class="cab-layout">
+          <aside class="cab-sidebar">
+            <button class="nav-item active" id="anav-adm-summary" onclick="switchAdminTab('adm-summary')">📊 Главная сводка</button>
+            <button class="nav-item" id="anav-adm-analytics" onclick="switchAdminTab('adm-analytics')">📈 Статистика и когорты</button>
+            <button class="nav-item" id="anav-adm-users" onclick="switchAdminTab('adm-users')">👥 Пользователи</button>
+            <button class="nav-item" id="anav-adm-licenses" onclick="switchAdminTab('adm-licenses')">🔑 Лицензии и lease_audit</button>
+            <button class="nav-item" id="anav-adm-plans" onclick="switchAdminTab('adm-plans')">🏷️ Тариф, триал и промо</button>
+            <button class="nav-item" id="anav-adm-billing" onclick="switchAdminTab('adm-billing')">💳 Счета и балансы <span class="badge badge-warning" style="margin-left:auto;padding:1px 6px;font-size:11px;">3</span></button>
+            <button class="nav-item" id="anav-adm-tickets" onclick="switchAdminTab('adm-tickets')">🎫 Тикеты и споры</button>
+            <button class="nav-item" id="anav-adm-settings" onclick="switchAdminTab('adm-settings')">⚙️ Настройки, контент, аудит</button>
+          </aside>
+
+          <main class="cab-main">
+            <!-- 1. Главная сводка (/admin) -->
+            <div class="adm-tab" id="adm-summary">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Сводка администратора (/admin)</h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Оперативные показатели за день и месяц без смешивания ручных начислений с реальными поступлениями.</p>
+                </div>
+              </div>
+              <div class="cards-3" style="margin-bottom:16px;">
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">РЕАЛЬНЫЕ ПОСТУПЛЕНИЯ (МЕСЯЦ)</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;">412 000 ₽</div>
+                  <div style="font-size:12px;color:var(--success);">Сегодня: +24 000 ₽</div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">АКТИВНЫЕ / ИСТЕКШИЕ ЛИЦЕНЗИИ</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;">148 / 29</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">Триал активен: 19 · Конверсия: 31%</div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ОЧЕРЕДИ ОЖИДАНИЯ</div>
+                  <div style="font-size:26px;font-weight:800;margin:4px 0;color:var(--warning);">3 счета · 2 тикета</div>
+                  <div style="font-size:12px;color:var(--text-secondary);"><a href="javascript:void(0)" onclick="switchAdminTab('adm-billing')">Перейти к проверке счетов →</a></div>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px;">Суммарные обязательства на балансах</div>
+                <div style="font-size:13px;color:var(--text-secondary);">Пользователи (основные): <strong>84 500 ₽</strong> · Бонусные: <strong>31 200 ₽</strong> · Реселлеры: <strong>120 000 ₽</strong></div>
+              </div>
+            </div>
+
+            <!-- 2. Статистика (/admin/analytics) -->
+            <div class="adm-tab" id="adm-analytics" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Подробная статистика (/admin/analytics)</h1>
+              <div class="callout callout-info"><span>📊</span><div>Без двойного учёта (§13): внешние поступления, списания с ранее внесённого баланса, бонусы, возвраты и ручные корректировки учитываются в раздельных рядах.</div></div>
+              <div class="grid-2">
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Финансовые ряды (Ноябрь 2026)</div>
+                  <div style="font-size:13px;line-height:1.9;">
+                    <div>Внешние поступления (<code class="mono">REAL_EXTERNAL_INFLOW</code>): <strong>412 000 ₽</strong></div>
+                    <div>Списания с ранее внесённого баланса: <strong>94 000 ₽</strong></div>
+                    <div>Применено бонусов: <strong>38 000 ₽</strong></div>
+                    <div>Возвраты (реселлерам / по спорам): <strong style="color:var(--danger);">−11 400 ₽</strong></div>
+                  </div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Когортная конверсия триала (D+14 / D+30)</div>
+                  <div style="font-size:13px;line-height:1.9;">
+                    <div>Когорта 01.11–10.11 (завершена): 42 триала → <strong>13 оплат (31.0%)</strong></div>
+                    <div>Когорта 15.11–26.11: 19 триалов · <span class="badge badge-info">in_progress</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Пользователи (/admin/users) -->
+            <div class="adm-tab" id="adm-users" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Пользователи (/admin/users)</h1>
+              <div class="card card-pad" style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                  <div>
+                    <strong style="font-size:16px;">alex.k@example.com</strong> <span class="badge badge-neutral">USER</span>
+                    <div class="mono" style="font-size:12px;color:var(--text-muted);">ID: U-1024 · Telegram: @alex_pgf · Скидка: 10% · Право приглашать: ВКЛ</div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="showToast('Персональная скидка обновлена (демо)')">Изм. скидку</button>
+                    <button class="btn btn-secondary btn-sm" onclick="showToast('Назначен статус RESELLER (демо)')">Сделать реселлером</button>
+                  </div>
+                </div>
+                <div style="padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <span style="font-size:12px;font-weight:700;color:var(--text-muted);">3 раздельных блокировки (§13):</span>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирован только вход в кабинет (authEpoch+1)')">1. Блок. кабинет</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Заблокирована конкретная лицензия LIC-A1B2C3D4E5F6')">2. Блок. лицензию</button>
+                  <button class="btn btn-danger-solid btn-sm" onclick="showToast('Полная блокировка аккаунта и всех лицензий')">3. Полный бан</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Лицензии и диагностика (/admin/licenses) -->
+            <div class="adm-tab" id="adm-licenses" style="display:none;">
+              <div class="page-header">
+                <h1 class="page-title">Лицензии и диагностика (/admin/licenses)</h1>
+                <button class="btn btn-primary btn-sm" onclick="showToast('Ручная выдача лицензии с правами Desktop + SEO (демо)')">+ Выдать вручную</button>
+              </div>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                  <div>
+                    <strong>Рабочая ферма #1</strong> (<code class="mono">LIC-A1B2C3D4E5F6</code>) · <span class="badge badge-active">ACTIVE</span>
+                    <div style="font-size:12px;color:var(--text-muted);">Отвязок за 30 дн.: 1 / 3 · Последний handshake: 2 ч назад</div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="showToast('Лимит отвязок сброшен администратором (0 / 3)')">Сбросить лимит отвязок</button>
+                    <button class="btn btn-danger btn-sm" onclick="showToast('Ключ отозван и перевыпущен')">Отозвать ключ</button>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary);background:var(--surface-muted);padding:10px;border-radius:8px;" class="mono">
+                  lease_audit: 26.11 08:15 OK (PC-a1b2c3d4) · 26.11 05:10 OK (PC-9f8e7d6c) · 20.11 14:12 UNBIND (PC-77aa88bb)
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Тариф, триал и промо (/admin/plans) -->
+            <div class="adm-tab" id="adm-plans" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Тариф, триал и промо (/admin/plans)</h1>
+              <div class="grid-2">
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Единственный основной платный тариф</div>
+                  <div style="font-size:13px;display:grid;gap:8px;">
+                    <label>Базовая цена (30 дн., 1 устр.): <input class="input mono" value="8000" style="width:120px;margin-left:8px;" /></label>
+                    <label>Цена доп. устройства: <input class="input mono" value="1000" style="width:120px;margin-left:8px;" /></label>
+                    <label>Модуль SEO: <select class="input"><option selected>Отдельная опция (+2 000 ₽)</option><option>Включён в тариф</option><option>Отключён</option></select></label>
+                    <button class="btn btn-primary btn-sm" onclick="showToast('Тариф сохранён (действующие счета и оплаченные периоды не затронуты)')">Сохранить тариф</button>
+                  </div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Пробный период (Trial) и возраст БД</div>
+                  <div style="font-size:13px;display:grid;gap:8px;">
+                    <label>Срок триала (дней): <input class="input mono" value="14" style="width:90px;margin-left:8px;" /></label>
+                    <label>Порог возраста локальной БД (дн.): <input class="input mono" value="15" style="width:90px;margin-left:8px;" /></label>
+                    <button class="btn btn-secondary btn-sm" onclick="showToast('Настройки триала обновлены')">Сохранить триал</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Платежи, счета и балансы (/admin/billing) -->
+            <div class="adm-tab" id="adm-billing" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Очередь ручных счетов (/admin/billing)</h1>
+              <div class="card card-pad" style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <div>
+                    <strong class="mono">#INV-2026-000142</strong> · <span class="badge badge-warning">UNDER_REVIEW</span>
+                    <div style="font-size:13px;margin-top:4px;">alex.k@example.com · Сумма зафиксирована: <strong>7 000 ₽</strong> · tx: <code class="mono">0x8f4c...92b1e4</code></div>
+                  </div>
+                  <div style="display:flex;gap:8px;">
+                    <button class="btn btn-primary btn-sm" onclick="showToast('Счёт #INV-2026-000142 подтверждён! Лицензия активирована.')">✓ Подтвердить</button>
+                    <button class="btn btn-danger btn-sm" onclick="showToast('Счёт отклонён с указанием причины')">✕ Отклонить</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <div>
+                    <strong class="mono">#INV-2026-000139</strong> · <span class="badge badge-danger">DUPLICATE_PROOF_DETECTED</span>
+                    <div style="font-size:13px;margin-top:4px;">user99@example.com · Повторно отправлен чужой tx_hash</div>
+                  </div>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Отклонено: дубликат перевода')">Разобрать</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Тикеты (/admin/tickets) -->
+            <div class="adm-tab" id="adm-tickets" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Тикеты, споры и жалобы (/admin/tickets)</h1>
+              <div class="card card-pad">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+                  <div><strong>#TCK-1042</strong> · Биллинг · alex.k@example.com</div>
+                  <span class="badge badge-warning">OPEN</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;">
+                  <div><strong>#DSP-0018</strong> · Жалоба на реселлера (изолирована от реселлера!)</div>
+                  <span class="badge badge-danger">ESCALATED</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Настройки, контент, аудит и бэкапы (/admin/settings) -->
+            <div class="adm-tab" id="adm-settings" style="display:none;">
+              <h1 class="page-title" style="margin-bottom:12px;">Настройки доступа, контент и аудит</h1>
+              <div class="grid-2">
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Независимые настройки доступа (§3.1)</div>
+                  <div style="display:grid;gap:10px;font-size:13px;">
+                    <label>Видимость витрины: <select class="input" style="width:100%;margin-top:4px;"><option selected>PUBLIC_WITH_PRICES (Витрина и цены всем)</option><option>PUBLIC_PRICES_AUTH_ONLY</option><option>PRIVATE_AUTH_ONLY</option></select></label>
+                    <label>Регистрация: <select class="input" style="width:100%;margin-top:4px;"><option selected>OPEN (Открытая)</option><option>INVITE_ONLY (Только по приглашению)</option></select></label>
+                    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" /> Приостановить новые покупки</label>
+                    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" /> Режим техобслуживания (handshake и /docs работают)</label>
+                    <button class="btn btn-primary btn-sm" onclick="showToast('Настройки видимости сохранены в аудит')">Сохранить настройки</button>
+                  </div>
+                </div>
+                <div class="card card-pad">
+                  <div style="font-weight:700;margin-bottom:10px;">Контент, релизы, аудит и бэкапы</div>
+                  <div style="display:grid;gap:8px;font-size:13px;">
+                    <div><button class="btn btn-secondary btn-sm" onclick="showToast('Редактор статей Docs/Wiki + API-ключи content:*')">📘 Управление Docs / Wiki</button></div>
+                    <div><button class="btn btn-secondary btn-sm" onclick="showToast('Публикация и YANK версий pgF + ключи releases:*')">📦 Релизы pgF (v0.1.0)</button></div>
+                    <div><button class="btn btn-secondary btn-sm" onclick="showToast('Append-only журнал аудита (неизменяемый)')">📜 Журнал аудита</button></div>
+                    <div><button class="btn btn-secondary btn-sm" onclick="showToast('Резервная копия БД V2 создана и проверена')">💾 Бэкап БД V2</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ЭКРАН 8: КАБИНЕТ РЕСЕЛЛЕРА (/reseller — обзор по §3.1, §6)
+           ===================================================================== -->
+      <section class="screen" id="s8">
+        <header class="cab-topbar">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="logo-mark" onclick="goScreen('s1')">
+              <span class="logo-icon">pgF</span>
+              <span>Reseller</span>
+            </div>
+            <span class="badge badge-info">Скидка реселлера: 25%</span>
+          </div>
+          <div class="cab-user-area">
+            <div class="balance-chip"><span>Баланс реселлера: <strong>45 000 ₽</strong></span></div>
+            <button class="btn btn-secondary btn-sm" onclick="goScreen('s2')">В клиентский кабинет</button>
+          </div>
+        </header>
+        <div class="container" style="padding-top:24px;padding-bottom:40px;">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Кабинет реселлера (/reseller)</h1>
+              <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Пул ключей (5 шт.), активация покупателям, автопродление выкл. по умолчанию, запросы аннулирования (§9).</p>
+            </div>
+            <button class="btn btn-primary" onclick="showToast('Новый ключ из пула активирован покупателю (демо)')">+ Активировать ключ из пула (5 / 5)</button>
+          </div>
+          <div class="card card-pad">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div>
+                <strong>Покупатель: @client_msk · LIC-RSL-9012</strong>
+                <div style="font-size:12px;color:var(--text-muted);">До: 25.12.2026 · Автопродление: выключено по умолчанию</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Продление по реселлерской скидке 25%')">Продлить</button>
+                <button class="btn btn-danger btn-sm" onclick="showToast('Запрос аннулирования отправлен покупателю в Telegram-бот (/confirm/revocation/...)')">Запросить аннулирование</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1991,25 +2399,41 @@
 
       if (mode === 'cabinet') {
         title.textContent = 'pgF Кабинет';
-        const isLic = ['s2', 's3', 's4'].includes(state.currentScreen);
-        const isBill = state.currentScreen === 's5';
         body.innerHTML = `
           <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;">
             <div style="font-weight:700;color:var(--text);">alex.k@example.com</div>
             <div style="color:var(--text-secondary);margin-top:2px;">Баланс: <strong>6 000 ₽</strong> (Осн: 4 000 · Бон: 2 000)</div>
           </div>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s2')">🏠 Главная кабинета</button>
-          <button class="nav-item ${isLic ? 'active' : ''}" onclick="closeMobileMenus();goScreen('s2')">🔑 Мои лицензии</button>
-          <button class="nav-item ${isBill ? 'active' : ''}" onclick="closeMobileMenus();goScreen('s5')">💳 Баланс и счета</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Реферальная программа: 10% бонусами')">🎁 Рефералы</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Раздел тикетов поддержки (/app/support)')">💬 Поддержка</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Актуальная версия pgF 0.1.0 для Windows x64')">⬇️ Скачать pgF</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Настройки аккаунта и 2FA в Telegram')">⚙️ Настройки</button>
+          <button class="nav-item ${state.currentScreen==='s2-home'?'active':''}" onclick="closeMobileMenus();goScreen('s2-home')">🏠 Главная кабинета</button>
+          <button class="nav-item ${['s2','s3','s4'].includes(state.currentScreen)?'active':''}" onclick="closeMobileMenus();goScreen('s2')">🔑 Мои лицензии</button>
+          <button class="nav-item ${state.currentScreen==='s5'?'active':''}" onclick="closeMobileMenus();goScreen('s5')">💳 Баланс и счета</button>
+          <button class="nav-item ${state.currentScreen==='s2-referrals'?'active':''}" onclick="closeMobileMenus();goScreen('s2-referrals')">🎁 Рефералы</button>
+          <button class="nav-item ${state.currentScreen==='s2-support'?'active':''}" onclick="closeMobileMenus();goScreen('s2-support')">💬 Поддержка</button>
+          <button class="nav-item ${state.currentScreen==='s2-downloads'?'active':''}" onclick="closeMobileMenus();goScreen('s2-downloads')">⬇️ Скачать pgF</button>
+          <button class="nav-item ${state.currentScreen==='s2-settings'?'active':''}" onclick="closeMobileMenus();goScreen('s2-settings')">⚙️ Настройки</button>
           <div class="nav-divider"></div>
           <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'docs'})">📘 Документация</button>
           <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки</button>
           <div class="nav-divider"></div>
           <button class="nav-item" style="color:var(--danger);" onclick="closeMobileMenus();goScreen('s1')">🚪 Выйти</button>
+        `;
+      } else if (mode === 'admin') {
+        title.textContent = 'Admin V2';
+        body.innerHTML = `
+          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;">
+            <div style="font-weight:700;color:var(--text);">admin@pgf.local</div>
+            <div style="color:var(--success);margin-top:2px;">2FA Telegram ✓</div>
+          </div>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-summary')">📊 Главная сводка</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-analytics')">📈 Статистика и когорты</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-users')">👥 Пользователи</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-licenses')">🔑 Лицензии и lease_audit</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-plans')">🏷️ Тариф, триал и промо</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-billing')">💳 Счета и балансы (3)</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-tickets')">🎫 Тикеты и споры</button>
+          <button class="nav-item" onclick="closeMobileMenus();switchAdminTab('adm-settings')">⚙️ Настройки, контент, аудит</button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s2')">🔑 В клиентский кабинет</button>
         `;
       } else if (mode === 'help') {
         title.textContent = 'pgF Помощь';
@@ -2037,6 +2461,15 @@
       backdrop.classList.add('open');
     }
 
+    function switchAdminTab(tabId) {
+      document.querySelectorAll('#s7 .adm-tab').forEach(el => el.style.display = 'none');
+      const target = document.getElementById(tabId);
+      if (target) target.style.display = 'block';
+      document.querySelectorAll('#s7 .cab-sidebar .nav-item').forEach(n => n.classList.remove('active'));
+      const btn = document.getElementById('anav-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
     function goScreen(screenId, opts = {}) {
       closeMobileMenus();
       state.currentScreen = screenId;
@@ -2044,21 +2477,19 @@
       document.getElementById(screenId).classList.add('active');
 
       // Show/hide cabinet shell
-      const isCabinet = ['s2', 's3', 's4', 's5'].includes(screenId);
+      const isCabinet = ['s2', 's2-home', 's2-referrals', 's2-support', 's2-downloads', 's2-settings', 's3', 's4', 's5'].includes(screenId);
       document.getElementById('cabinetShell').style.display = isCabinet ? 'block' : 'none';
 
       // Update top proto tabs
+      const tabKey = screenId.startsWith('s2-') ? 's2' : screenId;
       document.querySelectorAll('.proto-tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.screen === screenId);
+        t.classList.toggle('active', t.dataset.screen === tabKey);
       });
 
-      // Update sidebar & mobile nav active states
-      document.querySelectorAll('.cab-sidebar .nav-item').forEach(n => n.classList.remove('active'));
+      // Update sidebar active states
+      document.querySelectorAll('#cabinetShell .cab-sidebar .nav-item').forEach(n => n.classList.remove('active'));
       const navBtn = document.getElementById('nav-' + screenId);
       if (navBtn) navBtn.classList.add('active');
-      document.querySelectorAll('.mobile-subnav .chip').forEach(c => c.classList.remove('active'));
-      const mBtn = document.getElementById('mnav-' + screenId);
-      if (mBtn) mBtn.classList.add('active');
 
       if (opts.licenseId) state.selectedLicenseId = opts.licenseId;
       if (opts.article) state.helpArticle = opts.article;
