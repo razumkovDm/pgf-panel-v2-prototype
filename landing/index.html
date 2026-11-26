@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pgF — Десктопная платформа для проектов, профилей, прокси и SEO-аудитов (Windows)</title>
+  <meta name="description" content="pgF — десктопное приложение для Windows 10/11 x64 с локальной базой PostgreSQL 17 и шифрованием DPAPI: управление проектами, браузерными профилями, прокси, схемами прогрева, очередями Google/Яндекс и HTTP/rendered SEO-аудитом.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ======================================================================
+       PUBLIC STOREFRONT SHELL (PUBLIC_WITH_PRICES / PUBLIC_PRICES_AUTH_ONLY)
+       ====================================================================== -->
+  <div id="public-shell">
+    <!-- Maintenance Banner (shown only when MAINTENANCE is enabled) -->
+    <div id="banner-maintenance" class="system-banner is-hidden" role="status" aria-live="polite">
+      <div class="container system-banner__inner">
+        <p class="system-banner__text">
+          <span class="system-banner__badge">Техобслуживание</span>
+          <span>Идёт плановое обслуживание веб-панели. Действующие лицензии pgF продолжают работу в штатном режиме (автономный допуск до 24 ч).</span>
+        </p>
+        <div class="system-banner__links">
+          <a href="/docs">Документация</a>
+          <a href="/wiki">Wiki и ошибки</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Paused Banner (shown when SALES_PAUSED is enabled) -->
+    <div id="banner-sales-paused" class="system-banner system-banner--info is-hidden" role="status" aria-live="polite">
+      <div class="container system-banner__inner">
+        <p class="system-banner__text">
+          <span class="system-banner__badge">Пауза продаж</span>
+          <span>Оформление новых покупок и пополнение баланса временно приостановлены. Действующие лицензии работают без ограничений.</span>
+        </p>
+        <div class="system-banner__links">
+          <a href="/docs">Документация</a>
+          <a href="/wiki">Wiki</a>
+          <a href="/login" data-auth-link>Войти</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Header -->
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="#top" class="brand" aria-label="pgF — на главную">
+          <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" fill="#1B7A52"/>
+            <path d="M16 4.4L26 10.2V21.8L16 27.6L6 21.8V10.2L16 4.4Z" stroke="#9BE8C3" stroke-opacity="0.35" stroke-width="1"/>
+            <text x="16" y="20" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700" font-family="Segoe UI, Arial, sans-serif">pf</text>
+          </svg>
+          <span>pgF</span>
+          <span class="brand__tag">Windows x64</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="site-nav__link" href="#features">Возможности</a>
+          <a class="site-nav__link" href="/pricing">Тариф</a>
+          <a class="site-nav__link" href="/docs">Документация</a>
+          <a class="site-nav__link" href="/wiki">Wiki</a>
+        </nav>
+
+        <div class="site-header__actions">
+          <a class="btn btn--ghost" href="/login" data-auth-link>Войти</a>
+          <a class="btn btn--primary site-header__cta-desktop" href="/pricing" data-primary-pricing-cta>Тариф и стоимость</a>
+          <button id="nav-toggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Открыть меню">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-drawer" class="mobile-drawer" role="dialog" aria-label="Мобильное меню">
+      <nav class="mobile-drawer__nav" aria-label="Мобильная навигация">
+        <a class="mobile-drawer__link" href="#features">Возможности</a>
+        <a class="mobile-drawer__link" href="/pricing">Тариф и опции</a>
+        <a class="mobile-drawer__link" href="/docs">Документация (/docs)</a>
+        <a class="mobile-drawer__link" href="/wiki">Wiki и ошибки (/wiki)</a>
+        <a class="mobile-drawer__link" href="#faq">Частые вопросы</a>
+      </nav>
+      <div class="mobile-drawer__actions">
+        <a class="btn btn--primary btn--lg" href="/pricing" data-primary-pricing-cta>Тариф и стоимость</a>
+        <a class="btn btn--secondary btn--lg" href="/pricing#trial" data-trial-cta>Пробный период 14 дней</a>
+        <a class="btn btn--secondary btn--lg" href="/login" data-auth-link>Войти</a>
+      </div>
+      <div class="mobile-drawer__meta">
+        Windows 10/11 x64 · PostgreSQL 17 · Локальные секреты DPAPI
+      </div>
+    </div>
+
+    <main id="top">
+      <!-- ==================================================================
+           HERO SECTION (FIRST SCREEN)
+           ================================================================== -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero__top">
+            <p class="hero__eyebrow">Десктопная платформа для Windows 10/11 x64</p>
+            <h1 class="hero__title">Управляйте проектами, профилями, прокси и SEO-аудитами pgF на своём ПК</h1>
+            <p class="hero__subtitle">
+              Локальное приложение для ежедневной работы: схемы прогрева, очереди заданий Google и Яндекса, HTTP и rendered SEO-аудит через изолированный Playwright Chromium. База PostgreSQL 17 и секреты DPAPI остаются на вашем компьютере.
+            </p>
+
+            <div class="hero__actions">
+              <a class="btn btn--primary btn--lg" href="/pricing" data-primary-pricing-cta>Тариф и стоимость</a>
+              <a class="btn btn--secondary btn--lg" href="/pricing#trial" data-trial-cta>Пробный период 14 дней*</a>
+              <a class="btn btn--ghost btn--lg" href="/docs/getting-started">Документация</a>
+            </div>
+
+            <p id="hero-status-note" class="hero__status-note is-hidden"></p>
+
+            <ul class="hero__specs" aria-label="Ключевые системные параметры">
+              <li>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Windows 10/11 x64</span>
+              </li>
+              <li>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Локальная PostgreSQL 17</span>
+              </li>
+              <li>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Шифрование Windows DPAPI</span>
+              </li>
+              <li>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Автономный допуск до 24 ч</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Interactive Product Showcase (Desktop Design V2, Synthetic Data) -->
+          <div class="showcase" aria-label="Демонстрация экранов pgF Control Design V2">
+            <div class="showcase__tabs" role="tablist" aria-label="Экраны приложения pgF">
+              <button type="button" class="showcase__tab is-active" role="tab" aria-selected="true" data-screen-tab="projects">
+                Проекты и очереди
+              </button>
+              <button type="button" class="showcase__tab" role="tab" aria-selected="false" data-screen-tab="profiles">
+                Профили и прокси
+              </button>
+              <button type="button" class="showcase__tab" role="tab" aria-selected="false" data-screen-tab="seo">
+                SEO-аудит <span class="showcase__tab-badge">опция</span>
+              </button>
+              <button type="button" class="showcase__tab" role="tab" aria-selected="false" data-screen-tab="license">
+                Лицензия и допуск
+              </button>
+            </div>
+
+            <div class="pgf-window">
+              <div class="pgf-window__chrome">
+                <div class="pgf-window__title">
+                  <span>pgF Control — Design V2 (Windows)</span>
+                </div>
+                <span class="pgf-window__synthetic-tag">Демонстрация · синтетические данные</span>
+              </div>
+
+              <div class="pgf-window__body">
+                <!-- Authentic Design V2 Sidebar -->
+                <aside class="dv2-sidebar" aria-label="Навигация приложения pgF Control">
+                  <div class="dv2-sidebar__brand">
+                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                      <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" fill="#1D7750"/>
+                      <text x="16" y="20" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700" font-family="Segoe UI, Arial, sans-serif">pf</text>
+                    </svg>
+                    <span>pgF Control</span>
+                  </div>
+                  <ul class="dv2-sidebar__list">
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Обзор</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Помощник</li>
+                    <li class="dv2-sidebar__item is-active" data-dv2-nav="projects">Проекты</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Очередь</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Сессии</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="profiles">Профили</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Группы</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Прокси</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Схемы</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="seo">SEO-аудит</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="">Алерты</li>
+                    <li class="dv2-sidebar__item" data-dv2-nav="license">Настройки</li>
+                  </ul>
+                  <div class="dv2-sidebar__foot">
+                    <span><span class="dv2-status-dot"></span>Система работает</span>
+                    <span class="dv2-mono">PostgreSQL 17 · DPAPI</span>
+                  </div>
+                </aside>
+
+                <!-- SCREEN 1: Проекты и очереди -->
+                <div class="dv2-main" data-screen-panel="projects" role="tabpanel">
+                  <div class="dv2-topbar">
+                    <div class="dv2-topbar__left">
+                      <h2 class="dv2-screen-title">Проекты и очередь заданий</h2>
+                      <span class="dv2-chip dv2-chip--ok">Готовность проверена</span>
+                    </div>
+                    <span class="dv2-chip dv2-mono">Google · Яндекс</span>
+                  </div>
+
+                  <div class="dv2-kpis">
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Активные проекты</div>
+                      <div class="dv2-kpi__val tabular">6</div>
+                      <div class="dv2-kpi__sub">4 в очереди</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Сессии сейчас</div>
+                      <div class="dv2-kpi__val tabular">18</div>
+                      <div class="dv2-kpi__sub">16 в работе · 2 ждут</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Готовые профили</div>
+                      <div class="dv2-kpi__val tabular">1 420</div>
+                      <div class="dv2-kpi__sub dv2-kpi__sub--muted">из 1 850 в пуле</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Прокси ACTIVE</div>
+                      <div class="dv2-kpi__val tabular">124</div>
+                      <div class="dv2-kpi__sub">97% доступны</div>
+                    </div>
+                  </div>
+
+                  <div class="dv2-card">
+                    <div class="dv2-card__head">
+                      <span>Активные задания очереди</span>
+                      <span class="dv2-mono" style="color: var(--text-muted); font-weight: 500;">Синтетический стенд</span>
+                    </div>
+                    <div class="dv2-table-wrap">
+                      <table class="dv2-table tabular">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Проект</th>
+                            <th>Канал / Сценарий</th>
+                            <th>Профиль</th>
+                            <th>Прокси</th>
+                            <th>Статус</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td class="dv2-mono">J-4091</td>
+                            <td>NordicParts</td>
+                            <td>Яндекс · Прогрев каталога</td>
+                            <td class="dv2-mono">NP_0412</td>
+                            <td class="dv2-mono">198.51.100.14:8080</td>
+                            <td><span class="dv2-chip dv2-chip--ok">В РАБОТЕ</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">J-4090</td>
+                            <td>VeloCatalog</td>
+                            <td>Google · Поисковый маршрут</td>
+                            <td class="dv2-mono">VC_0884</td>
+                            <td class="dv2-mono">203.0.113.42:1080</td>
+                            <td><span class="dv2-chip dv2-chip--ok">В РАБОТЕ</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">J-4089</td>
+                            <td>ElectroOpt</td>
+                            <td>Яндекс · Схема «Базовый 7д»</td>
+                            <td class="dv2-mono">EO_0193</td>
+                            <td class="dv2-mono">192.0.2.77:3128</td>
+                            <td><span class="dv2-chip dv2-chip--warn">ОЖИДАНИЕ</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">J-4088</td>
+                            <td>HomeTextiles</td>
+                            <td>Google · Проверка прокси</td>
+                            <td class="dv2-mono">HT_0305</td>
+                            <td class="dv2-mono">198.51.100.89:1080</td>
+                            <td><span class="dv2-chip dv2-chip--err">ТАЙМАУТ</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SCREEN 2: Профили и прокси -->
+                <div class="dv2-main is-hidden" data-screen-panel="profiles" role="tabpanel">
+                  <div class="dv2-topbar">
+                    <div class="dv2-topbar__left">
+                      <h2 class="dv2-screen-title">Ресурсы проекта: профили и прокси</h2>
+                      <span class="dv2-chip dv2-chip--info">Агрегаты без блокировки UI</span>
+                    </div>
+                    <span class="dv2-chip dv2-chip--ok">Готов к запуску</span>
+                  </div>
+
+                  <div class="dv2-grid-2">
+                    <div class="dv2-card">
+                      <div class="dv2-card__head"><span>Ёмкость пула ресурсов</span></div>
+                      <div class="dv2-meter tabular">
+                        <div class="dv2-meter__row">
+                          <div class="dv2-meter__meta"><span>Готовые профили (группа «МСК-Органика»)</span><strong>76% · 1 420 / 1 850</strong></div>
+                          <div class="dv2-bar"><div class="dv2-bar__fill" style="width: 76%;"></div></div>
+                        </div>
+                        <div class="dv2-meter__row">
+                          <div class="dv2-meter__meta"><span>Прокси ACTIVE (SOCKS5 / HTTP)</span><strong>97% · 124 / 128</strong></div>
+                          <div class="dv2-bar"><div class="dv2-bar__fill dv2-bar__fill--info" style="width: 97%;"></div></div>
+                        </div>
+                        <div class="dv2-meter__row">
+                          <div class="dv2-meter__meta"><span>Свободные слоты воркеров</span><strong>60% · 18 / 30</strong></div>
+                          <div class="dv2-bar"><div class="dv2-bar__fill dv2-bar__fill--warn" style="width: 60%;"></div></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="dv2-card">
+                      <div class="dv2-card__head"><span>Сводка по группам профилей</span></div>
+                      <div class="dv2-table-wrap">
+                        <table class="dv2-table tabular">
+                          <thead>
+                            <tr>
+                              <th>Группа</th>
+                              <th>Всего</th>
+                              <th>Готово</th>
+                              <th>Доступно</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>МСК-Органика</td>
+                              <td>920</td>
+                              <td>740</td>
+                              <td><span class="dv2-chip dv2-chip--ok">680</span></td>
+                            </tr>
+                            <tr>
+                              <td>СПБ-Каталог</td>
+                              <td>540</td>
+                              <td>430</td>
+                              <td><span class="dv2-chip dv2-chip--ok">395</span></td>
+                            </tr>
+                            <tr>
+                              <td>Прогрев-Старт</td>
+                              <td>390</td>
+                              <td>250</td>
+                              <td><span class="dv2-chip dv2-chip--warn">140</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="dv2-card">
+                    <div class="dv2-card__head"><span>Проверка готовности перед запуском</span><span class="dv2-chip dv2-chip--ok">0 ошибок · 1 предупреждение</span></div>
+                    <div class="dv2-table-wrap">
+                      <table class="dv2-table">
+                        <thead>
+                          <tr>
+                            <th>Уровень</th>
+                            <th>Проверка</th>
+                            <th>Результат</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><span class="dv2-chip dv2-chip--ok">INFO</span></td>
+                            <td>Соответствие прокси и групп профилей</td>
+                            <td>124 активных прокси покрывают заданный параллелизм</td>
+                          </tr>
+                          <tr>
+                            <td><span class="dv2-chip dv2-chip--warn">WARNING</span></td>
+                            <td>Резерв группы «Прогрев-Старт»</td>
+                            <td>Осталось 140 свободных профилей — рекомендуется пополнить пул</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SCREEN 3: SEO-аудит (опция лицензии) -->
+                <div class="dv2-main is-hidden" data-screen-panel="seo" role="tabpanel">
+                  <div class="dv2-topbar">
+                    <div class="dv2-topbar__left">
+                      <h2 class="dv2-screen-title">SEO-аудит: HTTP + Rendered (Playwright)</h2>
+                      <span class="dv2-chip dv2-chip--info">Опция SEO-модуля лицензии</span>
+                    </div>
+                    <span class="dv2-chip dv2-mono">demo-shop.example</span>
+                  </div>
+
+                  <div class="dv2-kpis">
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Проверено URL</div>
+                      <div class="dv2-kpi__val tabular">2 480</div>
+                      <div class="dv2-kpi__sub">HTTP + Chromium</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">HTTP 200 OK</div>
+                      <div class="dv2-kpi__val tabular">2 394</div>
+                      <div class="dv2-kpi__sub">96.5% страниц</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">JS-расхождения DOM</div>
+                      <div class="dv2-kpi__val tabular">31</div>
+                      <div class="dv2-kpi__sub dv2-kpi__sub--muted">canonical / H1</div>
+                    </div>
+                    <div class="dv2-kpi">
+                      <div class="dv2-kpi__label">Ошибки 4xx / 5xx</div>
+                      <div class="dv2-kpi__val tabular">14</div>
+                      <div class="dv2-kpi__sub" style="color: var(--status-err-text);">требуют разбора</div>
+                    </div>
+                  </div>
+
+                  <div class="dv2-card">
+                    <div class="dv2-card__head">
+                      <span>Сравнение исходного HTML и rendered DOM (изолированный Playwright Chromium)</span>
+                    </div>
+                    <div class="dv2-table-wrap">
+                      <table class="dv2-table tabular">
+                        <thead>
+                          <tr>
+                            <th>URL (синтетический)</th>
+                            <th>Код</th>
+                            <th>Режим</th>
+                            <th>Замечание аудита</th>
+                            <th>Статус</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td class="dv2-mono">/catalog/tools</td>
+                            <td>200</td>
+                            <td>Rendered</td>
+                            <td>Title, H1 и canonical совпадают после JS</td>
+                            <td><span class="dv2-chip dv2-chip--ok">OK</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">/catalog/filters?sort=asc</td>
+                            <td>200</td>
+                            <td>Rendered</td>
+                            <td>JS меняет canonical после загрузки</td>
+                            <td><span class="dv2-chip dv2-chip--warn">РАСХОЖДЕНИЕ</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">/promo/archive-2025</td>
+                            <td>404</td>
+                            <td>HTTP</td>
+                            <td>Битая внутренняя ссылка из меню</td>
+                            <td><span class="dv2-chip dv2-chip--err">ОШИБКА</span></td>
+                          </tr>
+                          <tr>
+                            <td class="dv2-mono">/product/item-4410</td>
+                            <td>200</td>
+                            <td>Rendered</td>
+                            <td>Отсутствует meta description</td>
+                            <td><span class="dv2-chip dv2-chip--warn">ПРЕДУПР.</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SCREEN 4: Лицензия и автономный допуск -->
+                <div class="dv2-main is-hidden" data-screen-panel="license" role="tabpanel">
+                  <div class="dv2-topbar">
+                    <div class="dv2-topbar__left">
+                      <h2 class="dv2-screen-title">Статус лицензии и локальной среды</h2>
+                      <span class="dv2-chip dv2-chip--ok">ACTIVE · Автономный допуск</span>
+                    </div>
+                    <span class="dv2-chip dv2-mono">LIC-DEMO-0418</span>
+                  </div>
+
+                  <div class="dv2-grid-2">
+                    <div class="dv2-card">
+                      <div class="dv2-card__head"><span>Параметры лицензии (синтетические)</span></div>
+                      <div class="dv2-table-wrap">
+                        <table class="dv2-table">
+                          <tbody>
+                            <tr>
+                              <td style="color: var(--text-muted);">ID лицензии</td>
+                              <td class="dv2-mono">LIC-DEMO-0418</td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Права подписки</td>
+                              <td><span class="dv2-chip dv2-chip--ok">Desktop</span> <span class="dv2-chip dv2-chip--info">SEO</span></td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Устройства</td>
+                              <td class="tabular">1 из 2 слотов занято</td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Подписанный допуск (lease)</td>
+                              <td>RSA-SHA256 · запас 23 ч 40 м</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div class="dv2-card">
+                      <div class="dv2-card__head"><span>Локальный контур Windows</span></div>
+                      <div class="dv2-table-wrap">
+                        <table class="dv2-table">
+                          <tbody>
+                            <tr>
+                              <td style="color: var(--text-muted);">База данных</td>
+                              <td class="dv2-mono">PostgreSQL 17 (localhost)</td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Защита секретов</td>
+                              <td><span class="dv2-chip dv2-chip--ok">Windows DPAPI активен</span></td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Автопродление в кабинете</td>
+                              <td><span class="dv2-chip dv2-chip--ok">Автопродление включено</span></td>
+                            </tr>
+                            <tr>
+                              <td style="color: var(--text-muted);">Самостоятельная отвязка</td>
+                              <td class="tabular">Доступно 3 из 3 за 30 дн.</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 Practical Captions per Tab -->
+            <div class="showcase__captions" data-screen-captions="projects">
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Единая очередь Google и Яндекса</h3>
+                <p class="showcase__caption-text">Все проекты, этапы выполнения и статусы сессий в одном окне без переключения между скриптами и таблицами.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Проверка готовности до старта</h3>
+                <p class="showcase__caption-text">Экран готовности заранее показывает нехватку профилей или прокси, чтобы очередь не останавливалась на полпути.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Алерты по сбоям в реальном времени</h3>
+                <p class="showcase__caption-text">Таймауты прокси и ошибки этапов подсвечиваются с причиной и переходом к нужному проекту.</p>
+              </div>
+            </div>
+
+            <div class="showcase__captions is-hidden" data-screen-captions="profiles">
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Учёт пулов по группам</h3>
+                <p class="showcase__caption-text">Прозрачные агрегаты «Всего / Не готово / Готово / Доступно» сразу после привязки группы к проекту.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Контроль прокси и нагрузки</h3>
+                <p class="showcase__caption-text">Статусы ACTIVE/ошибки прокси и загрузка воркеров видны рядом с настройками проекта.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Локальное хранение секретов</h3>
+                <p class="showcase__caption-text">Учётные данные прокси и параметры профилей хранятся в вашей PostgreSQL 17 и шифруются Windows DPAPI.</p>
+              </div>
+            </div>
+
+            <div class="showcase__captions is-hidden" data-screen-captions="seo">
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">HTTP и rendered аудит в одном инструменте</h3>
+                <p class="showcase__caption-text">Быстрый HTTP-обход и проверка отрендеренного DOM через изолированный Playwright Chromium.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Сравнение HTML и JS-рендера</h3>
+                <p class="showcase__caption-text">Находит расхождения в Title, H1, canonical, мета-тегах и битые ссылки 4xx/5xx без облачных лимитов.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Опция на лицензию целиком</h3>
+                <p class="showcase__caption-text">SEO-модуль подключается опционально в настройках конкретной лицензии, а не отдельно на каждое устройство.</p>
+              </div>
+            </div>
+
+            <div class="showcase__captions is-hidden" data-screen-captions="license">
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Автономный допуск до 24 часов</h3>
+                <p class="showcase__caption-text">Подписанный RSA-SHA256 допуск (lease) позволяет продолжать работу при кратковременных сбоях сети.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Постоянный контроль в кабинете</h3>
+                <p class="showcase__caption-text">Ключ всегда виден в личном кабинете, заменяется на месте без потери срока, а устройства отвязываются самостоятельно.</p>
+              </div>
+              <div class="showcase__caption">
+                <h3 class="showcase__caption-title">Сохранность данных при паузе</h3>
+                <p class="showcase__caption-text">Если подписка закончится, локальная база PostgreSQL 17 на вашем ПК полностью сохраняется.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           FEATURES & CONNECTED WORKFLOW (#features)
+           ================================================================== -->
+      <section id="features" class="section">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Возможности и рабочий контур</p>
+            <h2 class="section__title">Как в pgF связаны проекты, профили, прокси, очереди и SEO-аудит</h2>
+            <p class="section__desc">
+              Вместо разрозненных скриптов и таблиц pgF объединяет подготовку ресурсов, выполнение сценариев и технический аудит в одном операционном приложении.
+            </p>
+          </div>
+
+          <div class="workflow-strip" aria-label="Последовательность работы в pgF">
+            <div class="workflow-node">
+              <div class="workflow-node__num">01</div>
+              <h3 class="workflow-node__title">Проекты</h3>
+              <p class="workflow-node__text">Изолированные настройки, запросы и история состояний по каждому сайту.</p>
+            </div>
+            <div class="workflow-node">
+              <div class="workflow-node__num">02</div>
+              <h3 class="workflow-node__title">Профили и прокси</h3>
+              <p class="workflow-node__text">Группы браузерных профилей, пулы прокси и автоматический подсчёт готовности.</p>
+            </div>
+            <div class="workflow-node">
+              <div class="workflow-node__num">03</div>
+              <h3 class="workflow-node__title">Схемы прогрева</h3>
+              <p class="workflow-node__text">Повторяемые маршруты и правила повторных визитов без ручной настройки каждого запуска.</p>
+            </div>
+            <div class="workflow-node">
+              <div class="workflow-node__num">04</div>
+              <h3 class="workflow-node__title">Очереди Google / Яндекс</h3>
+              <p class="workflow-node__text">Контролируемое выполнение заданий, журнал сессий и алерты по сбоям.</p>
+            </div>
+            <div class="workflow-node">
+              <div class="workflow-node__num">05</div>
+              <h3 class="workflow-node__title">SEO-аудит (опция)</h3>
+              <p class="workflow-node__text">HTTP и rendered проверки через изолированный Playwright Chromium.</p>
+            </div>
+          </div>
+
+          <div class="features-grid">
+            <article class="feature-card">
+              <div class="feature-card__top">
+                <span class="feature-card__icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 7.5H17.5" stroke="currentColor" stroke-width="1.6"/></svg>
+                </span>
+              </div>
+              <h3 class="feature-card__title">Проекты, проверка готовности и история состояний</h3>
+              <p class="feature-card__desc">
+                Каждый проект хранит свои поисковые запросы, привязанные группы ресурсов и журнал переходов. Перед запуском экран «Готовность» проверяет, достаточно ли профилей и активных прокси.
+              </p>
+              <ul class="feature-card__list">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Детерминированный список проверок с уровнями INFO, WARNING и ERROR</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Постоянная история смен статуса с локальным временем проекта</span>
+                </li>
+              </ul>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-card__top">
+                <span class="feature-card__icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 16C4.8 13.3 7.1 11.8 10 11.8C12.9 11.8 15.2 13.3 16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <h3 class="feature-card__title">Браузерные профили, группы и прокси</h3>
+              <p class="feature-card__desc">
+                Управляйте тысячами профилей и прокси через плотные операционные таблицы с пагинацией и фильтрами. Агрегаты пересчитываются в фоне без зависания интерфейса.
+              </p>
+              <ul class="feature-card__list">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Агрегаты «Всего / Не готово / Готово / Доступно» по каждой группе</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Пароли прокси и секреты защищены локальным Windows DPAPI</span>
+                </li>
+              </ul>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-card__top">
+                <span class="feature-card__icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H12M4 14H14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <h3 class="feature-card__title">Схемы прогрева и очереди Google / Яндекса</h3>
+              <p class="feature-card__desc">
+                Настраивайте схемы прогрева и запускайте очереди заданий для Google и Яндекса с прозрачным контролем этапов, политикой повторных визитов и журналом алертов.
+              </p>
+              <ul class="feature-card__list">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Видно, какой профиль и прокси выполняют конкретный этап прямо сейчас</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Операционный экран «Помощник» с планом действий до подтверждения</span>
+                </li>
+              </ul>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-card__top">
+                <span class="feature-card__icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+                <span class="feature-card__tag">Опция SEO-лицензии</span>
+              </div>
+              <h3 class="feature-card__title">HTTP и rendered SEO-аудит через Playwright Chromium</h3>
+              <p class="feature-card__desc">
+                Техническая проверка сайтов в двух режимах: быстрый HTTP-аудит и рендеринг страниц через изолированный Playwright Chromium. Опция подключается к конкретной лицензии целиком.
+              </p>
+              <ul class="feature-card__list">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Выявление расхождений между исходным HTML и JS-рендером</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Доступность SEO-модуля управляется настройками тарифа в панели</span>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           AUDIENCE / ROLES (#audience)
+           ================================================================== -->
+      <section id="audience" class="section section--white">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Для кого pgF</p>
+            <h2 class="section__title">Практический результат для ежедневных задач</h2>
+            <p class="section__desc">
+              pgF спроектирован для тех, кому нужен предсказуемый локальный инструмент без облачных ограничений и ручной рутины.
+            </p>
+          </div>
+
+          <div class="roles-grid">
+            <article class="role-card">
+              <span class="role-card__label">SEO-специалист</span>
+              <h3 class="role-card__title">Технический контроль и проекты в одной базе</h3>
+              <p class="role-card__text">
+                Ведите поисковые запросы, структуру проектов и технические SEO-аудиты (HTTP + rendered через Playwright Chromium при подключённой опции SEO) локально на своём ПК.
+              </p>
+              <div class="role-card__result">
+                <strong>Результат:</strong> все проверки и история проектов хранятся в вашей PostgreSQL 17 без лимитов облачных краулеров.
+              </div>
+            </article>
+
+            <article class="role-card">
+              <span class="role-card__label">Автоматизация и прогрев</span>
+              <h3 class="role-card__title">Управляемые пулы профилей, прокси и очередей</h3>
+              <p class="role-card__text">
+                Настраивайте схемы прогрева, распределяйте группы профилей и прокси, проверяйте готовность до старта и отслеживайте выполнение очередей Google и Яндекса.
+              </p>
+              <div class="role-card__result">
+                <strong>Результат:</strong> меньше ручных проверок и простоев благодаря алертам и прозрачным статусам каждой сессии.
+              </div>
+            </article>
+
+            <article class="role-card">
+              <span class="role-card__label">Небольшая команда и агентство</span>
+              <h3 class="role-card__title">Несколько лицензий и устройств в одном кабинете</h3>
+              <p class="role-card__text">
+                Держите столько самостоятельных лицензий, сколько нужно под рабочие машины или контуры клиентов — с отдельным лимитом устройств, опцией SEO и автопродлением.
+              </p>
+              <div class="role-card__result">
+                <strong>Результат:</strong> единый баланс, предсказуемый биллинг по ручному счёту и самостоятельная отвязка ПК при замене железа.
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           HOW TO START — 3 STEPS (#start)
+           ================================================================== -->
+      <section id="start" class="section">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Быстрый старт</p>
+            <h2 class="section__title">Как начать работу с pgF за 3 шага</h2>
+            <p class="section__desc">
+              От выбора конфигурации до запуска первого проекта с проверенной готовностью ресурсов.
+            </p>
+          </div>
+
+          <div class="steps-grid">
+            <article class="step-card">
+              <span class="step-card__num">1</span>
+              <h3 class="step-card__title">Выберите конфигурацию или пробный период</h3>
+              <p class="step-card__text">
+                На странице тарифа задайте срок, число устройств и при необходимости добавьте опцию SEO. Если пробный период включён, его можно оформить на новую локальную БД.
+              </p>
+              <a class="step-card__link" href="/pricing">Перейти к тарифу →</a>
+            </article>
+
+            <article class="step-card">
+              <span class="step-card__num">2</span>
+              <h3 class="step-card__title">Получите ключ и скачайте pgF в кабинете</h3>
+              <p class="step-card__text">
+                После активации в личном кабинете <code>/app</code> сразу виден текущий ключ лицензии, список привязанных устройств и актуальный дистрибутив с контрольной суммой SHA-256.
+              </p>
+              <a class="step-card__link" href="/login" data-auth-link>Войти</a>
+            </article>
+
+            <article class="step-card">
+              <span class="step-card__num">3</span>
+              <h3 class="step-card__title">Установите PostgreSQL 17 и активируйте ключ</h3>
+              <p class="step-card__text">
+                Разверните pgF на Windows 10/11 x64 по пошаговой инструкции, введите ключ и запустите проверку готовности первого проекта.
+              </p>
+              <a class="step-card__link" href="/docs/install">Инструкция по установке →</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           PRICING & TRIAL OVERVIEW (#pricing-overview)
+           ================================================================== -->
+      <section id="pricing-overview" class="section section--white">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Тариф и пробный период</p>
+            <h2 class="section__title">Один гибкий тариф без скрытых уровней</h2>
+            <p class="section__desc">
+              Базовая стоимость, сроки, цена дополнительных устройств и доступность SEO-модуля управляются в настройках панели. Ниже показан пример конфигурации; точный расчёт и скидки доступны на странице тарифа.
+            </p>
+          </div>
+
+          <div id="pricing-grid" class="pricing-grid">
+            <!-- Main Configurable Paid Plan -->
+            <article class="plan-card">
+              <div class="plan-card__head">
+                <div>
+                  <h3 class="plan-card__title">Основной тариф pgF</h3>
+                  <p class="plan-card__sub">Базовый Desktop + настраиваемые устройства и опция SEO</p>
+                </div>
+                <span id="plan-demo-badge" class="demo-price-badge">Демонстрационный пример</span>
+              </div>
+
+              <!-- Public price block (hidden in PUBLIC_PRICES_AUTH_ONLY) -->
+              <div id="price-public-block" class="plan-price-block">
+                <div class="plan-price-row">
+                  <span id="demo-price-amount" class="plan-price__amount tabular">4 100 ₽</span>
+                  <span class="plan-price__unit">/ 30 дней · <strong id="demo-total-devices" class="tabular">1</strong> ПК</span>
+                </div>
+                <p id="demo-price-breakdown" class="plan-price__note">
+                  База (1 ПК): 2 900 ₽ · SEO-модуль (на лицензию): 1 200 ₽ · Демонстрационный расчёт, цены задаются в админке
+                </p>
+
+                <div class="plan-options" aria-label="Демонстрационный предпросмотр опций">
+                  <div class="plan-option-row">
+                    <span>Дополнительные устройства (ПК)</span>
+                    <div class="stepper">
+                      <button id="demo-dev-minus" type="button" aria-label="Уменьшить число дополнительных устройств">−</button>
+                      <span id="demo-devices-count" class="tabular">0</span>
+                      <button id="demo-dev-plus" type="button" aria-label="Увеличить число дополнительных устройств">+</button>
+                    </div>
+                  </div>
+                  <div class="plan-option-row">
+                    <label for="demo-seo-toggle">
+                      <input id="demo-seo-toggle" type="checkbox" checked>
+                      <span>Опция SEO-аудита (на лицензию целиком)</span>
+                    </label>
+                    <span class="dv2-mono" style="color: var(--text-muted);">+1 200 ₽*</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Auth-only price gate (shown in PUBLIC_PRICES_AUTH_ONLY) -->
+              <div id="price-auth-gate" class="price-gate is-hidden">
+                <p class="price-gate__title">Цены и калькулятор доступны после входа</p>
+                <p class="price-gate__text">
+                  В текущем режиме витрины описание возможностей открыто всем, а стоимость конфигурации, персональные скидки и промокоды отображаются авторизованным пользователям.
+                </p>
+                <div>
+                  <a class="btn btn--primary" href="/login">Войти, чтобы увидеть цены</a>
+                </div>
+              </div>
+
+              <ul class="plan-features">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Право <strong>Desktop</strong>: проекты, профили, прокси, схемы прогрева, очереди Google/Яндекс</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Опция <strong>SEO</strong> подключается на всю лицензию целиком (если включена в тарифе)</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Неограниченное число самостоятельных лицензий в одном кабинете</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Самостоятельная отвязка устройств: до 3 раз за скользящие 30 дней</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Оплата напрямую по счёту (цена фиксируется на 24 ч) или с баланса + автопродление</span>
+                </li>
+              </ul>
+
+              <div class="plan-card__actions">
+                <a class="btn btn--primary btn--lg" href="/pricing" data-primary-pricing-cta>Тариф и стоимость</a>
+                <a class="btn btn--secondary btn--lg" href="/docs/getting-started">Условия и активация</a>
+              </div>
+            </article>
+
+            <!-- Trial Card (shown only when trial enabled & registration allowed) -->
+            <article id="trial-plan-card" class="plan-card plan-card--trial">
+              <div class="plan-card__head">
+                <div>
+                  <h3 class="plan-card__title">Пробный период</h3>
+                  <p class="plan-card__sub">Проверка pgF на реальных рабочих задачах</p>
+                </div>
+                <span class="demo-price-badge">По умолчанию 14 дн.*</span>
+              </div>
+
+              <div class="plan-price-block" style="background: var(--bg-surface);">
+                <div class="plan-price-row">
+                  <span class="plan-price__amount tabular">0 ₽</span>
+                  <span class="plan-price__unit">/ 14 дней (настраивается в панели)</span>
+                </div>
+                <p class="plan-price__note">
+                  *Длительность и доступность пробного периода задаются администратором.
+                </p>
+              </div>
+
+              <ul class="plan-features">
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Рассчитан на <strong>новую локальную БД</strong> (проекты и профили не старше момента начала триала)</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Выдаётся один раз на аккаунт и устройство после подтверждения email</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>Смена устройства на пробном периоде недоступна</span>
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>После окончания триала локальные данные на вашем ПК полностью сохраняются</span>
+                </li>
+              </ul>
+
+              <div class="plan-card__actions">
+                <a class="btn btn--secondary btn--lg" href="/pricing#trial" data-trial-cta>Оформить пробный период</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           TRUST (VERIFIABLE FACTS) & SYSTEM REQUIREMENTS (#trust)
+           ================================================================== -->
+      <section id="trust" class="section">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Доверие на фактах и системные требования</p>
+            <h2 class="section__title">Предсказуемая архитектура, которую можно проверить до покупки</h2>
+            <p class="section__desc">
+              Вместо маркетинговых обещаний — проверяемые технические правила хранения данных, безопасности и лицензирования.
+            </p>
+          </div>
+
+          <div class="trust-layout">
+            <div class="facts-grid">
+              <article class="fact-card">
+                <h3 class="fact-card__title">Локальная база PostgreSQL 17</h3>
+                <p class="fact-card__text">Проекты, профили, прокси и история сессий хранятся на вашем компьютере. Сервер лицензий не имеет доступа к вашей рабочей БД.</p>
+              </article>
+
+              <article class="fact-card">
+                <h3 class="fact-card__title">Шифрование секретов Windows DPAPI</h3>
+                <p class="fact-card__text">Пароли, токены и чувствительные параметры защищаются встроенными механизмами шифрования Windows.</p>
+              </article>
+
+              <article class="fact-card">
+                <h3 class="fact-card__title">Автономный RSA-допуск до 24 часов</h3>
+                <p class="fact-card__text">Подписанный временный допуск (lease) позволяет продолжать работу при кратковременной недоступности сети или техобслуживании панели.</p>
+              </article>
+
+              <article class="fact-card">
+                <h3 class="fact-card__title">Сохранность данных при паузе подписки</h3>
+                <p class="fact-card__text">Истечение срока останавливает только запуск новых заданий. Ваша база и настройки на ПК не удаляются и готовы к работе после продления.</p>
+              </article>
+
+              <article class="fact-card">
+                <h3 class="fact-card__title">Прозрачный контроль ключей и ПК</h3>
+                <p class="fact-card__text">Текущий ключ всегда доступен в кабинете с заменой на месте без потери срока; платные устройства отвязываются самостоятельно.</p>
+              </article>
+
+              <article class="fact-card">
+                <h3 class="fact-card__title">Открытая справка до регистрации</h3>
+                <p class="fact-card__text">Документация по установке и Wiki по кодам ошибок открыты всем посетителям до покупки и при любом режиме витрины.</p>
+              </article>
+            </div>
+
+            <aside class="specs-panel" aria-label="Системные требования pgF">
+              <h3 class="specs-panel__title">Системные требования</h3>
+              <ul class="specs-list">
+                <li>
+                  <span class="specs-list__k">Операционная система</span>
+                  <span class="specs-list__v">Windows 10 / 11 (64-bit, x64)</span>
+                </li>
+                <li>
+                  <span class="specs-list__k">База данных</span>
+                  <span class="specs-list__v">PostgreSQL 17 (локально)</span>
+                </li>
+                <li>
+                  <span class="specs-list__k">Защита секретов</span>
+                  <span class="specs-list__v">Windows DPAPI</span>
+                </li>
+                <li>
+                  <span class="specs-list__k">SEO-рендеринг (опция)</span>
+                  <span class="specs-list__v">Изолированный Playwright Chromium</span>
+                </li>
+                <li>
+                  <span class="specs-list__k">Сетевой доступ</span>
+                  <span class="specs-list__v">HTTPS для проверки лицензии (допуск 24 ч)</span>
+                </li>
+              </ul>
+              <div class="specs-panel__foot">
+                Подробный чек-лист подготовки ПК и установки PostgreSQL 17 опубликован в <a href="/docs/install">разделе «Установка» (/docs/install)</a>.
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           OPEN DOCS & WIKI HUB (#help)
+           ================================================================== -->
+      <section id="help" class="section section--white">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Открытая база знаний</p>
+            <h2 class="section__title">Документация и диагностика ошибок открыты без входа</h2>
+            <p class="section__desc">
+              Единый контур помощи без дублирования: пошаговые инструкции живут в <code>/docs</code>, а разбор кодов ошибок и частые сценарии — в <code>/wiki</code>.
+            </p>
+          </div>
+
+          <div class="help-grid">
+            <article class="help-card">
+              <div class="help-card__head">
+                <h3 class="help-card__title">Документация</h3>
+                <span class="help-card__route">/docs</span>
+              </div>
+              <p class="help-card__desc">
+                Канонические пошаговые руководства: системные требования, настройка PostgreSQL 17 и DPAPI, активация ключа, первый проект, управление устройствами и перенос pgF на новый ПК.
+              </p>
+              <div class="help-card__links">
+                <a href="/docs/getting-started">Быстрый старт →</a>
+                <a href="/docs/install">Установка и PostgreSQL 17 →</a>
+                <a href="/docs">Все разделы /docs →</a>
+              </div>
+            </article>
+
+            <article class="help-card">
+              <div class="help-card__head">
+                <h3 class="help-card__title">Wiki и коды ошибок</h3>
+                <span class="help-card__route">/wiki</span>
+              </div>
+              <p class="help-card__desc">
+                Диагностика по шаблону «Код → Причина → Проверка → Решение» и подсказка, что приложить в обращение (без передачи секретного ключа).
+              </p>
+              <div class="code-chips" aria-label="Популярные коды ошибок Wiki">
+                <a class="code-chip" href="/wiki">NODE_LIMIT</a>
+                <a class="code-chip" href="/wiki">LICENSE_LEASE_EXPIRED</a>
+                <a class="code-chip" href="/wiki">TRIAL_LOCAL_DATA_TOO_OLD</a>
+                <a class="code-chip" href="/wiki">JOB_LICENSE_FEATURE_MISSING</a>
+                <a class="code-chip" href="/wiki">PLAYWRIGHT_NOT_INSTALLED</a>
+              </div>
+              <div class="help-card__links">
+                <a href="/wiki">Открыть Wiki и поиск →</a>
+              </div>
+            </article>
+          </div>
+
+          <div class="help-invariant">
+            Гарантия доступности: <code>/docs</code> и <code>/wiki</code> остаются открытыми без авторизации при любом режиме видимости витрины, закрытой регистрации, паузе продаж и техническом обслуживании.
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           FAQ ACCORDION (#faq)
+           ================================================================== -->
+      <section id="faq" class="section">
+        <div class="container">
+          <div class="section__head">
+            <p class="section__eyebrow">Частые вопросы</p>
+            <h2 class="section__title">Ответы на ключевые вопросы перед стартом</h2>
+          </div>
+
+          <div class="faq-list">
+            <div class="faq-item is-open">
+              <button type="button" class="faq-item__btn" aria-expanded="true">
+                <span>Что будет с проектами и базой, если подписка закончится?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Все ваши проекты, профили, настройки и история остаются в локальной базе PostgreSQL 17 на вашем компьютере. После окончания срока подписки приостанавливается только выполнение новых заданий; после продления работа продолжается с того же места.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Опция SEO-аудита покупается на каждое устройство или на лицензию?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                SEO-модуль (HTTP и rendered аудит через изолированный Playwright Chromium) всегда подключается на конкретную лицензию целиком, а не отдельно на каждое устройство. Доступность опции задаётся настройками тарифа.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Как перенести pgF на другой компьютер?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Для платной лицензии в личном кабинете есть отдельный экран устройств, где можно самостоятельно отвязать старый ПК (лимит — 3 отвязки за скользящие 30 дней). Важно: простое удаление программы на компьютере не освобождает слот автоматически — устройство нужно отвязать в кабинете.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Какие условия действуют для пробного периода?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Пробный период (если включён в настройках панели, по умолчанию 14 дней) предназначен для новой локальной базы данных: записи проектов и профилей не должны быть старше момента начала триала. Выдаётся 1 раз на аккаунт и устройство после подтверждения email; смена устройства на триале недоступна.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Остановится ли pgF при кратковременной недоступности сервера или техобслуживании?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Нет. Приложение использует криптографически подписанный временный допуск (lease, RSA-SHA256), который действует автономно до 24 часов. Режим технического обслуживания веб-панели также не останавливает проверку и работу действующих лицензий.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Можно ли купить несколько лицензий в одном аккаунте?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Да. В личном кабинете поддерживается неограниченное число самостоятельных лицензий. Для каждой можно задать своё название, примечание, число устройств, опцию SEO и автопродление, а текущий ключ всегда виден и может быть заменён на месте без сброса срока.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-item__btn" aria-expanded="false">
+                <span>Как происходит оплата и что будет, если цена тарифа изменится?</span>
+                <svg class="faq-item__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="faq-item__panel">
+                Доступна прямая оплата заказа или оплата с внутреннего баланса кабинета. При выставлении ручного счёта цена и состав конфигурации фиксируются на 24 часа — изменение цены тарифа в админке не затрагивает уже выставленные счета и оплаченные периоды.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           FINAL CTA BAND
+           ================================================================== -->
+      <section class="final-cta">
+        <div class="container final-cta__inner">
+          <div class="final-cta__copy">
+            <h2 class="final-cta__title">Готовы развернуть pgF на своём компьютере?</h2>
+            <p class="final-cta__text">
+              Соберите нужную конфигурацию лицензии, откройте пошаговую инструкцию по установке или перейдите в личный кабинет.
+            </p>
+          </div>
+          <div class="final-cta__actions">
+            <a class="btn btn--on-dark-primary btn--lg" href="/pricing" data-primary-pricing-cta>Тариф и стоимость</a>
+            <a class="btn btn--on-dark-secondary btn--lg" href="/docs/getting-started">Документация</a>
+            <a class="btn btn--on-dark-secondary btn--lg" href="/login" data-auth-link>Войти</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a href="#top" class="brand">
+              <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" fill="#1B7A52"/>
+                <text x="16" y="20" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700" font-family="Segoe UI, Arial, sans-serif">pf</text>
+              </svg>
+              <span>pgF</span>
+            </a>
+            <p class="footer-brand__desc">
+              Десктопная платформа для Windows 10/11 x64 и PostgreSQL 17: проекты, профили, прокси, схемы прогрева, очереди Google/Яндекс и SEO-аудит.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="footer-col__title">Продукт</h3>
+            <ul class="footer-col__list">
+              <li><a href="#features">Возможности</a></li>
+              <li><a href="/pricing">Тариф и стоимость</a></li>
+              <li><a href="#trust">Системные требования</a></li>
+              <li><a href="#faq">Частые вопросы</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="footer-col__title">Справка (всегда открыта)</h3>
+            <ul class="footer-col__list">
+              <li><a href="/docs">Документация</a></li>
+              <li><a href="/docs/getting-started">Быстрый старт</a></li>
+              <li><a href="/docs/install">Установка и PostgreSQL 17</a></li>
+              <li><a href="/wiki">Wiki и коды ошибок</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="footer-col__title">Кабинет и документы</h3>
+            <ul class="footer-col__list">
+              <li><a href="/login" data-auth-link>Войти</a></li>
+              <li><a href="/app">Личный кабинет (/app)</a></li>
+              <li><a href="/legal/terms">Лицензионное соглашение</a></li>
+              <li><a href="/legal/privacy">Политика конфиденциальности</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© pgF · Витрина PANEL-V2 · Windows 10/11 x64 · PostgreSQL 17</span>
+          <span>Экраны продукта в макете используют только синтетические данные</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ======================================================================
+       COMPACT PRIVATE STOREFRONT VIEW (PRIVATE_AUTH_ONLY — K3)
+       ====================================================================== -->
+  <div id="private-shell" class="private-view is-hidden">
+    <div id="private-banner-maintenance" class="system-banner is-hidden" role="status">
+      <div class="container system-banner__inner">
+        <p class="system-banner__text">
+          <span class="system-banner__badge">Техобслуживание</span>
+          <span>Идёт обслуживание панели. Действующие лицензии pgF продолжают работу, справка открыта.</span>
+        </p>
+        <div class="system-banner__links">
+          <a href="/docs">Документация</a>
+          <a href="/wiki">Wiki</a>
+        </div>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <span class="brand">
+          <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" fill="#1B7A52"/>
+            <text x="16" y="20" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700" font-family="Segoe UI, Arial, sans-serif">pf</text>
+          </svg>
+          <span>pgF</span>
+        </span>
+        <div class="site-header__actions">
+          <a class="btn btn--ghost" href="/docs">Документация</a>
+          <a class="btn btn--ghost" href="/wiki">Wiki</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="private-view__main">
+      <div class="private-card">
+        <p class="section__eyebrow" style="margin-bottom: 6px;">Закрытая витрина · PRIVATE_AUTH_ONLY</p>
+        <h2 class="private-card__title">Вход в личный кабинет pgF</h2>
+        <p class="private-card__desc">
+          Публичная витрина скрыта настройками доступа. Войдите в аккаунт для управления лицензиями, устройствами и балансом.
+        </p>
+
+        <form id="private-login-form">
+          <div class="form-field">
+            <label for="priv-email">Email</label>
+            <input id="priv-email" type="email" placeholder="user@example.com" autocomplete="username">
+          </div>
+          <div class="form-field">
+            <label for="priv-password">Пароль</label>
+            <input id="priv-password" type="password" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn--primary btn--lg" style="width: 100%; margin-top: 4px;">
+            Войти в кабинет
+          </button>
+        </form>
+
+        <div class="private-card__links">
+          <a href="/forgot-password">Забыли пароль?</a>
+          <a id="private-register-link" href="/register">Создать аккаунт</a>
+          <span id="private-invite-note" class="is-hidden" style="color: var(--text-muted); font-weight: 500;">Регистрация по приглашению</span>
+        </div>
+
+        <div class="private-help-box">
+          <strong>Справка открыта без входа:</strong> инструкции по установке, активации и разбор ошибок доступны всем пользователям pgF.
+          <div class="private-help-box__links">
+            <a href="/docs">Документация (/docs)</a>
+            <a href="/wiki">Wiki (/wiki)</a>
+            <a href="/legal/terms">Условия</a>
+            <a href="/legal/privacy">Конфиденциальность</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================================================================
+       UNOBTRUSIVE K3 STATE SWITCHER (Hidden automatically when ?clean=1)
+       ====================================================================== -->
+  <div id="preview-controls" class="preview-controls" aria-label="Переключатель состояний витрины для ревью">
+    <div class="preview-controls__panel">
+      <p class="preview-controls__title">
+        <span>Состояния витрины (K3)</span>
+        <span class="dv2-mono" style="font-size: 11px; color: var(--text-muted);">превью</span>
+      </p>
+
+      <div class="preview-controls__group">
+        <label for="ctrl-visibility">Видимость витрины</label>
+        <select id="ctrl-visibility">
+          <option value="PUBLIC_WITH_PRICES">PUBLIC_WITH_PRICES (по умолчанию)</option>
+          <option value="PUBLIC_PRICES_AUTH_ONLY">PUBLIC_PRICES_AUTH_ONLY (цены после входа)</option>
+          <option value="PRIVATE_AUTH_ONLY">PRIVATE_AUTH_ONLY (закрытая витрина)</option>
+        </select>
+      </div>
+
+      <div class="preview-controls__group">
+        <label for="ctrl-auth">Сессия посетителя</label>
+        <select id="ctrl-auth">
+          <option value="guest">Гость («Войти» → /login)</option>
+          <option value="user">Авторизован («В кабинет» → /app)</option>
+        </select>
+      </div>
+
+      <div class="preview-controls__group">
+        <label for="ctrl-registration">Режим регистрации</label>
+        <select id="ctrl-registration">
+          <option value="OPEN">OPEN (открыта)</option>
+          <option value="INVITE_ONLY">INVITE_ONLY (по приглашению)</option>
+        </select>
+      </div>
+
+      <div class="preview-controls__checks">
+        <label><input id="ctrl-trial" type="checkbox" checked> Триал вкл.</label>
+        <label><input id="ctrl-paused" type="checkbox"> Пауза продаж</label>
+        <label><input id="ctrl-maintenance" type="checkbox"> Техобслуживание</label>
+      </div>
+    </div>
+
+    <button id="preview-toggle-btn" class="preview-controls__toggle" type="button" aria-expanded="false">
+      <span>Режимы витрины (K3)</span>
+    </button>
+  </div>
+
+  <!-- Local file:// Route Preview Toast -->
+  <div id="route-toast" class="route-toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
