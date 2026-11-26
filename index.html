@@ -1341,7 +1341,7 @@
                   <button class="btn btn-secondary" onclick="goScreen('s5')">
                     Продлить / изменить опции
                   </button>
-                  <button class="btn btn-secondary" onclick="goScreen('s5')">
+                  <button class="btn btn-secondary" onclick="openUpsellModal()">
                     Докупить устройства / SEO
                   </button>
                   <button class="btn btn-ghost" onclick="goScreen('s6',{article:'activation'})">
@@ -1362,7 +1362,7 @@
                   <h1 class="page-title" id="s4Title">Устройства лицензии «Рабочая ферма #1»</h1>
                   <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="s4SubId">Public ID: LIC-A1B2C3D4E5F6</div>
                 </div>
-                <button class="btn btn-primary" onclick="goScreen('s5')">+ Докупить устройство</button>
+                <button class="btn btn-primary" onclick="openUpsellModal()">+ Докупить устройства / модули</button>
               </div>
 
               <!-- Slot & Limit KPIs -->
@@ -1420,11 +1420,11 @@
                     <h1 class="page-title mono">Счёт #INV-2026-000142</h1>
                     <span class="badge badge-warning" id="s5StatusBadge">● Подтверждение на проверке</span>
                   </div>
-                  <div style="font-size:13px;color:var(--text-secondary);margin-top:6px;">
+                  <div style="font-size:13px;color:var(--text-secondary);margin-top:6px;" id="s5Purpose">
                     Назначение: <strong>Покупка новой лицензии pgF (30 дн., 2 устр., SEO)</strong>
                   </div>
                 </div>
-                <div class="seg-control" title="Демо-переключатель состояния счёта">
+                <div class="seg-control" title="Демо-переключатель состояния счёта" id="s5StateSwitch">
                   <button class="seg-btn" onclick="setInvoiceState('AWAITING', this)">Ожидает</button>
                   <button class="seg-btn active" onclick="setInvoiceState('UNDER_REVIEW', this)">На проверке</button>
                   <button class="seg-btn" onclick="setInvoiceState('PAID', this)">Оплачен</button>
@@ -1444,35 +1444,8 @@
                 <!-- Состав заказа и зафиксированная цена -->
                 <div class="card card-pad">
                   <div style="font-weight:700;font-size:15px;margin-bottom:12px;">Зафиксированный состав заказа и расчёт</div>
-                  <table class="invoice-table">
-                    <tr>
-                      <td>Основной тариф pgF (30 дн., 1 базовое устр.)</td>
-                      <td style="text-align:right;" class="mono">8 000 ₽</td>
-                    </tr>
-                    <tr>
-                      <td>+ 1 дополнительное устройство</td>
-                      <td style="text-align:right;" class="mono">1 000 ₽</td>
-                    </tr>
-                    <tr>
-                      <td>+ Модуль SEO-аудитов (на всю лицензию)</td>
-                      <td style="text-align:right;" class="mono">2 000 ₽</td>
-                    </tr>
-                    <tr>
-                      <td style="color:var(--success);">Промоакция «START» (новая лицензия)</td>
-                      <td style="text-align:right;color:var(--success);" class="mono">−1 000 ₽</td>
-                    </tr>
-                    <tr>
-                      <td style="color:var(--success);">Персональная скидка клиента (10%)</td>
-                      <td style="text-align:right;color:var(--success);" class="mono">−1 000 ₽</td>
-                    </tr>
-                    <tr>
-                      <td style="color:var(--info);">Списание бонусного баланса (приоритет бонусов)</td>
-                      <td style="text-align:right;color:var(--info);" class="mono">−2 000 ₽</td>
-                    </tr>
-                    <tr class="invoice-total-row">
-                      <td>ИТОГО К ОПЛАТЕ (прямая оплата заказа)</td>
-                      <td style="text-align:right;" class="mono">7 000 ₽</td>
-                    </tr>
+                  <table class="invoice-table" id="s5InvoiceTable">
+                    <!-- Rendered by JS -->
                   </table>
                   <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);">
                     Средства прямой оплаты идут строго на этот заказ и не списываются на автопродление других лицензий.
@@ -1490,7 +1463,7 @@
                       <code class="mono" style="font-size:12px;word-break:break-all;">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>
                       <button class="btn btn-secondary btn-sm" onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','Адрес кошелька скопирован')">Копировать</button>
                     </div>
-                    <div style="font-size:12px;color:var(--text-muted);">
+                    <div style="font-size:12px;color:var(--text-muted);" id="s5TransferSum">
                       Сумма к переводу: <strong>7 000 ₽</strong> (эквивалент 72.50 USDT на момент выставления).
                     </div>
                   </div>
@@ -1632,6 +1605,62 @@
     </div>
   </div>
 
+  <!-- Upsell Modal (Buy Additional Devices & Modules) -->
+  <div class="modal-backdrop" id="upsellModalBackdrop">
+    <div class="modal-card" style="max-width:500px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
+        <h3 style="margin:0;font-size:18px;font-weight:800;">Докупка устройств и модулей</h3>
+        <span class="badge badge-info" id="upsellLicBadge">LIC-...</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;" id="upsellLicInfo">
+        Пропорциональный расчёт за остаток оплаченного периода.
+      </div>
+
+      <div class="card card-pad" style="background:var(--surface-muted);margin-bottom:14px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;">Сколько дополнительных устройств докупить?</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="btn btn-secondary btn-sm" onclick="changeUpsellDevices(-1)">−</button>
+            <strong class="mono" style="font-size:16px;min-width:90px;text-align:center;" id="upsellDevAddCount">+1 устр.</strong>
+            <button class="btn btn-secondary btn-sm" onclick="changeUpsellDevices(1)">+</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);" id="upsellDevNewLimit">Лимит: 2 → 3 устр.</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:8px;" id="upsellDevPriceHint">
+          1 000 ₽ за 1 устройство (за остаток 30 дн.)
+        </div>
+      </div>
+
+      <div class="card card-pad" style="background:var(--surface-muted);margin-bottom:16px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">Модули (подключаются на всю лицензию целиком)</div>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;margin-bottom:10px;" id="upsellSeoRow">
+          <input type="checkbox" id="upsellSeoCheck" onchange="recalcUpsell()" style="margin-top:3px;width:16px;height:16px;accent-color:var(--primary);" />
+          <div>
+            <strong>Модуль SEO-аудитов (HTTP + Rendered SEO)</strong>
+            <div style="font-size:12px;color:var(--text-muted);" id="upsellSeoNote">+2 000 ₽ за остаток периода</div>
+          </div>
+        </label>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;opacity:0.65;">
+          <input type="checkbox" disabled style="margin-top:3px;width:16px;height:16px;" />
+          <div>
+            <strong>Базовый модуль Desktop (проекты, профили, прокси)</strong>
+            <div style="font-size:12px;color:var(--text-muted);">Уже включён в основной тариф</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-bottom:14px;">
+        <span style="font-weight:600;font-size:14px;">Итого к доплате:</span>
+        <strong class="mono" style="font-size:20px;" id="upsellTotalPrice">1 000 ₽</strong>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="closeUpsellModal()">Отмена</button>
+        <button class="btn btn-primary" id="upsellSubmitBtn" onclick="submitUpsellToInvoice()">Выставить счёт →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -1646,6 +1675,20 @@
       licFilter: 'ALL',
       selectedLicenseId: 'lic-1',
       invoiceState: 'UNDER_REVIEW',
+      upsellAddDevices: 1,
+      upsellAddSeo: false,
+      invoiceData: {
+        purpose: 'Покупка новой лицензии pgF (30 дн., 2 устр., SEO)',
+        total: 7000,
+        rows: [
+          { label: 'Основной тариф pgF (30 дн., 1 базовое устр.)', amount: '8 000 ₽', color: '' },
+          { label: '+ 1 дополнительное устройство', amount: '1 000 ₽', color: '' },
+          { label: '+ Модуль SEO-аудитов (на всю лицензию)', amount: '2 000 ₽', color: '' },
+          { label: 'Промоакция «START» (новая лицензия)', amount: '−1 000 ₽', color: 'var(--success)' },
+          { label: 'Персональная скидка клиента (10%)', amount: '−1 000 ₽', color: 'var(--success)' },
+          { label: 'Списание бонусного баланса (приоритет бонусов)', amount: '−2 000 ₽', color: 'var(--info)' }
+        ]
+      },
       helpArticle: 'activation',
       licenses: [
         {
@@ -2186,6 +2229,33 @@
       const badge = document.getElementById('s5StatusBadge');
       const banner = document.getElementById('s5StateBanner');
       const proofCard = document.getElementById('s5ProofCard');
+      const inv = state.invoiceData;
+
+      document.getElementById('s5Purpose').innerHTML = `Назначение: <strong>${inv.purpose}</strong>`;
+      document.getElementById('s5InvoiceTable').innerHTML =
+        inv.rows.map(r => `
+          <tr>
+            <td style="${r.color ? 'color:' + r.color + ';' : ''}">${r.label}</td>
+            <td style="text-align:right;${r.color ? 'color:' + r.color + ';' : ''}" class="mono">${r.amount}</td>
+          </tr>
+        `).join('') + `
+          <tr class="invoice-total-row">
+            <td>ИТОГО К ОПЛАТЕ (прямая оплата заказа)</td>
+            <td style="text-align:right;" class="mono">${inv.total.toLocaleString('ru-RU')} ₽</td>
+          </tr>`;
+
+      const usdt = (inv.total / 96.55).toFixed(2);
+      document.getElementById('s5TransferSum').innerHTML =
+        `Сумма к переводу: <strong>${inv.total.toLocaleString('ru-RU')} ₽</strong> (эквивалент ${usdt} USDT на момент выставления).`;
+
+      document.querySelectorAll('#s5StateSwitch .seg-btn').forEach(b => {
+        const txt = b.textContent.trim();
+        b.classList.toggle('active',
+          (state.invoiceState === 'AWAITING' && txt === 'Ожидает') ||
+          (state.invoiceState === 'UNDER_REVIEW' && txt === 'На проверке') ||
+          (state.invoiceState === 'PAID' && txt === 'Оплачен')
+        );
+      });
 
       if (state.invoiceState === 'UNDER_REVIEW') {
         badge.className = 'badge badge-warning';
@@ -2216,7 +2286,7 @@
           <span style="font-size:16px;">🕒</span>
           <div>
             <strong>Срок оплаты: до 27.11.2026 10:30 (осталось 22 ч 15 мин)</strong><br />
-            Цена <strong>7 000 ₽</strong> и состав заказа зафиксированы на 24 часа с момента выставления счёта.
+            Цена <strong>${inv.total.toLocaleString('ru-RU')} ₽</strong> и состав заказа зафиксированы на 24 часа с момента выставления счёта.
           </div>`;
         proofCard.innerHTML = `
           <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Шаг 2. Отправьте подтверждение перевода</div>
@@ -2233,13 +2303,110 @@
           <span style="font-size:16px;">✅</span>
           <div>
             <strong>Счёт подтверждён администратором 26.11.2026 в 01:05.</strong><br />
-            Лицензия создана и активирована в разделе «Мои лицензии».
+            Условия заказа применены к лицензии в разделе «Мои лицензии».
           </div>`;
         proofCard.innerHTML = `
           <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Результат проверки</div>
           <p style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Платёж по транзакции <code class="mono">0x8f4c7a12...92b1e4</code> подтверждён.</p>
           <button class="btn btn-primary" onclick="goScreen('s2')">Перейти к «Моим лицензиям» →</button>`;
       }
+    }
+
+    function openUpsellModal() {
+      const l = getSelectedLicense();
+      state.upsellAddDevices = 1;
+      const hasSeo = l.rights.includes('SEO');
+      state.upsellAddSeo = false;
+
+      document.getElementById('upsellLicBadge').textContent = l.publicId;
+      const days = Math.max(1, l.daysLeft > 0 ? l.daysLeft : 30);
+      document.getElementById('upsellLicInfo').textContent =
+        `Лицензия «${l.name}» · Остаток периода: ${days} дн. (пропорциональный расчёт).`;
+
+      const seoCheck = document.getElementById('upsellSeoCheck');
+      const seoNote = document.getElementById('upsellSeoNote');
+      if (hasSeo) {
+        seoCheck.checked = true;
+        seoCheck.disabled = true;
+        seoNote.textContent = '✓ Уже включён в эту лицензию';
+      } else {
+        seoCheck.checked = false;
+        seoCheck.disabled = false;
+        const seoPrice = Math.round(2000 * (days / 30));
+        seoNote.textContent = `+${seoPrice.toLocaleString('ru-RU')} ₽ за остаток ${days} дн. (на всю лицензию)`;
+      }
+
+      recalcUpsell();
+      document.getElementById('upsellModalBackdrop').classList.add('open');
+    }
+
+    function closeUpsellModal() {
+      document.getElementById('upsellModalBackdrop').classList.remove('open');
+    }
+
+    function changeUpsellDevices(delta) {
+      state.upsellAddDevices = Math.max(0, Math.min(10, state.upsellAddDevices + delta));
+      recalcUpsell();
+    }
+
+    function recalcUpsell() {
+      const l = getSelectedLicense();
+      const days = Math.max(1, l.daysLeft > 0 ? l.daysLeft : 30);
+      const hasSeo = l.rights.includes('SEO');
+      const addSeo = !hasSeo && document.getElementById('upsellSeoCheck').checked;
+      state.upsellAddSeo = addSeo;
+
+      const perDev = Math.round(1000 * (days / 30));
+      const devTotal = state.upsellAddDevices * perDev;
+      const seoTotal = addSeo ? Math.round(2000 * (days / 30)) : 0;
+      const total = devTotal + seoTotal;
+
+      document.getElementById('upsellDevAddCount').textContent = `+${state.upsellAddDevices} устр.`;
+      document.getElementById('upsellDevNewLimit').textContent =
+        `Лимит: ${l.deviceLimit} → ${l.deviceLimit + state.upsellAddDevices} устр.`;
+      document.getElementById('upsellDevPriceHint').textContent =
+        `${perDev.toLocaleString('ru-RU')} ₽ за 1 устройство (за остаток ${days} дн.)`;
+      document.getElementById('upsellTotalPrice').textContent = `${total.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('upsellSubmitBtn').disabled = total === 0;
+    }
+
+    function submitUpsellToInvoice() {
+      const l = getSelectedLicense();
+      const days = Math.max(1, l.daysLeft > 0 ? l.daysLeft : 30);
+      const perDev = Math.round(1000 * (days / 30));
+      const devTotal = state.upsellAddDevices * perDev;
+      const seoTotal = state.upsellAddSeo ? Math.round(2000 * (days / 30)) : 0;
+      const total = devTotal + seoTotal;
+
+      const rows = [];
+      if (state.upsellAddDevices > 0) {
+        rows.push({
+          label: `+ ${state.upsellAddDevices} доп. устройств(а) для ${l.publicId} (${days} дн.)`,
+          amount: `${devTotal.toLocaleString('ru-RU')} ₽`,
+          color: ''
+        });
+      }
+      if (state.upsellAddSeo) {
+        rows.push({
+          label: `+ Модуль SEO-аудитов (на всю лицензию ${l.publicId}, ${days} дн.)`,
+          amount: `${seoTotal.toLocaleString('ru-RU')} ₽`,
+          color: ''
+        });
+      }
+
+      const parts = [];
+      if (state.upsellAddDevices > 0) parts.push(`+${state.upsellAddDevices} устр.`);
+      if (state.upsellAddSeo) parts.push('+SEO');
+
+      state.invoiceData = {
+        purpose: `Докупка опций для «${l.name}» (${parts.join(', ')})`,
+        total,
+        rows
+      };
+      state.invoiceState = 'AWAITING';
+      closeUpsellModal();
+      goScreen('s5');
+      showToast('Счёт на доплату сформирован');
     }
 
     function submitProofDemo() {
