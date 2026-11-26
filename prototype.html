@@ -1349,19 +1349,7 @@
                   <button class="seg-btn" onclick="filterLicenses('TRIAL', this)">Триал</button>
                   <button class="seg-btn" onclick="filterLicenses('EXPIRED', this)">Истекшие</button>
                 </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                  <select class="input" id="licRightFilter" onchange="renderLicensesList()">
-                    <option value="ALL">Права: Все</option>
-                    <option value="SEO">С модулем SEO</option>
-                    <option value="DESKTOP_ONLY">Только Desktop</option>
-                  </select>
-                  <select class="input" id="licAutoFilter" onchange="renderLicensesList()">
-                    <option value="ALL">Автопродление: Все</option>
-                    <option value="ON">Включено</option>
-                    <option value="OFF">Выключено</option>
-                  </select>
-                  <input type="text" class="input" id="licSearchInput" placeholder="Поиск по названию или LIC-..." oninput="renderLicensesList()" style="min-width:210px;" />
-                </div>
+                <input type="text" class="input" id="licSearchInput" placeholder="Поиск по названию или LIC-..." oninput="renderLicensesList()" style="min-width:240px;" />
               </div>
 
               <div id="licensesListContainer">
