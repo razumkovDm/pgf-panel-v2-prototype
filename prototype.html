@@ -382,6 +382,8 @@
       gap: 10px;
     }
     .mobile-mode .pub-nav { display: none; }
+    .mobile-mode .hide-sm { display: none; }
+    .mobile-mode .app-frame { transform: translateZ(0); overflow: hidden; }
     .burger-btn {
       display: none;
       align-items: center;
@@ -397,20 +399,68 @@
       flex-shrink: 0;
     }
     .mobile-mode .burger-btn { display: inline-flex; }
-    .mobile-drawer {
-      display: none;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
-      flex-direction: column;
-      gap: 4px;
-      box-shadow: var(--shadow);
+
+    /* Slide-out Side Drawer for Mobile */
+    .side-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 1500;
     }
-    .mobile-drawer.open { display: flex; }
-    .mobile-drawer .nav-item {
+    .side-drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 82vw;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 1501;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px;
+      overflow-y: auto;
+    }
+    .side-drawer.open {
+      transform: translateX(0);
+    }
+    .side-drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .side-drawer-close {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .side-drawer .nav-item {
       padding: 10px 12px;
       font-size: 14px;
     }
+
     @media (max-width: 768px) {
       .pub-nav { display: none; }
       .burger-btn { display: inline-flex; }
@@ -420,8 +470,6 @@
       .hide-sm { display: none; }
       .cab-layout { grid-template-columns: 1fr; }
       .cab-main { padding: 16px; }
-      .mobile-subnav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
-      .mobile-subnav .chip { white-space: nowrap; flex-shrink: 0; }
       .hero-grid { grid-template-columns: 1fr; gap: 24px; }
       .cards-3 { grid-template-columns: 1fr; }
       .pricing-box { grid-template-columns: 1fr; }
@@ -1042,15 +1090,31 @@
   <div class="stage desktop-mode" id="stage">
     <div class="app-frame" id="appFrame">
 
+      <!-- Slide-out Mobile Side Drawer -->
+      <div class="side-drawer-backdrop" id="sideDrawerBackdrop" onclick="closeMobileMenus()"></div>
+      <aside class="side-drawer" id="sideDrawer" aria-label="Мобильное меню">
+        <div class="side-drawer-head">
+          <div class="logo-mark" onclick="closeMobileMenus();goScreen('s1')">
+            <span class="logo-icon">pgF</span>
+            <span id="sideDrawerTitle">pgF Меню</span>
+          </div>
+          <button class="side-drawer-close" aria-label="Закрыть меню" onclick="closeMobileMenus()">✕</button>
+        </div>
+        <div id="sideDrawerBody" style="display:flex;flex-direction:column;gap:4px;"></div>
+      </aside>
+
       <!-- =====================================================================
            ЭКРАН 1: ПУБЛИЧНАЯ ГЛАВНАЯ ДО ВХОДА (/)
            ===================================================================== -->
       <section class="screen active" id="s1">
         <header class="pub-header">
           <div class="container pub-header-inner">
-            <div class="logo-mark" onclick="goScreen('s1')">
-              <span class="logo-icon">pgF</span>
-              <span>pgF Platform</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button class="burger-btn" aria-label="Меню" onclick="toggleMobileMenu('public')">☰</button>
+              <div class="logo-mark" onclick="goScreen('s1')">
+                <span class="logo-icon">pgF</span>
+                <span>pgF Platform</span>
+              </div>
             </div>
             <nav class="pub-nav">
               <button onclick="scrollToEl('s1-audience')">Возможности</button>
@@ -1061,16 +1125,7 @@
             <div class="pub-actions">
               <button class="btn btn-secondary btn-sm" onclick="goScreen('s2')">Войти</button>
               <button class="btn btn-primary btn-sm" onclick="scrollToEl('s1-pricing')">Тариф →</button>
-              <button class="burger-btn" aria-label="Меню" onclick="toggleMobileMenu('s1PubMenu')">☰</button>
             </div>
-          </div>
-          <div class="mobile-drawer" id="s1PubMenu">
-            <button class="nav-item" onclick="closeMobileMenus();scrollToEl('s1-audience')">✨ Возможности pgF</button>
-            <button class="nav-item" onclick="closeMobileMenus();scrollToEl('s1-pricing')">💳 Тариф и калькулятор</button>
-            <button class="nav-item" onclick="closeMobileMenus();goScreen('s6', {tab:'docs'})">📘 Документация (/docs)</button>
-            <button class="nav-item" onclick="closeMobileMenus();goScreen('s6', {tab:'wiki'})">🩺 Wiki и ошибки (/wiki)</button>
-            <div class="nav-divider"></div>
-            <button class="nav-item" style="color:var(--primary);font-weight:700;" onclick="closeMobileMenus();goScreen('s2')">🔑 Войти в кабинет</button>
           </div>
         </header>
 
@@ -1230,7 +1285,7 @@
       <div id="cabinetShell" style="display:none;">
         <header class="cab-topbar">
           <div style="display:flex;align-items:center;gap:10px;">
-            <button class="burger-btn" aria-label="Меню кабинета" onclick="toggleMobileMenu('cabMobileMenu')">☰</button>
+            <button class="burger-btn" aria-label="Меню кабинета" onclick="toggleMobileMenu('cabinet')">☰</button>
             <div class="logo-mark" onclick="goScreen('s1')">
               <span class="logo-icon">pgF</span>
               <span>Кабинет</span>
@@ -1250,32 +1305,6 @@
             <button class="btn btn-secondary btn-sm" onclick="goScreen('s1')">Выйти</button>
           </div>
         </header>
-
-        <div class="mobile-drawer" id="cabMobileMenu">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 12px 8px;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border);margin-bottom:4px;">
-            <span>alex.k@example.com</span>
-            <span>Баланс: <strong style="color:var(--text);">6 000 ₽</strong></span>
-          </div>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s2')">🏠 Главная кабинета</button>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s2')">🔑 Мои лицензии</button>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s5')">💳 Баланс и счета</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Реферальная программа: 10% бонусами')">🎁 Рефералы</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Раздел тикетов поддержки (/app/support)')">💬 Поддержка</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Актуальная версия pgF 0.1.0 для Windows x64')">⬇️ Скачать pgF</button>
-          <button class="nav-item" onclick="closeMobileMenus();showToast('Настройки аккаунта и 2FA в Telegram')">⚙️ Настройки</button>
-          <div class="nav-divider"></div>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'docs'})">📘 Документация</button>
-          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки</button>
-        </div>
-
-        <!-- Mobile subnav -->
-        <div class="mobile-subnav">
-          <button class="chip" id="mnav-s2" onclick="goScreen('s2')">Мои лицензии</button>
-          <button class="chip" id="mnav-s3" onclick="goScreen('s3')">Карточка</button>
-          <button class="chip" id="mnav-s4" onclick="goScreen('s4')">Устройства</button>
-          <button class="chip" id="mnav-s5" onclick="goScreen('s5')">Счёт (6 000 ₽)</button>
-          <button class="chip" onclick="goScreen('s6')">Docs / Wiki</button>
-        </div>
 
         <div class="cab-layout">
           <aside class="cab-sidebar">
@@ -1558,9 +1587,12 @@
       <section class="screen" id="s6">
         <header class="pub-header">
           <div class="container pub-header-inner">
-            <div class="logo-mark" onclick="goScreen('s1')">
-              <span class="logo-icon">pgF</span>
-              <span>pgF Помощь</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button class="burger-btn" aria-label="Меню" onclick="toggleMobileMenu('help')">☰</button>
+              <div class="logo-mark" onclick="goScreen('s1')">
+                <span class="logo-icon">pgF</span>
+                <span>pgF Помощь</span>
+              </div>
             </div>
             <nav class="pub-nav">
               <button onclick="goScreen('s1')">Главная</button>
@@ -1570,14 +1602,7 @@
             </nav>
             <div class="pub-actions">
               <button class="btn btn-primary btn-sm" onclick="goScreen('s2')">В кабинет</button>
-              <button class="burger-btn" aria-label="Меню" onclick="toggleMobileMenu('s6PubMenu')">☰</button>
             </div>
-          </div>
-          <div class="mobile-drawer" id="s6PubMenu">
-            <button class="nav-item" onclick="closeMobileMenus();goScreen('s1')">🏠 Главная</button>
-            <button class="nav-item" onclick="closeMobileMenus();goScreen('s1', {scroll:'s1-pricing'})">💳 Тариф</button>
-            <button class="nav-item" onclick="closeMobileMenus();selectHelpArticle('activation')">📘 Документация</button>
-            <button class="nav-item" onclick="closeMobileMenus();selectHelpArticle('node-limit')">🩺 Wiki и ошибки</button>
           </div>
         </header>
 
@@ -1867,14 +1892,67 @@
 
     // ================= NAVIGATION & VIEWPORT =================
     function closeMobileMenus() {
-      document.querySelectorAll('.mobile-drawer').forEach(d => d.classList.remove('open'));
+      document.getElementById('sideDrawer').classList.remove('open');
+      document.getElementById('sideDrawerBackdrop').classList.remove('open');
     }
 
-    function toggleMobileMenu(id) {
-      const el = document.getElementById(id);
-      const isOpen = el.classList.contains('open');
-      closeMobileMenus();
-      if (!isOpen) el.classList.add('open');
+    function toggleMobileMenu(mode) {
+      const drawer = document.getElementById('sideDrawer');
+      const backdrop = document.getElementById('sideDrawerBackdrop');
+      if (drawer.classList.contains('open')) {
+        closeMobileMenus();
+        return;
+      }
+
+      const title = document.getElementById('sideDrawerTitle');
+      const body = document.getElementById('sideDrawerBody');
+
+      if (mode === 'cabinet') {
+        title.textContent = 'pgF Кабинет';
+        const isLic = ['s2', 's3', 's4'].includes(state.currentScreen);
+        const isBill = state.currentScreen === 's5';
+        body.innerHTML = `
+          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;">
+            <div style="font-weight:700;color:var(--text);">alex.k@example.com</div>
+            <div style="color:var(--text-secondary);margin-top:2px;">Баланс: <strong>6 000 ₽</strong> (Осн: 4 000 · Бон: 2 000)</div>
+          </div>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s2')">🏠 Главная кабинета</button>
+          <button class="nav-item ${isLic ? 'active' : ''}" onclick="closeMobileMenus();goScreen('s2')">🔑 Мои лицензии</button>
+          <button class="nav-item ${isBill ? 'active' : ''}" onclick="closeMobileMenus();goScreen('s5')">💳 Баланс и счета</button>
+          <button class="nav-item" onclick="closeMobileMenus();showToast('Реферальная программа: 10% бонусами')">🎁 Рефералы</button>
+          <button class="nav-item" onclick="closeMobileMenus();showToast('Раздел тикетов поддержки (/app/support)')">💬 Поддержка</button>
+          <button class="nav-item" onclick="closeMobileMenus();showToast('Актуальная версия pgF 0.1.0 для Windows x64')">⬇️ Скачать pgF</button>
+          <button class="nav-item" onclick="closeMobileMenus();showToast('Настройки аккаунта и 2FA в Telegram')">⚙️ Настройки</button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'docs'})">📘 Документация</button>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки</button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" style="color:var(--danger);" onclick="closeMobileMenus();goScreen('s1')">🚪 Выйти</button>
+        `;
+      } else if (mode === 'help') {
+        title.textContent = 'pgF Помощь';
+        body.innerHTML = `
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s1')">🏠 Главная</button>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s1',{scroll:'s1-pricing'})">💳 Тариф и калькулятор</button>
+          <button class="nav-item active" onclick="closeMobileMenus();selectHelpArticle('activation')">📘 Документация (/docs)</button>
+          <button class="nav-item" onclick="closeMobileMenus();selectHelpArticle('node-limit')">🩺 Wiki и ошибки (/wiki)</button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" style="color:var(--primary);font-weight:700;" onclick="closeMobileMenus();goScreen('s2')">🔑 В кабинет</button>
+        `;
+      } else {
+        title.textContent = 'pgF Platform';
+        body.innerHTML = `
+          <button class="nav-item" onclick="closeMobileMenus();scrollToEl('s1-audience')">✨ Возможности pgF</button>
+          <button class="nav-item" onclick="closeMobileMenus();scrollToEl('s1-pricing')">💳 Тариф и стоимость</button>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'docs'})">📘 Документация (/docs)</button>
+          <button class="nav-item" onclick="closeMobileMenus();goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки (/wiki)</button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" style="color:var(--primary);font-weight:700;" onclick="closeMobileMenus();goScreen('s2')">🔑 Войти в кабинет</button>
+        `;
+      }
+
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
     }
 
     function goScreen(screenId, opts = {}) {
