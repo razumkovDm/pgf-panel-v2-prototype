@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pgF PANEL-V2 — Интерактивный прототип (§3.6 ТЗ #590)</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-muted: #f8fafc;
+      --surface-dark: #0f172a;
+      --surface-dark-2: #1e293b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --primary-border: #bfdbfe;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #b45309;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      --info: #0284c7;
+      --info-bg: #f0f9ff;
+      --info-border: #bae6fd;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.14);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, "Cascadia Code", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+      background: #e2e8f0;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Prototype Control Bar */
+    .proto-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #0b1120;
+      color: #f8fafc;
+      border-bottom: 1px solid #1e293b;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .proto-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+    .proto-pill {
+      background: #1e293b;
+      color: #60a5fa;
+      border: 1px solid #334155;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+    .proto-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .proto-tab {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid transparent;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .proto-tab:hover {
+      color: #f8fafc;
+      background: #1e293b;
+    }
+    .proto-tab.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+    .proto-viewport-toggle {
+      display: flex;
+      align-items: center;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .vp-btn {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .vp-btn.active {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    /* Viewport Frame */
+    .stage {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      min-height: calc(100vh - 50px);
+    }
+    .stage.desktop-mode {
+      padding: 0;
+    }
+    .app-frame {
+      width: 100%;
+      background: var(--bg);
+      min-height: calc(100vh - 50px);
+      transition: max-width 0.25s ease, border-radius 0.25s ease;
+    }
+    .stage.mobile-mode .app-frame {
+      max-width: 390px;
+      border-radius: 28px;
+      border: 8px solid #0f172a;
+      box-shadow: var(--shadow-lg);
+      overflow-x: hidden;
+      min-height: 780px;
+      margin: 8px auto 24px;
+    }
+
+    /* Common UI Components */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .mobile-mode .container {
+      padding: 0 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--surface-muted); border-color: #94a3b8; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover:not(:disabled) { background: #e2e8f0; color: var(--text); }
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: var(--danger);
+    }
+    .btn-danger-solid {
+      background: var(--danger);
+      color: #ffffff;
+    }
+    .btn-danger-solid:hover:not(:disabled) { background: var(--danger-hover); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-lg { padding: 12px 22px; font-size: 14px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .badge-active {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success-border);
+    }
+    .badge-warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: var(--warning-border);
+    }
+    .badge-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .badge-info {
+      background: var(--info-bg);
+      color: var(--info);
+      border-color: var(--info-border);
+    }
+    .badge-neutral {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      border-color: var(--border);
+    }
+
+    .autorenew-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .autorenew-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+    }
+    .autorenew-off {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .card-pad { padding: 20px; }
+    .mobile-mode .card-pad { padding: 16px; }
+
+    .mono { font-family: var(--mono); }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Screen visibility */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ================= SCREEN 1: PUBLIC LANDING ================= */
+    .pub-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .pub-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      gap: 16px;
+    }
+    .pub-nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .pub-nav a, .pub-nav button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .pub-nav a:hover, .pub-nav button:hover { color: var(--text); text-decoration: none; }
+    .pub-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mobile-mode .pub-nav { display: none; }
+
+    .hero-section {
+      background: radial-gradient(circle at 80% 10%, #1e3a8a 0%, #0f172a 55%, #090d16 100%);
+      color: #f8fafc;
+      padding: 56px 0 48px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .mobile-mode .hero-section { padding: 32px 0 28px; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .mobile-mode .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.16);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: #93c5fd;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-size: 40px;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin: 0 0 16px;
+      color: #ffffff;
+    }
+    .mobile-mode .hero-title { font-size: 26px; }
+    .hero-sub {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      margin: 0 0 24px;
+    }
+    .mobile-mode .hero-sub { font-size: 14px; }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mobile-mode .hero-ctas .btn { width: 100%; }
+    .hero-specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: var(--mono);
+    }
+
+    /* Desktop App Preview Widget on Hero */
+    .desktop-preview {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+    }
+    .preview-titlebar {
+      background: #1e293b;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+    }
+    .preview-dots { display: flex; gap: 6px; }
+    .preview-dots span { width: 10px; height: 10px; border-radius: 50%; background: #475569; }
+    .preview-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      background: #111827;
+      border-bottom: 1px solid #1e293b;
+      overflow-x: auto;
+    }
+    .preview-tab {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .preview-tab.active {
+      background: #1e293b;
+      color: #60a5fa;
+    }
+    .preview-body {
+      padding: 16px;
+      color: #e2e8f0;
+      font-size: 12px;
+      min-height: 220px;
+    }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    .preview-table th {
+      text-align: left;
+      color: #94a3b8;
+      font-weight: 600;
+      padding: 6px 8px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 11px;
+    }
+    .preview-table td {
+      padding: 8px;
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
+    }
+
+    .section { padding: 48px 0; }
+    .mobile-mode .section { padding: 32px 0; }
+    .section-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .mobile-mode .section-title { font-size: 21px; }
+    .section-sub {
+      color: var(--text-secondary);
+      margin: 0 0 28px;
+      font-size: 15px;
+    }
+
+    .cards-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .mobile-mode .cards-3 { grid-template-columns: 1fr; gap: 14px; }
+
+    .pricing-box {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .mobile-mode .pricing-box { grid-template-columns: 1fr; }
+
+    .opt-group { margin-bottom: 18px; }
+    .opt-label { font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block; color: var(--text); }
+    .seg-control {
+      display: inline-flex;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pub-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .pub-footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* ================= CABINET SHELL (SCREENS 2-5) ================= */
+    .cab-topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      gap: 16px;
+    }
+    .mobile-mode .cab-topbar {
+      padding: 0 14px;
+      height: 56px;
+    }
+    .cab-search {
+      flex: 1;
+      max-width: 340px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .cab-search:hover { border-color: var(--border-strong); }
+    .mobile-mode .cab-search { display: none; }
+
+    .cab-user-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .balance-chip {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mobile-mode .balance-chip { display: none; }
+
+    .cab-layout {
+      display: grid;
+      grid-template-columns: 236px 1fr;
+      min-height: calc(100vh - 110px);
+    }
+    .mobile-mode .cab-layout {
+      grid-template-columns: 1fr;
+    }
+    .cab-sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mobile-mode .cab-sidebar {
+      display: none;
+    }
+    .mobile-subnav {
+      display: none;
+    }
+    .mobile-mode .mobile-subnav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-mode .mobile-subnav .chip {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+    }
+    .nav-item:hover { background: var(--surface-muted); color: var(--text); }
+    .nav-item.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 4px;
+    }
+
+    .cab-main {
+      padding: 28px 32px;
+      max-width: 1040px;
+    }
+    .mobile-mode .cab-main {
+      padding: 16px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .mobile-mode .page-title { font-size: 20px; }
+
+    /* License List Cards */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .input {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+
+    .lic-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s;
+    }
+    .lic-card:hover { border-color: var(--border-strong); }
+    .lic-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .lic-meta-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .lic-key-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+    .lic-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .mobile-mode .lic-actions-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .mobile-mode .lic-actions-row .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .mobile-mode .lic-actions-row .btn-group .btn { flex: 1; }
+
+    /* Screen 3 & 4 & 5 Specifics */
+    .breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      margin-bottom: 14px;
+    }
+    .breadcrumb:hover { color: var(--primary); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .mobile-mode .grid-2 { grid-template-columns: 1fr; }
+
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      border: 1px solid;
+      margin-bottom: 16px;
+    }
+    .callout-info { background: var(--info-bg); border-color: var(--info-border); color: #0c4a6e; }
+    .callout-warning { background: var(--warning-bg); border-color: var(--warning-border); color: #78350f; }
+    .callout-success { background: var(--success-bg); border-color: var(--success-border); color: #064e3b; }
+
+    .device-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .invoice-table tr:last-child td { border-bottom: none; }
+    .invoice-total-row td {
+      padding-top: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    /* Screen 6 Docs & Wiki */
+    .help-hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 0;
+    }
+    .help-search-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .help-search-input {
+      width: 100%;
+      padding: 14px 80px 14px 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      font-size: 15px;
+      background: var(--surface-muted);
+      outline: none;
+    }
+    .help-search-input:focus {
+      background: var(--surface);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .chip:hover, .chip.active {
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+      color: var(--primary);
+    }
+    .doc-link-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .doc-link-item:hover { background: var(--surface-muted); border-color: var(--border); }
+    .doc-link-item.active {
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Modal & Toast */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 2000;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      max-width: 460px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Prototype Navigation & Viewport Switcher -->
+  <div class="proto-bar" id="protoBar">
+    <div class="proto-brand">
+      <span class="proto-pill">PANEL-V2 · §3.6 ТЗ #590</span>
+      <span>Кликабельный прототип</span>
+    </div>
+    <div class="proto-tabs" id="protoTabs">
+      <button class="proto-tab active" data-screen="s1" onclick="goScreen('s1')">1. Главная (/)</button>
+      <button class="proto-tab" data-screen="s2" onclick="goScreen('s2')">2. Мои лицензии</button>
+      <button class="proto-tab" data-screen="s3" onclick="goScreen('s3')">3. Карточка лицензии</button>
+      <button class="proto-tab" data-screen="s4" onclick="goScreen('s4')">4. Устройства</button>
+      <button class="proto-tab" data-screen="s5" onclick="goScreen('s5')">5. Ручной счёт</button>
+      <button class="proto-tab" data-screen="s6" onclick="goScreen('s6')">6. Docs &amp; Wiki</button>
+    </div>
+    <div class="proto-viewport-toggle">
+      <button class="vp-btn active" id="vpDesktop" onclick="setViewport('desktop')">Desktop</button>
+      <button class="vp-btn" id="vpMobile" onclick="setViewport('mobile')">Телефон (390px)</button>
+    </div>
+  </div>
+
+  <div class="stage desktop-mode" id="stage">
+    <div class="app-frame" id="appFrame">
+
+      <!-- =====================================================================
+           ЭКРАН 1: ПУБЛИЧНАЯ ГЛАВНАЯ ДО ВХОДА (/)
+           ===================================================================== -->
+      <section class="screen active" id="s1">
+        <header class="pub-header">
+          <div class="container pub-header-inner">
+            <div class="logo-mark" onclick="goScreen('s1')">
+              <span class="logo-icon">pgF</span>
+              <span>pgF Platform</span>
+            </div>
+            <nav class="pub-nav">
+              <button onclick="scrollToEl('s1-audience')">Возможности</button>
+              <button onclick="scrollToEl('s1-pricing')">Тариф</button>
+              <button onclick="goScreen('s6', {tab:'docs'})">Документация</button>
+              <button onclick="goScreen('s6', {tab:'wiki'})">Wiki</button>
+            </nav>
+            <div class="pub-actions">
+              <button class="btn btn-secondary btn-sm" onclick="goScreen('s2')">Войти</button>
+              <button class="btn btn-primary btn-sm" onclick="scrollToEl('s1-pricing')">Тариф →</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="hero-section">
+          <div class="container hero-grid">
+            <div>
+              <div class="hero-eyebrow">
+                <span>●</span> Десктопная платформа для Windows 10/11 x64
+              </div>
+              <h1 class="hero-title">Управляйте проектами, профилями, прокси и SEO-аудитами pgF</h1>
+              <p class="hero-sub">
+                Автоматизация схем прогрева, очереди заданий Google и Яндекс, HTTP и rendered SEO-аудиты.
+                Ваши проекты и база хранятся локально в PostgreSQL 17 под защитой DPAPI.
+              </p>
+              <div class="hero-ctas">
+                <button class="btn btn-primary btn-lg" onclick="scrollToEl('s1-pricing')">Выбрать тариф и конфигурацию</button>
+                <button class="btn btn-secondary btn-lg" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.22);" onclick="goScreen('s2')">Пробный период 14 дней</button>
+                <button class="btn btn-ghost btn-lg" style="color:#cbd5e1;" onclick="goScreen('s6')">Документация</button>
+              </div>
+              <div class="hero-specs">
+                <span>Windows 10/11 x64</span>
+                <span>·</span>
+                <span>PostgreSQL 17</span>
+                <span>·</span>
+                <span>Автономный допуск до 24 ч</span>
+                <span>·</span>
+                <span>Без облака БД</span>
+              </div>
+            </div>
+
+            <!-- Interactive Desktop Showcase (Synthetic Data) -->
+            <div class="desktop-preview">
+              <div class="preview-titlebar">
+                <div class="preview-dots"><span></span><span></span><span></span></div>
+                <span class="mono" style="font-size:11px;color:#94a3b8;">pgF Desktop v0.1.0 · Design V2 (демо)</span>
+              </div>
+              <div class="preview-tabs">
+                <button class="preview-tab active" onclick="switchPreviewTab(this, 'tab-projects')">Проекты и очереди</button>
+                <button class="preview-tab" onclick="switchPreviewTab(this, 'tab-proxies')">Профили и прокси</button>
+                <button class="preview-tab" onclick="switchPreviewTab(this, 'tab-seo')">SEO-аудит</button>
+                <button class="preview-tab" onclick="switchPreviewTab(this, 'tab-lic')">Лицензия</button>
+              </div>
+              <div class="preview-body" id="previewBody">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Для кого pgF -->
+        <section class="section" id="s1-audience">
+          <div class="container">
+            <h2 class="section-title">Кому подходит pgF</h2>
+            <p class="section-sub">Единый инструмент для тех, кому важны локальный контроль данных, стабильные очереди и предсказуемое лицензирование.</p>
+            <div class="cards-3">
+              <div class="card card-pad">
+                <div class="badge badge-info" style="margin-bottom:10px;">SEO-специалисты</div>
+                <h3 style="margin:0 0 8px;font-size:16px;">HTTP и Rendered SEO-аудиты</h3>
+                <p style="margin:0;color:var(--text-secondary);font-size:13px;">
+                  Проверка мета-тегов, индексации, редиректов и DOM после рендера JS. Модуль SEO подключается на всю лицензию целиком.
+                </p>
+              </div>
+              <div class="card card-pad">
+                <div class="badge badge-active" style="margin-bottom:10px;">Прогрев и автоматизация</div>
+                <h3 style="margin:0 0 8px;font-size:16px;">Профили, прокси и схемы</h3>
+                <p style="margin:0;color:var(--text-secondary);font-size:13px;">
+                  Гибкие очереди заданий для Google и Яндекс, управление браузерными профилями и пулами прокси без передачи секретов в облако.
+                </p>
+              </div>
+              <div class="card card-pad">
+                <div class="badge badge-neutral" style="margin-bottom:10px;">Команды и агентства</div>
+                <h3 style="margin:0 0 8px;font-size:16px;">Несколько лицензий в одном кабинете</h3>
+                <p style="margin:0;color:var(--text-secondary);font-size:13px;">
+                  Разделяйте рабочие фермы, офисные ПК и тестовые машины по отдельным лицензиям с гибким числом устройств и автопродлением.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Тариф и калькулятор -->
+        <section class="section" id="s1-pricing" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <div class="container">
+            <h2 class="section-title">Прозрачный тариф и расчёт стоимости</h2>
+            <p class="section-sub">Один основной гибкий тариф из админки: выберите срок, нужное число устройств и опциональный модуль SEO.</p>
+
+            <div class="pricing-box">
+              <div class="card card-pad" style="background:var(--surface-muted);">
+                <div class="opt-group">
+                  <span class="opt-label">Срок действия лицензии</span>
+                  <div class="seg-control" id="pubPeriodControl">
+                    <button class="seg-btn active" onclick="setPubPeriod(30, this)">30 дней</button>
+                    <button class="seg-btn" onclick="setPubPeriod(90, this)">90 дней (-10%)</button>
+                    <button class="seg-btn" onclick="setPubPeriod(180, this)">180 дней (-15%)</button>
+                  </div>
+                </div>
+
+                <div class="opt-group">
+                  <span class="opt-label">Устройства (1 базовое включено, доп. +1 000 ₽ / 30 дн.)</span>
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="btn btn-secondary btn-sm" onclick="changePubDevices(-1)">−</button>
+                    <strong class="mono" style="font-size:16px;" id="pubDevCount">2 устройства</strong>
+                    <button class="btn btn-secondary btn-sm" onclick="changePubDevices(1)">+</button>
+                  </div>
+                </div>
+
+                <div class="opt-group" style="margin-bottom:0;">
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:13px;">
+                    <input type="checkbox" id="pubSeoCheck" checked onchange="recalcPubPrice()" style="width:16px;height:16px;accent-color:var(--primary);" />
+                    <span>Модуль SEO-аудитов (на всю лицензию, +2 000 ₽ / 30 дн.)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="card card-pad" style="border-color:var(--primary-border);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <span style="font-weight:700;font-size:16px;">pgF Pro · Конфигурация</span>
+                  <span class="badge badge-info" id="pubSummaryBadge">30 дн. · 2 устр. · SEO</span>
+                </div>
+                <div style="font-size:32px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px;" id="pubTotalPrice">11 000 ₽</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;" id="pubPriceBreakdown">
+                  База 8 000 ₽ + 1 доп. устр. 1 000 ₽ + SEO 2 000 ₽
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <button class="btn btn-primary btn-lg" onclick="goScreen('s5')">Перейти к покупке (выставить счёт) →</button>
+                  <button class="btn btn-secondary" onclick="goScreen('s2')">Начать пробный период (14 дней)</button>
+                </div>
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);">
+                  1. Настройте тариф → 2. Скопируйте ключ в кабинете → 3. Активируйте pgF на ПК
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="pub-footer">
+          <div class="container pub-footer-inner">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <strong>pgF</strong>
+              <span>· Локальная автоматизация и SEO для Windows</span>
+            </div>
+            <div style="display:flex;gap:18px;flex-wrap:wrap;">
+              <a href="javascript:void(0)" onclick="goScreen('s6',{tab:'docs'})">Документация</a>
+              <a href="javascript:void(0)" onclick="goScreen('s6',{tab:'wiki'})">Wiki и ошибки</a>
+              <a href="javascript:void(0)" onclick="scrollToEl('s1-pricing')">Тариф</a>
+              <a href="javascript:void(0)" onclick="goScreen('s2')">Войти в кабинет</a>
+              <a href="javascript:void(0)" onclick="showToast('Открыты условия лицензионного соглашения')">Условия</a>
+            </div>
+          </div>
+        </footer>
+      </section>
+
+
+      <!-- =====================================================================
+           CABINET SHELL (SCREENS 2, 3, 4, 5)
+           ===================================================================== -->
+      <div id="cabinetShell" style="display:none;">
+        <header class="cab-topbar">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="logo-mark" onclick="goScreen('s1')">
+              <span class="logo-icon">pgF</span>
+              <span>Кабинет</span>
+            </div>
+          </div>
+          <div class="cab-search" onclick="goScreen('s6')">
+            <span>🔍</span>
+            <span style="flex:1;">Поиск в Документации и Wiki...</span>
+            <span class="mono" style="font-size:11px;background:#e2e8f0;padding:1px 6px;border-radius:4px;">Ctrl+K</span>
+          </div>
+          <div class="cab-user-area">
+            <div class="balance-chip" onclick="goScreen('s5')" style="cursor:pointer;">
+              <span>Баланс: <strong>6 000 ₽</strong></span>
+              <span style="color:var(--text-muted);">(Осн: 4 000 · Бон: 2 000)</span>
+            </div>
+            <span style="font-size:13px;color:var(--text-secondary);" class="hide-sm">alex.k@example.com</span>
+            <button class="btn btn-secondary btn-sm" onclick="goScreen('s1')">Выйти</button>
+          </div>
+        </header>
+
+        <!-- Mobile subnav -->
+        <div class="mobile-subnav">
+          <button class="chip" id="mnav-s2" onclick="goScreen('s2')">Мои лицензии</button>
+          <button class="chip" id="mnav-s3" onclick="goScreen('s3')">Карточка</button>
+          <button class="chip" id="mnav-s4" onclick="goScreen('s4')">Устройства</button>
+          <button class="chip" id="mnav-s5" onclick="goScreen('s5')">Счёт (6 000 ₽)</button>
+          <button class="chip" onclick="goScreen('s6')">Docs / Wiki</button>
+        </div>
+
+        <div class="cab-layout">
+          <aside class="cab-sidebar">
+            <button class="nav-item" onclick="goScreen('s2')">🏠 Главная кабинета</button>
+            <button class="nav-item" id="nav-s2" onclick="goScreen('s2')">🔑 Мои лицензии</button>
+            <button class="nav-item" id="nav-s5" onclick="goScreen('s5')">💳 Баланс и счета</button>
+            <button class="nav-item" onclick="showToast('Реферальная программа: 10% бонусами')">🎁 Рефералы</button>
+            <button class="nav-item" onclick="showToast('Раздел тикетов поддержки (/app/support)')">💬 Поддержка</button>
+            <button class="nav-item" onclick="showToast('Актуальная версия pgF 0.1.0 для Windows x64')">⬇️ Скачать pgF</button>
+            <button class="nav-item" onclick="showToast('Настройки аккаунта и 2FA в Telegram')">⚙️ Настройки</button>
+            <div class="nav-divider"></div>
+            <button class="nav-item" onclick="goScreen('s6',{tab:'docs'})">📘 Документация</button>
+            <button class="nav-item" onclick="goScreen('s6',{tab:'wiki'})">🩺 Wiki и ошибки</button>
+          </aside>
+
+          <main class="cab-main">
+
+            <!-- ===============================================================
+                 ЭКРАН 2: «МОИ ЛИЦЕНЗИИ» (/app/licenses)
+                 =============================================================== -->
+            <section class="screen" id="s2">
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title">Мои лицензии <span style="color:var(--text-muted);font-weight:600;" id="licTotalCount">(4)</span></h1>
+                  <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">
+                    Управляйте ключами, сроками действия, автопродлением и устройствами каждой лицензии отдельно.
+                  </p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="btn btn-primary" onclick="goScreen('s5')">+ Купить лицензию</button>
+                  <button class="btn btn-secondary" onclick="showToast('Запрос переноса лицензии от реселлера')">Перенести от реселлера</button>
+                </div>
+              </div>
+
+              <div class="filter-bar">
+                <div class="seg-control" id="licFilterPills">
+                  <button class="seg-btn active" onclick="filterLicenses('ALL', this)">Все</button>
+                  <button class="seg-btn" onclick="filterLicenses('ACTIVE', this)">Активные</button>
+                  <button class="seg-btn" onclick="filterLicenses('TRIAL', this)">Триал</button>
+                  <button class="seg-btn" onclick="filterLicenses('EXPIRED', this)">Истекшие</button>
+                </div>
+                <input type="text" class="input" id="licSearchInput" placeholder="Поиск по названию или LIC-..." oninput="renderLicensesList()" style="min-width:240px;" />
+              </div>
+
+              <div id="licensesListContainer">
+                <!-- Rendered by JS -->
+              </div>
+            </section>
+
+            <!-- ===============================================================
+                 ЭКРАН 3: КАРТОЧКА ЛИЦЕНЗИИ (/app/licenses/[id])
+                 =============================================================== -->
+            <section class="screen" id="s3">
+              <button class="breadcrumb" onclick="goScreen('s2')">← Назад к «Моим лицензиям»</button>
+
+              <div class="card card-pad" style="margin-bottom:16px;">
+                <div class="lic-card-top">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                      <h1 class="page-title" id="s3Name">Рабочая ферма #1</h1>
+                      <button class="btn btn-secondary btn-sm" onclick="renameCurrentLicense()">Ред. название</button>
+                    </div>
+                    <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="s3Meta">
+                      Public ID: LIC-A1B2C3D4E5F6 · Источник: Прямая покупка
+                    </div>
+                  </div>
+                  <span class="badge badge-active" id="s3StatusBadge">ACTIVE</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);font-size:13px;">
+                  <div>
+                    <span style="color:var(--text-muted);">Личное примечание:</span>
+                    <strong id="s3Note">«Основной сервер Google/Яндекс»</strong>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" onclick="editNoteCurrentLicense()">Изменить примечание</button>
+                </div>
+              </div>
+
+              <div class="grid-2" style="margin-bottom:16px;">
+                <div class="card card-pad">
+                  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin-bottom:10px;">
+                    Срок действия и права
+                  </div>
+                  <div style="font-size:18px;font-weight:800;margin-bottom:4px;" id="s3Expiry">До 25.12.2026 (осталось 30 дн.)</div>
+                  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+                    Лимит устройств: <strong id="s3DeviceSummary">2 из 2 занято</strong>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;" id="s3Rights">
+                    <span class="badge badge-info">✓ Desktop</span>
+                    <span class="badge badge-info">✓ SEO (на всю лицензию)</span>
+                  </div>
+                </div>
+
+                <div class="card card-pad">
+                  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin-bottom:10px;">
+                    Автопродление
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                    <span id="s3AutoRenewBadge" class="autorenew-tag"><span class="autorenew-dot"></span> Автопродление включено</span>
+                    <button class="btn btn-secondary btn-sm" id="s3AutoRenewBtn" onclick="toggleAutoRenew()">Выключить</button>
+                  </div>
+                  <div style="font-size:12px;color:var(--text-secondary);" id="s3AutoRenewNote">
+                    Следующее списание: 25.12.2026 (10 000 ₽) с внутреннего баланса по актуальной цене.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Текущий лицензионный ключ -->
+              <div class="card card-pad" style="margin-bottom:16px;border-color:var(--primary-border);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+                  <div>
+                    <div style="font-weight:700;font-size:15px;">Текущий лицензионный ключ</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Введите этот ключ в настольном приложении pgF</div>
+                  </div>
+                  <span class="badge badge-active">Ключ: ACTIVE</span>
+                </div>
+                <div class="lic-key-row">
+                  <code class="mono" style="font-size:16px;font-weight:700;letter-spacing:0.03em;" id="s3KeyValue">PGF-7K9M-4X2Q-8P5N-3V1R</code>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="copyCurrentKey()">📋 Копировать ключ</button>
+                    <button class="btn btn-secondary" onclick="openRotateKeyModal()">Заменить ключ</button>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">
+                  Подсказка: замена ключа обновит ключ на месте; оплаченный срок, права и привязанные устройства сохранятся.
+                </div>
+              </div>
+
+              <!-- Действия по лицензии -->
+              <div class="card card-pad">
+                <div style="font-weight:700;font-size:14px;margin-bottom:12px;">Действия по этой лицензии</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-primary" onclick="goScreen('s4')" id="s3DevicesBtn">
+                    Устройства этой лицензии (2 / 2) →
+                  </button>
+                  <button class="btn btn-secondary" onclick="goScreen('s5')">
+                    Продлить / изменить опции
+                  </button>
+                  <button class="btn btn-secondary" onclick="goScreen('s5')">
+                    Докупить устройства / SEO
+                  </button>
+                  <button class="btn btn-ghost" onclick="goScreen('s6',{article:'activation'})">
+                    Как активировать ключ ↗
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===============================================================
+                 ЭКРАН 4: УСТРОЙСТВА ВЫБРАННОЙ ЛИЦЕНЗИИ (/app/licenses/[id]/devices)
+                 =============================================================== -->
+            <section class="screen" id="s4">
+              <button class="breadcrumb" onclick="goScreen('s3')" id="s4BackBtn">← Назад к карточке «Рабочая ферма #1»</button>
+
+              <div class="page-header">
+                <div>
+                  <h1 class="page-title" id="s4Title">Устройства лицензии «Рабочая ферма #1»</h1>
+                  <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="s4SubId">Public ID: LIC-A1B2C3D4E5F6</div>
+                </div>
+                <button class="btn btn-primary" onclick="goScreen('s5')">+ Докупить устройство</button>
+              </div>
+
+              <!-- Slot & Limit KPIs -->
+              <div class="grid-2" style="margin-bottom:16px;">
+                <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ЗАНЯТО МЕСТ</div>
+                    <div style="font-size:26px;font-weight:800;margin-top:2px;" id="s4SlotCounter">2 из 2</div>
+                  </div>
+                  <span class="badge badge-warning" id="s4SlotBadge">Все слоты заняты</span>
+                </div>
+                <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:12px;color:var(--text-muted);font-weight:600;">ЛИМИТ ОТВЯЗОК ЗА 30 ДНЕЙ</div>
+                    <div style="font-size:20px;font-weight:800;margin-top:2px;" id="s4UnbindQuota">Использовано 1 из 3</div>
+                  </div>
+                  <span class="badge badge-neutral" id="s4QuotaLeft">Осталось 2</span>
+                </div>
+              </div>
+
+              <div class="callout callout-info">
+                <span style="font-size:16px;">ℹ️</span>
+                <div>
+                  <strong>Удаление pgF с ПК не освобождает слот — отвяжите устройство здесь.</strong><br />
+                  Слот освобождается сразу, но ранее выданный подписанный офлайн-допуск на старом ПК может действовать до следующей проверки (≤ 12 ч) или истечения (≤ 24 ч).
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <h2 style="font-size:16px;font-weight:700;margin:0;" id="s4ActiveHeading">Активные устройства (2)</h2>
+                <button class="btn btn-ghost btn-sm" onclick="resetDevicesDemo()" id="s4ResetBtn" style="display:none;">↺ Вернуть 2 из 2 (демо)</button>
+              </div>
+
+              <div id="s4DevicesList">
+                <!-- Rendered by JS -->
+              </div>
+
+              <div class="card card-pad" style="margin-top:20px;">
+                <h3 style="font-size:15px;font-weight:700;margin:0 0 12px;">История привязок и отвязок этой лицензии</h3>
+                <div id="s4HistoryList" style="font-size:13px;">
+                  <!-- Rendered by JS -->
+                </div>
+              </div>
+            </section>
+
+            <!-- ===============================================================
+                 ЭКРАН 5: РУЧНОЙ СЧЁТ (/app/billing/invoices/[id])
+                 =============================================================== -->
+            <section class="screen" id="s5">
+              <button class="breadcrumb" onclick="goScreen('s2')">← Назад к «Моим лицензиям»</button>
+
+              <div class="page-header">
+                <div>
+                  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <h1 class="page-title mono">Счёт #INV-2026-000142</h1>
+                    <span class="badge badge-warning" id="s5StatusBadge">● Подтверждение на проверке</span>
+                  </div>
+                  <div style="font-size:13px;color:var(--text-secondary);margin-top:6px;">
+                    Назначение: <strong>Покупка новой лицензии pgF (30 дн., 2 устр., SEO)</strong>
+                  </div>
+                </div>
+                <div class="seg-control" title="Демо-переключатель состояния счёта">
+                  <button class="seg-btn" onclick="setInvoiceState('AWAITING', this)">Ожидает</button>
+                  <button class="seg-btn active" onclick="setInvoiceState('UNDER_REVIEW', this)">На проверке</button>
+                  <button class="seg-btn" onclick="setInvoiceState('PAID', this)">Оплачен</button>
+                </div>
+              </div>
+
+              <!-- Fixed price & timer banner -->
+              <div class="callout callout-warning" id="s5StateBanner">
+                <span style="font-size:16px;">⏳</span>
+                <div>
+                  <strong>Срок оплаты: до 27.11.2026 10:30 (осталось 22 ч 15 мин)</strong><br />
+                  Цена, валюта, состав заказа и условия лицензии <strong>зафиксированы при выставлении</strong>. Так как подтверждение подано в срок, условия сохраняются до решения администратора даже при изменении тарифа.
+                </div>
+              </div>
+
+              <div class="grid-2" style="align-items:start;">
+                <!-- Состав заказа и зафиксированная цена -->
+                <div class="card card-pad">
+                  <div style="font-weight:700;font-size:15px;margin-bottom:12px;">Зафиксированный состав заказа и расчёт</div>
+                  <table class="invoice-table">
+                    <tr>
+                      <td>Основной тариф pgF (30 дн., 1 базовое устр.)</td>
+                      <td style="text-align:right;" class="mono">8 000 ₽</td>
+                    </tr>
+                    <tr>
+                      <td>+ 1 дополнительное устройство</td>
+                      <td style="text-align:right;" class="mono">1 000 ₽</td>
+                    </tr>
+                    <tr>
+                      <td>+ Модуль SEO-аудитов (на всю лицензию)</td>
+                      <td style="text-align:right;" class="mono">2 000 ₽</td>
+                    </tr>
+                    <tr>
+                      <td style="color:var(--success);">Промоакция «START» (новая лицензия)</td>
+                      <td style="text-align:right;color:var(--success);" class="mono">−1 000 ₽</td>
+                    </tr>
+                    <tr>
+                      <td style="color:var(--success);">Персональная скидка клиента (10%)</td>
+                      <td style="text-align:right;color:var(--success);" class="mono">−1 000 ₽</td>
+                    </tr>
+                    <tr>
+                      <td style="color:var(--info);">Списание бонусного баланса (приоритет бонусов)</td>
+                      <td style="text-align:right;color:var(--info);" class="mono">−2 000 ₽</td>
+                    </tr>
+                    <tr class="invoice-total-row">
+                      <td>ИТОГО К ОПЛАТЕ (прямая оплата заказа)</td>
+                      <td style="text-align:right;" class="mono">7 000 ₽</td>
+                    </tr>
+                  </table>
+                  <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);">
+                    Средства прямой оплаты идут строго на этот заказ и не списываются на автопродление других лицензий.
+                  </div>
+                </div>
+
+                <!-- Реквизиты и статус подтверждения -->
+                <div style="display:flex;flex-direction:column;gap:16px;">
+                  <div class="card card-pad">
+                    <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Реквизиты оплаты</div>
+                    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+                      Способ: <strong>Криптовалюта USDT (сеть TRC-20)</strong>
+                    </div>
+                    <div class="lic-key-row" style="margin-bottom:8px;">
+                      <code class="mono" style="font-size:12px;word-break:break-all;">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code>
+                      <button class="btn btn-secondary btn-sm" onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','Адрес кошелька скопирован')">Копировать</button>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);">
+                      Сумма к переводу: <strong>7 000 ₽</strong> (эквивалент 72.50 USDT на момент выставления).
+                    </div>
+                  </div>
+
+                  <div class="card card-pad" id="s5ProofCard">
+                    <!-- Rendered by JS based on state -->
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </main>
+        </div>
+      </div>
+
+
+      <!-- =====================================================================
+           ЭКРАН 6: ДОКУМЕНТАЦИЯ И WIKI (/docs и /wiki — всегда публично)
+           ===================================================================== -->
+      <section class="screen" id="s6">
+        <header class="pub-header">
+          <div class="container pub-header-inner">
+            <div class="logo-mark" onclick="goScreen('s1')">
+              <span class="logo-icon">pgF</span>
+              <span>pgF Помощь</span>
+            </div>
+            <nav class="pub-nav">
+              <button onclick="goScreen('s1')">Главная</button>
+              <button onclick="goScreen('s1', {scroll:'s1-pricing'})">Тариф</button>
+              <button style="color:var(--primary);font-weight:700;" onclick="selectHelpArticle('activation')">Документация</button>
+              <button style="color:var(--primary);font-weight:700;" onclick="selectHelpArticle('node-limit')">Wiki и ошибки</button>
+            </nav>
+            <div class="pub-actions">
+              <button class="btn btn-primary btn-sm" onclick="goScreen('s2')">В кабинет</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="help-hero">
+          <div class="container">
+            <div style="text-align:center;max-width:720px;margin:0 auto 20px;">
+              <div class="badge badge-active" style="margin-bottom:10px;">Открыто всегда без авторизации</div>
+              <h1 class="page-title" style="font-size:28px;margin-bottom:8px;">Документация и Wiki pgF</h1>
+              <p style="color:var(--text-secondary);margin:0;">
+                Единый поиск по пошаговым инструкциям и диагностике ошибок.
+              </p>
+            </div>
+
+            <div class="help-search-wrap">
+              <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span>
+              <input type="text" class="help-search-input" id="helpSearchInput" placeholder="Поиск: активация, NODE_LIMIT, лимит устройств, триал, 24ч..." oninput="filterHelp()" />
+              <span class="mono" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-muted);background:#e2e8f0;padding:3px 7px;border-radius:5px;">Ctrl+K</span>
+            </div>
+
+            <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px;">
+              <span style="font-size:12px;color:var(--text-muted);align-self:center;">Часто ищут:</span>
+              <button class="chip" onclick="quickHelpSearch('активация','activation')">Активация ключа</button>
+              <button class="chip" onclick="quickHelpSearch('Лимит устройств','node-limit')">NODE_LIMIT (Лимит устройств)</button>
+              <button class="chip" onclick="quickHelpSearch('триал','trial')">Пробный период</button>
+              <button class="chip" onclick="quickHelpSearch('счёт','invoice')">Оплата по счёту</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="container" style="padding-top:28px;padding-bottom:48px;">
+          <div class="grid-2" style="margin-bottom:24px;">
+            <!-- Документация (/docs) -->
+            <div class="card card-pad">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span class="badge badge-info">ДОКУМЕНТАЦИЯ (/docs)</span>
+                <span style="font-size:12px;color:var(--text-muted);">Пошаговые инструкции</span>
+              </div>
+              <div id="docsNavList">
+                <div class="doc-link-item" data-search="требования система windows postgresql dpapi" onclick="selectHelpArticle('requirements')">
+                  <span>1. Требования к системе (Windows / PostgreSQL 17)</span><span>→</span>
+                </div>
+                <div class="doc-link-item active" id="doc-item-activation" data-search="активация ключ триал запуск 24ч 12ч handshake" onclick="selectHelpArticle('activation')">
+                  <span>2. Триал и активация ключа (политика 24 ч / 12 ч)</span><span>→</span>
+                </div>
+                <div class="doc-link-item" data-search="устройства отвязка перенос лимит 3 30 дней" onclick="selectHelpArticle('unlink-doc')">
+                  <span>3. Управление устройствами и отвязка (3 за 30 дн.)</span><span>→</span>
+                </div>
+                <div class="doc-link-item" data-search="счёт оплата баланс автопродление" onclick="selectHelpArticle('invoice')">
+                  <span>4. Кабинет, ручной счёт и автопродление</span><span>→</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wiki и ошибки (/wiki) -->
+            <div class="card card-pad">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span class="badge badge-warning">WIKI И ОШИБКИ (/wiki)</span>
+                <span style="font-size:12px;color:var(--text-muted);">Симптом → Решение</span>
+              </div>
+              <div id="wikiNavList">
+                <div class="doc-link-item" id="wiki-item-node-limit" data-search="node_limit лимит устройств занято слот отвязать" onclick="selectHelpArticle('node-limit')">
+                  <span><code class="mono">NODE_LIMIT</code> — Лимит устройств исчерпан</span><span>→</span>
+                </div>
+                <div class="doc-link-item" data-search="lease_expired истек допуск офлайн 24ч" onclick="selectHelpArticle('lease-expired')">
+                  <span><code class="mono">LEASE_EXPIRED</code> — Истёк локальный допуск</span><span>→</span>
+                </div>
+                <div class="doc-link-item" data-search="trial_local_data_too_old триал база возраст 15 дней" onclick="selectHelpArticle('trial')">
+                  <span><code class="mono">TRIAL_LOCAL_DATA_TOO_OLD</code> — Отказ триала</span><span>→</span>
+                </div>
+                <div class="doc-link-item" data-search="job_license_feature_missing seo модуль право" onclick="selectHelpArticle('seo-missing')">
+                  <span><code class="mono">JOB_LICENSE_FEATURE_MISSING</code> — Нет права SEO</span><span>→</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Article Reader -->
+          <div class="card card-pad" id="helpArticleReader">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div class="callout callout-info" style="margin-top:20px;margin-bottom:0;">
+            <span>💬</span>
+            <div>
+              <strong>Нужна помощь оператора?</strong> Создайте тикет в кабинете (<a href="javascript:void(0)" onclick="goScreen('s2')">/app/support</a>) или через кнопку «Поддержка» в официальном Telegram-боте pgF.
+              <strong>Никогда не присылайте секретный ключ <code>PGF-...</code></strong> — указывайте только <code>Public ID (LIC-...)</code>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Confirmation Modal (for Unbind & Rotate Key) -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-card">
+      <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;" id="modalTitle">Подтвердите действие</h3>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;line-height:1.55;" id="modalBody"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+        <button class="btn btn-danger-solid" id="modalConfirmBtn">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ================= STATE =================
+    const state = {
+      currentScreen: 's1',
+      viewport: 'desktop',
+      pubPeriod: 30,
+      pubDevices: 2,
+      pubSeo: true,
+      licFilter: 'ALL',
+      selectedLicenseId: 'lic-1',
+      invoiceState: 'UNDER_REVIEW',
+      helpArticle: 'activation',
+      licenses: [
+        {
+          id: 'lic-1',
+          publicId: 'LIC-A1B2C3D4E5F6',
+          name: 'Рабочая ферма #1',
+          note: 'Основной сервер Google/Яндекс',
+          source: 'Прямая покупка',
+          status: 'ACTIVE',
+          expiry: '25.12.2026',
+          daysLeft: 30,
+          autoRenew: true,
+          autoRenewSupported: true,
+          rights: ['Desktop', 'SEO'],
+          key: 'PGF-7K9M-4X2Q-8P5N-3V1R',
+          deviceLimit: 2,
+          unbindUsed: 1,
+          unbindLimit: 3,
+          devices: [
+            { id: 'dev-1', fp: 'PC-a1b2c3d4', label: 'DESKTOP-MAIN-01', version: 'pgF 0.1.0', boundAt: '01.11.2026', lastSeen: '2 ч назад', leaseUntil: '27.11.2026 08:15' },
+            { id: 'dev-2', fp: 'PC-9f8e7d6c', label: 'WORKSTATION-SEO', version: 'pgF 0.1.0', boundAt: '15.11.2026', lastSeen: '5 ч назад', leaseUntil: '27.11.2026 05:10' }
+          ],
+          history: [
+            { time: '20.11.2026 14:12', action: 'Отвязка (клиент)', fp: 'PC-77aa88bb', detail: 'Слот освобождён' },
+            { time: '15.11.2026 09:00', action: 'Привязка', fp: 'PC-9f8e7d6c', detail: 'Успешный handshake' },
+            { time: '01.11.2026 11:24', action: 'Привязка', fp: 'PC-a1b2c3d4', detail: 'Успешный handshake' }
+          ]
+        },
+        {
+          id: 'lic-2',
+          publicId: 'LIC-D4E5F6G7H8J9',
+          name: 'Офис SEO-аудит',
+          note: 'Рабочий ПК для клиентских аудитов',
+          source: 'Прямая покупка',
+          status: 'ACTIVE',
+          expiry: '10.02.2027',
+          daysLeft: 76,
+          autoRenew: true,
+          autoRenewSupported: true,
+          rights: ['Desktop', 'SEO'],
+          key: 'PGF-9M2L-6W8K-1T4R-5Z7C',
+          deviceLimit: 1,
+          unbindUsed: 0,
+          unbindLimit: 3,
+          devices: [
+            { id: 'dev-3', fp: 'PC-3c4d5e6f', label: 'OFFICE-PC-02', version: 'pgF 0.1.0', boundAt: '10.11.2026', lastSeen: '1 ч назад', leaseUntil: '27.11.2026 09:00' }
+          ],
+          history: [
+            { time: '10.11.2026 10:15', action: 'Привязка', fp: 'PC-3c4d5e6f', detail: 'Успешный handshake' }
+          ]
+        },
+        {
+          id: 'lic-3',
+          publicId: 'LIC-G7H8J9K0L1M2',
+          name: 'Тестовый ПК',
+          note: 'Архивные профили',
+          source: 'Перенесена от реселлера',
+          status: 'EXPIRED',
+          expiry: '20.11.2026',
+          daysLeft: -6,
+          autoRenew: false,
+          autoRenewSupported: true,
+          rights: ['Desktop'],
+          key: 'PGF-3B6N-8Q1V-4H9J-2K5M',
+          deviceLimit: 1,
+          unbindUsed: 0,
+          unbindLimit: 3,
+          devices: [],
+          history: []
+        },
+        {
+          id: 'lic-4',
+          publicId: 'LIC-TRIAL-0912',
+          name: 'Ноутбук (Пробная)',
+          note: 'Ознакомительный триал 14 дней',
+          source: 'Пробный период',
+          status: 'TRIAL',
+          expiry: '04.12.2026',
+          daysLeft: 8,
+          autoRenew: false,
+          autoRenewSupported: false,
+          rights: ['Desktop'],
+          key: 'PGF-TRL1-8842-9910-4421',
+          deviceLimit: 1,
+          unbindUsed: 0,
+          unbindLimit: 0,
+          devices: [
+            { id: 'dev-4', fp: 'PC-aa11bb22', label: 'LAPTOP-DEV', version: 'pgF 0.1.0', boundAt: '20.11.2026', lastSeen: '40 мин назад', leaseUntil: '27.11.2026 10:00' }
+          ],
+          history: []
+        }
+      ]
+    };
+
+    const initialLic1Devices = JSON.parse(JSON.stringify(state.licenses[0].devices));
+    const initialLic1History = JSON.parse(JSON.stringify(state.licenses[0].history));
+
+    // ================= NAVIGATION & VIEWPORT =================
+    function goScreen(screenId, opts = {}) {
+      state.currentScreen = screenId;
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+
+      // Show/hide cabinet shell
+      const isCabinet = ['s2', 's3', 's4', 's5'].includes(screenId);
+      document.getElementById('cabinetShell').style.display = isCabinet ? 'block' : 'none';
+
+      // Update top proto tabs
+      document.querySelectorAll('.proto-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.screen === screenId);
+      });
+
+      // Update sidebar & mobile nav active states
+      document.querySelectorAll('.cab-sidebar .nav-item').forEach(n => n.classList.remove('active'));
+      const navBtn = document.getElementById('nav-' + screenId);
+      if (navBtn) navBtn.classList.add('active');
+      document.querySelectorAll('.mobile-subnav .chip').forEach(c => c.classList.remove('active'));
+      const mBtn = document.getElementById('mnav-' + screenId);
+      if (mBtn) mBtn.classList.add('active');
+
+      if (opts.licenseId) state.selectedLicenseId = opts.licenseId;
+      if (opts.article) state.helpArticle = opts.article;
+      if (opts.tab === 'wiki' && !opts.article) state.helpArticle = 'node-limit';
+      if (opts.tab === 'docs' && !opts.article) state.helpArticle = 'activation';
+
+      // Render screen-specific views
+      if (screenId === 's2') renderLicensesList();
+      if (screenId === 's3') renderLicenseCard();
+      if (screenId === 's4') renderDevicesScreen();
+      if (screenId === 's5') renderInvoiceScreen();
+      if (screenId === 's6') renderHelpArticle();
+
+      if (opts.scroll) {
+        setTimeout(() => scrollToEl(opts.scroll), 50);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+
+    function setViewport(mode) {
+      state.viewport = mode;
+      const stage = document.getElementById('stage');
+      stage.classList.toggle('desktop-mode', mode === 'desktop');
+      stage.classList.toggle('mobile-mode', mode === 'mobile');
+      document.getElementById('vpDesktop').classList.toggle('active', mode === 'desktop');
+      document.getElementById('vpMobile').classList.toggle('active', mode === 'mobile');
+    }
+
+    function scrollToEl(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ================= SCREEN 1: HERO PREVIEW & PRICING =================
+    const previewTabsData = {
+      'tab-projects': `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong>Активные проекты (Google / Яндекс)</strong>
+          <span style="color:#34d399;font-family:var(--mono);">● Worker pool: 4/4</span>
+        </div>
+        <table class="preview-table">
+          <thead><tr><th>Проект</th><th>Очередь</th><th>Профили</th><th>Статус</th></tr></thead>
+          <tbody>
+            <tr><td>Shop-RU-Warmup</td><td>Яндекс · 142/200</td><td>48 шт</td><td style="color:#34d399;">Выполняется</td></tr>
+            <tr><td>Blog-EN-Index</td><td>Google · 85/120</td><td>24 шт</td><td style="color:#60a5fa;">В очереди</td></tr>
+            <tr><td>Audit-Tech-2026</td><td>HTTP + DOM</td><td>—</td><td style="color:#34d399;">Готово</td></tr>
+          </tbody>
+        </table>`,
+      'tab-proxies': `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong>Локальные профили и прокси (DPAPI)</strong>
+          <span style="color:#94a3b8;font-family:var(--mono);">PostgreSQL 17 · localhost</span>
+        </div>
+        <table class="preview-table">
+          <thead><tr><th>Профиль</th><th>Прокси</th><th>Возраст</th><th>Состояние</th></tr></thead>
+          <tbody>
+            <tr><td>prof_msk_014</td><td>SOCKS5 · 198.51.100.12</td><td>18 дн.</td><td style="color:#34d399;">OK (42 ms)</td></tr>
+            <tr><td>prof_spb_009</td><td>HTTP · 203.0.113.44</td><td>11 дн.</td><td style="color:#34d399;">OK (65 ms)</td></tr>
+          </tbody>
+        </table>`,
+      'tab-seo': `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong>SEO-аудит (HTTP + Rendered)</strong>
+          <span style="color:#60a5fa;font-family:var(--mono);">Право: SEO включено</span>
+        </div>
+        <table class="preview-table">
+          <thead><tr><th>URL (демо)</th><th>Код</th><th>Title / H1</th><th>Оценка</th></tr></thead>
+          <tbody>
+            <tr><td>https://example.org/</td><td>200</td><td>OK · 54 симв.</td><td style="color:#34d399;">96/100</td></tr>
+            <tr><td>https://example.org/catalog</td><td>200</td><td>Нет meta desc</td><td style="color:#fbbf24;">78/100</td></tr>
+          </tbody>
+        </table>`,
+      'tab-lic': `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong>Статус лицензии в pgF Desktop</strong>
+          <span style="color:#34d399;font-family:var(--mono);">RSA-SHA256 Verified</span>
+        </div>
+        <div style="background:#1e293b;padding:12px;border-radius:8px;line-height:1.8;">
+          <div>Лицензия: <span class="mono">LIC-A1B2C3D4E5F6</span> · <span style="color:#34d399;">ACTIVE</span></div>
+          <div>Права: <strong>Desktop, SEO</strong> · Офлайн-допуск: <strong>до 24 ч (refresh 12 ч)</strong></div>
+          <div>Устройство: <span class="mono">PC-a1b2c3d4</span> · Проверка: 2 ч назад</div>
+        </div>`
+    };
+
+    function switchPreviewTab(btn, tabKey) {
+      document.querySelectorAll('.preview-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('previewBody').innerHTML = previewTabsData[tabKey];
+    }
+
+    function setPubPeriod(days, btn) {
+      state.pubPeriod = days;
+      document.querySelectorAll('#pubPeriodControl .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      recalcPubPrice();
+    }
+
+    function changePubDevices(delta) {
+      state.pubDevices = Math.max(1, Math.min(10, state.pubDevices + delta));
+      document.getElementById('pubDevCount').textContent = state.pubDevices + (state.pubDevices === 1 ? ' устройство' : state.pubDevices < 5 ? ' устройства' : ' устройств');
+      recalcPubPrice();
+    }
+
+    function recalcPubPrice() {
+      state.pubSeo = document.getElementById('pubSeoCheck').checked;
+      const mult = state.pubPeriod / 30;
+      const discount = state.pubPeriod === 90 ? 0.9 : state.pubPeriod === 180 ? 0.85 : 1;
+      const base = 8000 * mult;
+      const extraDev = (state.pubDevices - 1) * 1000 * mult;
+      const seoCost = state.pubSeo ? 2000 * mult : 0;
+      const total = Math.round((base + extraDev + seoCost) * discount);
+
+      document.getElementById('pubTotalPrice').textContent = total.toLocaleString('ru-RU') + ' ₽';
+      document.getElementById('pubSummaryBadge').textContent = `${state.pubPeriod} дн. · ${state.pubDevices} устр.${state.pubSeo ? ' · SEO' : ''}`;
+      document.getElementById('pubPriceBreakdown').textContent =
+        `База ${base.toLocaleString('ru-RU')} ₽` +
+        (extraDev ? ` + доп. устр. ${extraDev.toLocaleString('ru-RU')} ₽` : '') +
+        (seoCost ? ` + SEO ${seoCost.toLocaleString('ru-RU')} ₽` : '') +
+        (discount < 1 ? ` (скидка за период ${Math.round((1 - discount) * 100)}%)` : '');
+    }
+
+    // ================= SCREEN 2: MY LICENSES =================
+    function filterLicenses(status, btn) {
+      state.licFilter = status;
+      document.querySelectorAll('#licFilterPills .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLicensesList();
+    }
+
+    function renderLicensesList() {
+      const q = (document.getElementById('licSearchInput').value || '').trim().toLowerCase();
+      const filtered = state.licenses.filter(l => {
+        if (state.licFilter !== 'ALL' && l.status !== state.licFilter) return false;
+        if (q && !l.name.toLowerCase().includes(q) && !l.publicId.toLowerCase().includes(q)) return false;
+        return true;
+      });
+      document.getElementById('licTotalCount').textContent = `(${state.licenses.length})`;
+
+      const container = document.getElementById('licensesListContainer');
+      if (!filtered.length) {
+        container.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-muted);">Лицензии по фильтру не найдены.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(l => {
+        const statusBadge = l.status === 'ACTIVE'
+          ? `<span class="badge badge-active">ACTIVE</span>`
+          : l.status === 'TRIAL'
+            ? `<span class="badge badge-info">TRIAL</span>`
+            : `<span class="badge badge-danger">EXPIRED</span>`;
+
+        const termText = l.daysLeft >= 0
+          ? `До: <strong>${l.expiry}</strong> (осталось ${l.daysLeft} дн.)`
+          : `<span style="color:var(--danger);">Истекла: <strong>${l.expiry}</strong></span>`;
+
+        const autoTag = l.autoRenew
+          ? `<span class="autorenew-tag"><span class="autorenew-dot"></span> Автопродление включено</span>`
+          : `<span class="autorenew-off">Автопродление выключено</span>`;
+
+        const rightsHtml = l.rights.map(r => `<span class="badge badge-neutral">${r}</span>`).join(' ');
+
+        return `
+          <div class="lic-card">
+            <div class="lic-card-top">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <a href="javascript:void(0)" onclick="goScreen('s3',{licenseId:'${l.id}'})" style="font-size:16px;font-weight:800;color:var(--text);">${l.name}</a>
+                  <span class="mono" style="font-size:12px;color:var(--text-muted);">${l.publicId}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Источник: ${l.source}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                ${autoTag}
+                ${statusBadge}
+              </div>
+            </div>
+
+            <div class="lic-meta-row">
+              <span>${termText}</span>
+              <span>·</span>
+              <span style="display:inline-flex;gap:6px;align-items:center;">Права: ${rightsHtml}</span>
+            </div>
+
+            <div class="lic-key-row">
+              <div>
+                <span style="font-size:11px;color:var(--text-muted);display:block;">ТЕКУЩИЙ КЛЮЧ</span>
+                <code class="mono" style="font-size:13px;font-weight:700;">${l.key}</code>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="copyText('${l.key}','Ключ ${l.publicId} скопирован')">Копировать</button>
+            </div>
+
+            <div class="lic-actions-row">
+              <span style="font-size:13px;color:var(--text-secondary);">
+                Устройства: <strong class="mono">${l.devices.length} / ${l.deviceLimit}</strong>
+              </span>
+              <div class="btn-group" style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${l.status === 'EXPIRED' ? `<button class="btn btn-primary btn-sm" onclick="goScreen('s5')">Продлить</button>` : ''}
+                <button class="btn btn-secondary btn-sm" onclick="goScreen('s4',{licenseId:'${l.id}'})">Устройства (${l.devices.length}/${l.deviceLimit}) →</button>
+                <button class="btn btn-primary btn-sm" onclick="goScreen('s3',{licenseId:'${l.id}'})">Открыть карточку →</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ================= SCREEN 3: LICENSE CARD =================
+    function getSelectedLicense() {
+      return state.licenses.find(l => l.id === state.selectedLicenseId) || state.licenses[0];
+    }
+
+    function renderLicenseCard() {
+      const l = getSelectedLicense();
+      document.getElementById('s3Name').textContent = l.name;
+      document.getElementById('s3Meta').textContent = `Public ID: ${l.publicId} · Источник: ${l.source}`;
+      document.getElementById('s3Note').textContent = `«${l.note}»`;
+
+      const badge = document.getElementById('s3StatusBadge');
+      badge.textContent = l.status;
+      badge.className = 'badge ' + (l.status === 'ACTIVE' ? 'badge-active' : l.status === 'TRIAL' ? 'badge-info' : 'badge-danger');
+
+      document.getElementById('s3Expiry').textContent = l.daysLeft >= 0
+        ? `До ${l.expiry} (осталось ${l.daysLeft} дн.)`
+        : `Истекла ${l.expiry}`;
+
+      document.getElementById('s3DeviceSummary').textContent = `${l.devices.length} из ${l.deviceLimit} занято`;
+      document.getElementById('s3Rights').innerHTML = l.rights.map(r =>
+        `<span class="badge badge-info">✓ ${r === 'SEO' ? 'SEO (на всю лицензию)' : r}</span>`
+      ).join('');
+
+      const arBadge = document.getElementById('s3AutoRenewBadge');
+      const arBtn = document.getElementById('s3AutoRenewBtn');
+      const arNote = document.getElementById('s3AutoRenewNote');
+      if (!l.autoRenewSupported) {
+        arBadge.className = 'autorenew-off';
+        arBadge.innerHTML = 'Автопродление недоступно на триале';
+        arBtn.style.display = 'none';
+        arNote.textContent = 'Для продолжения работы после триала оформите платную лицензию.';
+      } else if (l.autoRenew) {
+        arBadge.className = 'autorenew-tag';
+        arBadge.innerHTML = '<span class="autorenew-dot"></span> Автопродление включено';
+        arBtn.style.display = 'inline-flex';
+        arBtn.textContent = 'Выключить';
+        arNote.textContent = `Следующее списание: ${l.expiry} (10 000 ₽) с внутреннего баланса по актуальной цене.`;
+      } else {
+        arBadge.className = 'autorenew-off';
+        arBadge.innerHTML = 'Автопродление выключено';
+        arBtn.style.display = 'inline-flex';
+        arBtn.textContent = 'Включить';
+        arNote.textContent = 'Продление выполняется вручную до или после окончания срока.';
+      }
+
+      document.getElementById('s3KeyValue').textContent = l.key;
+      document.getElementById('s3DevicesBtn').textContent = `Устройства этой лицензии (${l.devices.length} / ${l.deviceLimit}) →`;
+    }
+
+    function toggleAutoRenew() {
+      const l = getSelectedLicense();
+      l.autoRenew = !l.autoRenew;
+      renderLicenseCard();
+      showToast(l.autoRenew ? 'Автопродление включено' : 'Автопродление выключено');
+    }
+
+    function copyCurrentKey() {
+      const l = getSelectedLicense();
+      copyText(l.key, 'Лицензионный ключ скопирован в буфер обмена');
+    }
+
+    function renameCurrentLicense() {
+      const l = getSelectedLicense();
+      const val = prompt('Новое название лицензии:', l.name);
+      if (val && val.trim()) {
+        l.name = val.trim();
+        renderLicenseCard();
+        showToast('Название лицензии обновлено');
+      }
+    }
+
+    function editNoteCurrentLicense() {
+      const l = getSelectedLicense();
+      const val = prompt('Личное примечание:', l.note);
+      if (val !== null) {
+        l.note = val.trim() || 'Без примечания';
+        renderLicenseCard();
+        showToast('Примечание сохранено');
+      }
+    }
+
+    function openRotateKeyModal() {
+      const l = getSelectedLicense();
+      openModal(
+        'Заменить лицензионный ключ?',
+        `Текущий ключ <code class="mono">${l.key}</code> перестанет приниматься сразу после замены. Оплаченный срок, права и привязанные устройства (${l.devices.length}/${l.deviceLimit}) сохранятся.`,
+        'Заменить ключ',
+        () => {
+          const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+          const seg = () => Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+          l.key = `PGF-${seg()}-${seg()}-${seg()}-${seg()}`;
+          renderLicenseCard();
+          closeModal();
+          showToast('Ключ успешно заменён на месте');
+        }
+      );
+    }
+
+    // ================= SCREEN 4: DEVICES OF SELECTED LICENSE =================
+    function renderDevicesScreen() {
+      const l = getSelectedLicense();
+      document.getElementById('s4BackBtn').textContent = `← Назад к карточке «${l.name}»`;
+      document.getElementById('s4Title').textContent = `Устройства лицензии «${l.name}»`;
+      document.getElementById('s4SubId').textContent = `Public ID: ${l.publicId}`;
+
+      const used = l.devices.length;
+      const limit = l.deviceLimit;
+      document.getElementById('s4SlotCounter').textContent = `${used} из ${limit}`;
+      const slotBadge = document.getElementById('s4SlotBadge');
+      if (used >= limit) {
+        slotBadge.className = 'badge badge-warning';
+        slotBadge.textContent = 'Все слоты заняты';
+      } else {
+        slotBadge.className = 'badge badge-active';
+        slotBadge.textContent = `Свободно: ${limit - used}`;
+      }
+
+      if (l.status === 'TRIAL') {
+        document.getElementById('s4UnbindQuota').textContent = 'Недоступно на триале';
+        document.getElementById('s4QuotaLeft').textContent = 'Запрещено';
+      } else {
+        document.getElementById('s4UnbindQuota').textContent = `Использовано ${l.unbindUsed} из ${l.unbindLimit}`;
+        document.getElementById('s4QuotaLeft').textContent = `Осталось ${Math.max(0, l.unbindLimit - l.unbindUsed)}`;
+      }
+
+      document.getElementById('s4ActiveHeading').textContent = `Активные устройства (${used})`;
+      document.getElementById('s4ResetBtn').style.display = (l.id === 'lic-1' && used < 2) ? 'inline-flex' : 'none';
+
+      const listEl = document.getElementById('s4DevicesList');
+      if (!used) {
+        listEl.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--text-muted);">Нет привязанных устройств. Введите ключ <code class="mono">${l.key}</code> в pgF на ПК.</div>`;
+      } else {
+        listEl.innerHTML = l.devices.map(d => `
+          <div class="device-row">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+                <strong class="mono" style="font-size:15px;">${d.fp}</strong>
+                <span class="badge badge-neutral">${d.label}</span>
+                <span class="badge badge-info">${d.version}</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);">
+                Привязано: ${d.boundAt} · Последняя проверка: <strong>${d.lastSeen}</strong> · Офлайн-допуск до: ${d.leaseUntil}
+              </div>
+            </div>
+            <button class="btn btn-danger" ${l.status === 'TRIAL' ? 'disabled title="Смена устройства на пробном периоде недоступна"' : ''} onclick="confirmUnbindDevice('${d.id}')">
+              Отвязать
+            </button>
+          </div>
+        `).join('');
+      }
+
+      const histEl = document.getElementById('s4HistoryList');
+      if (!l.history.length) {
+        histEl.innerHTML = `<div style="color:var(--text-muted);">Записей пока нет.</div>`;
+      } else {
+        histEl.innerHTML = l.history.map(h => `
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <span class="mono" style="color:var(--text-muted);margin-right:10px;">${h.time}</span>
+              <strong>${h.action}</strong> · <code class="mono">${h.fp}</code>
+            </div>
+            <span style="color:var(--text-secondary);">${h.detail}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function confirmUnbindDevice(deviceId) {
+      const l = getSelectedLicense();
+      const dev = l.devices.find(d => d.id === deviceId);
+      if (!dev) return;
+
+      openModal(
+        `Отвязать устройство ${dev.fp}?`,
+        `Устройство <strong>${dev.label}</strong> (<code class="mono">${dev.fp}</code>) будет немедленно отключено от лицензии, а слот освободится (${l.devices.length - 1} из ${l.deviceLimit}).<br><br>` +
+        `<span style="color:var(--warning);">Примечание:</span> ранее выданный офлайн-допуск на этом ПК может действовать до следующей проверки (≤ 12 ч). Будет использована 1 из ${l.unbindLimit} отвязок за 30 дней.`,
+        'Подтвердить отвязку',
+        () => {
+          l.devices = l.devices.filter(d => d.id !== deviceId);
+          l.unbindUsed += 1;
+          l.history.unshift({
+            time: '26.11.2026 01:02',
+            action: 'Отвязка (клиент)',
+            fp: dev.fp,
+            detail: `Слот освобождён (${l.devices.length} из ${l.deviceLimit})`
+          });
+          closeModal();
+          renderDevicesScreen();
+          showToast(`Устройство ${dev.fp} отвязано. Занято ${l.devices.length} из ${l.deviceLimit}.`);
+        }
+      );
+    }
+
+    function resetDevicesDemo() {
+      const l = state.licenses[0];
+      l.devices = JSON.parse(JSON.stringify(initialLic1Devices));
+      l.history = JSON.parse(JSON.stringify(initialLic1History));
+      l.unbindUsed = 1;
+      renderDevicesScreen();
+      showToast('Демо-состояние устройств сброшено на 2 из 2');
+    }
+
+    // ================= SCREEN 5: MANUAL INVOICE =================
+    function setInvoiceState(newState, btn) {
+      state.invoiceState = newState;
+      btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderInvoiceScreen();
+    }
+
+    function renderInvoiceScreen() {
+      const badge = document.getElementById('s5StatusBadge');
+      const banner = document.getElementById('s5StateBanner');
+      const proofCard = document.getElementById('s5ProofCard');
+
+      if (state.invoiceState === 'UNDER_REVIEW') {
+        badge.className = 'badge badge-warning';
+        badge.textContent = '● Подтверждение на проверке';
+        banner.className = 'callout callout-warning';
+        banner.innerHTML = `
+          <span style="font-size:16px;">⏳</span>
+          <div>
+            <strong>Срок оплаты: до 27.11.2026 10:30 (осталось 22 ч 15 мин)</strong><br />
+            Цена, валюта, состав заказа и условия лицензии <strong>зафиксированы при выставлении</strong>. Так как подтверждение подано в срок, условия сохраняются до решения администратора.
+          </div>`;
+        proofCard.innerHTML = `
+          <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Подтверждение оплаты</div>
+          <div class="callout callout-warning" style="margin-bottom:12px;">
+            <span>🔎</span>
+            <div><strong>Подтверждение на проверке у администратора.</strong><br/>Загрузка скриншота сама не зачисляет оплату — администратор проверяет фактическое поступление средств.</div>
+          </div>
+          <div style="font-size:13px;line-height:1.7;">
+            <div>Хэш транзакции: <code class="mono">0x8f4c7a12...92b1e4</code></div>
+            <div>Квитанция: <strong>receipt_inv_000142.png</strong> (342 КБ)</div>
+            <div>Отправлено: 26.11.2026 в 00:45</div>
+          </div>`;
+      } else if (state.invoiceState === 'AWAITING') {
+        badge.className = 'badge badge-info';
+        badge.textContent = '● Ожидает оплаты';
+        banner.className = 'callout callout-info';
+        banner.innerHTML = `
+          <span style="font-size:16px;">🕒</span>
+          <div>
+            <strong>Срок оплаты: до 27.11.2026 10:30 (осталось 22 ч 15 мин)</strong><br />
+            Цена <strong>7 000 ₽</strong> и состав заказа зафиксированы на 24 часа с момента выставления счёта.
+          </div>`;
+        proofCard.innerHTML = `
+          <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Шаг 2. Отправьте подтверждение перевода</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <input type="text" class="input mono" placeholder="Хэш транзакции или номер перевода" value="0x8f4c7a12...92b1e4" />
+            <div style="font-size:12px;color:var(--text-secondary);">Файл квитанции: PNG / JPG / PDF (прикреплён: receipt.png)</div>
+            <button class="btn btn-primary" onclick="submitProofDemo()">Отправить на проверку администратору</button>
+          </div>`;
+      } else {
+        badge.className = 'badge badge-active';
+        badge.textContent = '✓ Оплачен и подтверждён';
+        banner.className = 'callout callout-success';
+        banner.innerHTML = `
+          <span style="font-size:16px;">✅</span>
+          <div>
+            <strong>Счёт подтверждён администратором 26.11.2026 в 01:05.</strong><br />
+            Лицензия создана и активирована в разделе «Мои лицензии».
+          </div>`;
+        proofCard.innerHTML = `
+          <div style="font-weight:700;font-size:15px;margin-bottom:10px;">Результат проверки</div>
+          <p style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Платёж по транзакции <code class="mono">0x8f4c7a12...92b1e4</code> подтверждён.</p>
+          <button class="btn btn-primary" onclick="goScreen('s2')">Перейти к «Моим лицензиям» →</button>`;
+      }
+    }
+
+    function submitProofDemo() {
+      state.invoiceState = 'UNDER_REVIEW';
+      const btns = document.querySelectorAll('#s5 .seg-control .seg-btn');
+      btns.forEach((b, i) => b.classList.toggle('active', i === 1));
+      renderInvoiceScreen();
+      showToast('Подтверждение отправлено. Статус: Подтверждение на проверке.');
+    }
+
+    // ================= SCREEN 6: DOCS & WIKI =================
+    const helpArticles = {
+      'activation': {
+        badge: 'ДОКУМЕНТАЦИЯ · /docs/activation',
+        badgeClass: 'badge-info',
+        title: 'Триал и активация ключа pgF (политика 24 ч / 12 ч)',
+        html: `
+          <ol style="padding-left:18px;line-height:1.75;margin:12px 0;">
+            <li>Откройте <a href="javascript:void(0)" onclick="goScreen('s2')">«Мои лицензии»</a> или <a href="javascript:void(0)" onclick="goScreen('s3')">карточку нужной лицензии</a> и нажмите <strong>«Копировать ключ»</strong>.</li>
+            <li>Запустите <strong>pgF</strong> на Windows 10/11 x64 и вставьте ключ формата <code class="mono">PGF-XXXX-XXXX-XXXX-XXXX</code>.</li>
+            <li>Приложение выполнит проверку подписи (<code class="mono">POST /api/licenses/handshake</code>) и получит локальный допуск на <strong>24 часа</strong> (автообновление каждые <strong>12 часов</strong>).</li>
+            <li>При активной работе устройство автоматически появится в разделе <a href="javascript:void(0)" onclick="goScreen('s4')">«Устройства лицензии»</a>.</li>
+          </ol>
+          <div class="callout callout-info" style="margin-bottom:0;">
+            <span>💡</span>
+            <div>Если при активации возникает ошибка лимита мест, откройте статью Wiki <a href="javascript:void(0)" onclick="selectHelpArticle('node-limit')"><strong>NODE_LIMIT — Лимит устройств</strong></a>.</div>
+          </div>`
+      },
+      'node-limit': {
+        badge: 'WIKI И ОШИБКИ · /wiki/error-node-limit',
+        badgeClass: 'badge-warning',
+        title: 'NODE_LIMIT — Превышен лимит устройств лицензии',
+        html: `
+          <div style="display:grid;gap:12px;margin-top:12px;">
+            <div><strong>Симптом:</strong> При запуске или активации pgF сообщает об ошибке <code class="mono">NODE_LIMIT</code> (все слоты лицензии заняты).</div>
+            <div><strong>Причина:</strong> Лимит устройств исчерпан (например, занято <strong>2 из 2</strong> мест) или pgF был удалён с прежнего ПК без предварительной отвязки в веб-панели.</div>
+            <div><strong>Проверка:</strong> Откройте карточку лицензии и посмотрите счётчик <code class="mono">Занято / Лимит</code>.</div>
+            <div><strong>Решение:</strong>
+              <ol style="padding-left:18px;margin:6px 0 0;line-height:1.7;">
+                <li>Перейдите на экран устройств выбранной лицензии и нажмите <strong>«Отвязать»</strong> на неиспользуемом ПК (лимит: 3 отвязки за 30 дней для платной лицензии).</li>
+                <li>Либо нажмите <strong>«+ Докупить устройство»</strong>, если нужно работать одновременно на большем числе машин.</li>
+              </ol>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:6px;">
+              <button class="btn btn-primary" onclick="goScreen('s4')">Открыть «Устройства лицензии» →</button>
+              <button class="btn btn-secondary" onclick="selectHelpArticle('unlink-doc')">Подробная инструкция в /docs</button>
+            </div>
+          </div>`
+      },
+      'requirements': {
+        badge: 'ДОКУМЕНТАЦИЯ · /docs/requirements',
+        badgeClass: 'badge-info',
+        title: 'Системные требования pgF',
+        html: `<p>Windows 10/11 x64, локальная БД PostgreSQL 17, шифрование секретов через Windows DPAPI, доступ в интернет минимум раз в 24 часа для обновления подписанного допуска.</p>`
+      },
+      'unlink-doc': {
+        badge: 'ДОКУМЕНТАЦИЯ · /docs/devices#unlink-device',
+        badgeClass: 'badge-info',
+        title: 'Управление устройствами и отвязка (лимит 3 за 30 дней)',
+        html: `<p>Удаление папки pgF на компьютере не освобождает слот на сервере. Для освобождения слота откройте <a href="javascript:void(0)" onclick="goScreen('s4')">экран устройств</a>, нажмите «Отвязать» и подтвердите действие. Слот освобождается мгновенно.</p>`
+      },
+      'invoice': {
+        badge: 'ДОКУМЕНТАЦИЯ · /docs/billing',
+        badgeClass: 'badge-info',
+        title: 'Оплата по ручному счёту и автопродление',
+        html: `<p>При выставлении ручного счёта цена, валюта и состав заказа фиксируются на 24 часа. Если вы загрузили подтверждение в срок, условия сохраняются на время проверки администратором (<a href="javascript:void(0)" onclick="goScreen('s5')">пример счёта</a>).</p>`
+      },
+      'lease-expired': {
+        badge: 'WIKI И ОШИБКИ · /wiki/error-lease-expired',
+        badgeClass: 'badge-warning',
+        title: 'LEASE_EXPIRED — Истёк локальный допуск (24 ч)',
+        html: `<p>Проверьте подключение к сети и системное время Windows, затем перезапустите проверку лицензии в pgF.</p>`
+      },
+      'trial': {
+        badge: 'WIKI И ОШИБКИ · /wiki/error-trial-local-data-too-old',
+        badgeClass: 'badge-warning',
+        title: 'TRIAL_LOCAL_DATA_TOO_OLD — Пробный период недоступен',
+        html: `<p>Обнаружены локальные проекты или профили старше 15 дней. Для работы на этой базе необходимо оформить платную лицензию.</p>`
+      },
+      'seo-missing': {
+        badge: 'WIKI И ОШИБКИ · /wiki/error-job-license-feature-missing',
+        badgeClass: 'badge-warning',
+        title: 'JOB_LICENSE_FEATURE_MISSING — Нет права на модуль SEO',
+        html: `<p>Текущая лицензия включает только базовый режим Desktop. Докупите модуль SEO в <a href="javascript:void(0)" onclick="goScreen('s3')">карточке лицензии</a> (приобретается на всю лицензию целиком).</p>`
+      }
+    };
+
+    function selectHelpArticle(key) {
+      state.helpArticle = key;
+      document.querySelectorAll('#docsNavList .doc-link-item, #wikiNavList .doc-link-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById('doc-item-' + key) || document.getElementById('wiki-item-' + key);
+      if (activeEl) activeEl.classList.add('active');
+      renderHelpArticle();
+    }
+
+    function renderHelpArticle() {
+      const art = helpArticles[state.helpArticle] || helpArticles['activation'];
+      document.getElementById('helpArticleReader').innerHTML = `
+        <div style="margin-bottom:8px;"><span class="badge ${art.badgeClass}">${art.badge}</span></div>
+        <h2 style="margin:0 0 8px;font-size:20px;font-weight:800;">${art.title}</h2>
+        <div style="font-size:14px;color:var(--text-secondary);">${art.html}</div>
+      `;
+    }
+
+    function filterHelp() {
+      const q = (document.getElementById('helpSearchInput').value || '').trim().toLowerCase();
+      document.querySelectorAll('#docsNavList .doc-link-item, #wikiNavList .doc-link-item').forEach(el => {
+        const text = (el.textContent + ' ' + (el.dataset.search || '')).toLowerCase();
+        el.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+      });
+      if (q.includes('лимит') || q.includes('node')) selectHelpArticle('node-limit');
+      else if (q.includes('актив')) selectHelpArticle('activation');
+    }
+
+    function quickHelpSearch(query, articleKey) {
+      document.getElementById('helpSearchInput').value = query;
+      filterHelp();
+      selectHelpArticle(articleKey);
+    }
+
+    // ================= MODAL, COPY & TOAST =================
+    let modalAction = null;
+    function openModal(title, bodyHtml, confirmLabel, onConfirm) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = bodyHtml;
+      const btn = document.getElementById('modalConfirmBtn');
+      btn.textContent = confirmLabel;
+      modalAction = onConfirm;
+      btn.onclick = () => { if (modalAction) modalAction(); };
+      document.getElementById('modalBackdrop').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      modalAction = null;
+    }
+
+    function copyText(text, msg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+      showToast(msg || 'Скопировано');
+    }
+
+    function showToast(msg) {
+      const wrap = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = '✓ ' + msg;
+      wrap.appendChild(t);
+      setTimeout(() => { t.remove(); }, 2800);
+    }
+
+    // Ctrl+K shortcut to jump to Docs & Wiki search
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        goScreen('s6');
+        setTimeout(() => document.getElementById('helpSearchInput').focus(), 50);
+      }
+    });
+
+    // Init
+    document.getElementById('previewBody').innerHTML = previewTabsData['tab-projects'];
+    recalcPubPrice();
+    renderLicensesList();
+    renderHelpArticle();
+  </script>
+</body>
+</html>
