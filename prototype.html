@@ -1885,7 +1885,7 @@
                 <div class="doc-link-item" data-search="lease_expired истек допуск офлайн 24ч" onclick="selectHelpArticle('lease-expired')">
                   <span><code class="mono">LEASE_EXPIRED</code> — Истёк локальный допуск</span><span>→</span>
                 </div>
-                <div class="doc-link-item" data-search="trial_local_data_too_old триал база возраст 15 дней" onclick="selectHelpArticle('trial')">
+                <div class="doc-link-item" data-search="trial_local_data_too_old триал пробный период отказ" onclick="selectHelpArticle('trial')">
                   <span><code class="mono">TRIAL_LOCAL_DATA_TOO_OLD</code> — Отказ триала</span><span>→</span>
                 </div>
                 <div class="doc-link-item" data-search="job_license_feature_missing seo модуль право" onclick="selectHelpArticle('seo-missing')">
@@ -3374,11 +3374,7 @@
     function openTrialModal() {
       openFormModal(
         'Пробный период pgF (14 дней)',
-        `Пробный период предоставляется <strong>один раз на аккаунт и устройство</strong> при подтверждённом email.<br/><br/>
-        <div class="callout callout-info" style="margin-bottom:0;">
-          <span>ℹ️</span>
-          <div>При активации выполняется локальная проверка возраста базы pgF. Смена устройства на пробном периоде недоступна.</div>
-        </div>`,
+        `Пробный период предоставляется <strong>один раз на аккаунт и устройство</strong> при подтверждённом email. Смена устройства на пробном периоде недоступна.`,
         'Понятно',
         closeFormModal
       );
@@ -3525,7 +3521,7 @@
         badge: 'WIKI И ОШИБКИ · /wiki/error-trial-local-data-too-old',
         badgeClass: 'badge-warning',
         title: 'TRIAL_LOCAL_DATA_TOO_OLD — Пробный период недоступен',
-        html: `<p>Обнаружены локальные проекты или профили старше 15 дней. Для работы на этой базе необходимо оформить платную лицензию.</p>`
+        html: `<p>Пробный период недоступен: в локальной базе обнаружены записи старше допустимого порога. Для продолжения работы оформите платную лицензию.</p>`
       },
       'seo-missing': {
         badge: 'WIKI И ОШИБКИ · /wiki/error-job-license-feature-missing',
