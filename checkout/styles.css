@@ -111,6 +111,12 @@ svg {
   outline-offset: 2px;
 }
 
+.demo-bar :focus-visible,
+.sidebar :focus-visible {
+  outline: 3px solid #38BDF8;
+  outline-offset: 2px;
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -1357,4 +1363,61 @@ svg {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* Dark surface #94A3B8 without opacity (#606 / #623) */
+.demo-bar__label,
+.sidebar__section,
+.sidebar__user-role {
+  color: #94A3B8;
+  opacity: 1;
+}
+
+/* Renew & Downgrade Device Selection (#620, Q-DEV-1) */
+.downgrade-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.downgrade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.downgrade-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  cursor: pointer;
+}
+
+.downgrade-item--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.downgrade-item__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.downgrade-item__name {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.downgrade-item__sub {
+  font-size: 12px;
+  color: var(--text-secondary);
 }

@@ -45,8 +45,41 @@
     insufficient: { bonus: 500, main: 1500, label: 'Не хватает (2 000 ₽)' }
   };
 
+  var DEMO_LICENSES = {
+    'LIC-A1B2C3D4E5F6': {
+      publicId: 'LIC-A1B2C3D4E5F6',
+      name: 'Рабочая ферма #1',
+      status: 'ACTIVE',
+      periodEnd: '25.12.2026',
+      rights: 'Desktop, SEO',
+      currentCfg: '30d-3pc-seo1',
+      currentLimit: 3,
+      activeDevices: [
+        { id: 'dev-1', name: 'WS-01-ALPHA', os: 'Windows 11 Pro · 192.168.1.14', lastSeen: '27.11.2026 12:10' },
+        { id: 'dev-2', name: 'WS-02-BETA', os: 'Windows 10 LTSC · 192.168.1.28', lastSeen: '26.11.2026 19:45' },
+        { id: 'dev-3', name: 'SRV-03-GAMMA', os: 'Windows Server 2022 · 10.0.4.12', lastSeen: '25.11.2026 09:00' }
+      ]
+    },
+    'LIC-D4E5F6G7H8J9': {
+      publicId: 'LIC-D4E5F6G7H8J9',
+      name: 'Резервная студия',
+      status: 'EXPIRED',
+      periodEnd: '10.11.2026',
+      rights: 'Desktop',
+      currentCfg: '30d-1pc-seo0',
+      currentLimit: 1,
+      activeDevices: [
+        { id: 'dev-10', name: 'WS-OLD-01', os: 'Windows 11 Pro · 192.168.1.40', lastSeen: '09.11.2026 18:00' }
+      ]
+    }
+  };
+
   var state = {
     view: 'checkout', // checkout | invoice | paid
+    mode: 'purchase', // purchase | renew | upgrade
+    targetLicense: null,
+    selectedKeepDeviceIds: ['dev-1'],
+    renewInvalidId: '',
     slice: 3,         // 3 | 4
     cfgRaw: '30d-2pc-seo1',
     periodDays: 30,
@@ -183,7 +216,7 @@
       personalDiscount = Math.round(grossTotal * (DEMO_PLAN_CONFIG.personalDiscountPct / 100));
       netAfterDiscounts = Math.max(0, grossTotal - personalDiscount);
 
-      var promoObj = state.promoCode ? DEMO_PLAN_CONFIG.promoCodes[state.promoCode] : null;
+      var promoObj = (state.mode === 'purchase' && state.promoCode) ? DEMO_PLAN_CONFIG.promoCodes[state.promoCode] : null;
       if (promoObj) {
         if (promoObj.type === 'fixed') {
           promoDiscount = Math.min(netAfterDiscounts, promoObj.value);
@@ -330,6 +363,13 @@
     var bumpBtn = qs('#demo-price-bump');
     bumpBtn.setAttribute('aria-pressed', state.priceBumpActive ? 'true' : 'false');
     bumpBtn.textContent = state.priceBumpActive ? '✓ Цена тарифа +20% (сбросить)' : 'Цена тарифа +20%';
+
+    var modePurchBtn = qs('#demo-mode-purchase');
+    var modeRenewBtn = qs('#demo-mode-renew');
+    if (modePurchBtn && modeRenewBtn) {
+      modePurchBtn.setAttribute('aria-pressed', state.mode === 'purchase' ? 'true' : 'false');
+      modeRenewBtn.setAttribute('aria-pressed', state.mode === 'renew' ? 'true' : 'false');
+    }
   }
 
   function renderHeader() {
@@ -349,10 +389,22 @@
     navLicenses.classList.toggle('sidebar__link--active', state.view === 'paid');
 
     if (state.view === 'checkout') {
-      routePill.textContent = '/app/billing/checkout?cfg=' + state.cfgRaw;
-      bc.textContent = 'Оформление подписки';
-      title.textContent = 'Оформление подписки';
-      subtitle.textContent = 'Проверьте перенесённую конфигурацию из калькулятора и выберите способ оплаты новой лицензии.';
+      if (state.mode === 'renew' && state.targetLicense) {
+        routePill.textContent = '/app/billing/checkout?renew=' + state.targetLicense.publicId + '&cfg=' + state.cfgRaw;
+        bc.textContent = 'Продление ' + state.targetLicense.publicId;
+        title.textContent = 'Продление лицензии «' + state.targetLicense.name + '»';
+        subtitle.textContent = 'Выберите срок и лимит устройств на следующий оплаченный период (текущий действует до ' + state.targetLicense.periodEnd + ').';
+      } else if (state.mode === 'upgrade' && state.targetLicense) {
+        routePill.textContent = '/app/billing/checkout?upgrade=' + state.targetLicense.publicId;
+        bc.textContent = 'Докупка ' + state.targetLicense.publicId;
+        title.textContent = 'Докупка устройств / SEO для «' + state.targetLicense.name + '»';
+        subtitle.textContent = 'Пропорциональная доплата до конца текущего периода (' + state.targetLicense.periodEnd + ').';
+      } else {
+        routePill.textContent = '/app/billing/checkout?cfg=' + state.cfgRaw;
+        bc.textContent = 'Оформление подписки';
+        title.textContent = 'Оформление подписки';
+        subtitle.textContent = 'Проверьте перенесённую конфигурацию из калькулятора и выберите способ оплаты новой лицензии.';
+      }
     } else if (state.view === 'invoice' && state.invoice) {
       routePill.textContent = '/app/billing/invoices/' + state.invoice.id;
       bc.textContent = 'Счёт ' + state.invoice.id;
@@ -366,9 +418,103 @@
     }
   }
 
+  function renderRenewAndDowngrade(pr) {
+    var invalidAlert = qs('#renew-invalid-alert');
+    if (state.renewInvalidId) {
+      invalidAlert.classList.remove('is-hidden');
+      qs('#renew-invalid-text').textContent =
+        'Передан неизвестный или некорректный идентификатор лицензии: «' + state.renewInvalidId + '». Оформление переключено в режим покупки новой лицензии.';
+    } else {
+      invalidAlert.classList.add('is-hidden');
+    }
+
+    var licCard = qs('#renew-license-card');
+    var dgCard = qs('#renew-downgrade-card');
+    var lic = state.targetLicense;
+
+    if ((state.mode !== 'renew' && state.mode !== 'upgrade') || !lic) {
+      licCard.classList.add('is-hidden');
+      dgCard.classList.add('is-hidden');
+      return;
+    }
+
+    licCard.classList.remove('is-hidden');
+    qs('#renew-card-title').textContent = state.mode === 'upgrade' ? 'Докупка опций для лицензии' : 'Продлеваемая лицензия';
+    qs('#renew-license-id').textContent = lic.publicId;
+    qs('#renew-devices-link').setAttribute('href', '../devices/index.html?id=' + encodeURIComponent(lic.publicId));
+
+    var kv = qs('#renew-license-kv');
+    kv.textContent = '';
+    kv.appendChild(makeRow('Название', lic.name));
+    kv.appendChild(makeRow('Статус / срок', lic.status + ' · до ' + lic.periodEnd));
+    kv.appendChild(makeRow('Текущая конфигурация', lic.activeDevices.length + ' из ' + lic.currentLimit + ' ПК · ' + lic.rights));
+
+    var newLimit = pr.totalDevices;
+    var activeCount = lic.activeDevices.length;
+    if (state.mode === 'renew' && newLimit < activeCount) {
+      dgCard.classList.remove('is-hidden');
+      qs('#renew-downgrade-title').textContent =
+        'Граница периода: ' + lic.periodEnd + ' (лимит снижается с ' + activeCount + ' до ' + newLimit + ' ПК)';
+      qs('#renew-downgrade-desc').textContent =
+        'До ' + lic.periodEnd + ' все текущие устройства продолжат работу. В момент переключения периода останутся выбранные ' +
+        newLimit + ' устр., остальные отвяжутся автоматически (Q-DEV-1).';
+
+      // Trim selectedKeepDeviceIds if newLimit decreased
+      if (state.selectedKeepDeviceIds.length > newLimit) {
+        state.selectedKeepDeviceIds = state.selectedKeepDeviceIds.slice(0, newLimit);
+      }
+      qs('#renew-keep-counter').textContent = 'Выбрано: ' + state.selectedKeepDeviceIds.length + ' из ' + newLimit;
+
+      var listEl = qs('#renew-downgrade-list');
+      listEl.textContent = '';
+      var limitReached = state.selectedKeepDeviceIds.length >= newLimit;
+
+      lic.activeDevices.forEach(function (dev) {
+        var isChecked = state.selectedKeepDeviceIds.indexOf(dev.id) !== -1;
+        var isDisabled = !isChecked && limitReached;
+
+        var label = document.createElement('label');
+        label.className = 'downgrade-item' + (isDisabled ? ' downgrade-item--disabled' : '');
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = isChecked;
+        cb.disabled = isDisabled;
+        cb.addEventListener('change', function () {
+          if (cb.checked) {
+            if (state.selectedKeepDeviceIds.length < newLimit && state.selectedKeepDeviceIds.indexOf(dev.id) === -1) {
+              state.selectedKeepDeviceIds.push(dev.id);
+            }
+          } else {
+            state.selectedKeepDeviceIds = state.selectedKeepDeviceIds.filter(function (id) { return id !== dev.id; });
+          }
+          renderCheckoutView();
+        });
+
+        var meta = document.createElement('div');
+        meta.className = 'downgrade-item__meta';
+        var nameEl = document.createElement('span');
+        nameEl.className = 'downgrade-item__name mono';
+        nameEl.textContent = dev.name;
+        var subEl = document.createElement('span');
+        subEl.className = 'downgrade-item__sub';
+        subEl.textContent = dev.os + ' · активность: ' + dev.lastSeen;
+        meta.appendChild(nameEl);
+        meta.appendChild(subEl);
+
+        label.appendChild(cb);
+        label.appendChild(meta);
+        listEl.appendChild(label);
+      });
+    } else {
+      dgCard.classList.add('is-hidden');
+    }
+  }
+
   function renderCheckoutView() {
     var pr = getCurrentPricing();
     var isUnavailable = !!state.unavailableReason;
+    renderRenewAndDowngrade(pr);
 
     // Alerts
     var unavailAlert = qs('#unavailable-alert');
@@ -1151,7 +1297,7 @@
 
     // Paid view actions
     qs('#goto-licenses-btn').addEventListener('click', function () {
-      showToast('Переход в раздел «Мои лицензии» (/app/licenses) — отдельный макет.');
+      window.location.href = '../licenses/index.html';
     });
 
     qs('#restart-demo-btn').addEventListener('click', function () {
@@ -1161,6 +1307,31 @@
       render();
       showToast('Возврат к экрану оформления подписки.');
     });
+
+    // Mode demo toggles (#620)
+    var modePurchBtn = qs('#demo-mode-purchase');
+    if (modePurchBtn) {
+      modePurchBtn.addEventListener('click', function () {
+        state.mode = 'purchase';
+        state.targetLicense = null;
+        state.renewInvalidId = '';
+        state.view = 'checkout';
+        applyCfgPreset('30d-2pc-seo1');
+        render();
+      });
+    }
+    var modeRenewBtn = qs('#demo-mode-renew');
+    if (modeRenewBtn) {
+      modeRenewBtn.addEventListener('click', function () {
+        state.mode = 'renew';
+        state.targetLicense = DEMO_LICENSES['LIC-A1B2C3D4E5F6'];
+        state.renewInvalidId = '';
+        state.selectedKeepDeviceIds = ['dev-1'];
+        state.view = 'checkout';
+        applyCfgPreset('30d-1pc-seo0');
+        render();
+      });
+    }
 
     // Copy buttons
     qsa('[data-copy-target]').forEach(function (btn) {
@@ -1189,30 +1360,6 @@
       });
     });
 
-    qsa('[data-nav="licenses"], #mobile-licenses-link').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (state.paidResult) {
-          state.view = 'paid';
-          render();
-        } else {
-          showToast('Раздел «Мои лицензии» (/app/licenses) — отдельный макет. Завершите оплату, чтобы увидеть выдачу ключа.');
-        }
-      });
-    });
-
-    qsa('[data-nav="billing"]').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (state.invoice) {
-          state.view = 'invoice';
-          render();
-        } else {
-          showToast('Раздел «Баланс и счета» (/app/billing) — выставите счёт, чтобы увидеть экран счёта.');
-        }
-      });
-    });
-
     qsa('[data-route-preview]').forEach(function (a) {
       a.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1223,11 +1370,37 @@
 
   function initFromUrl() {
     var params = new URLSearchParams(window.location.search || '');
+    var renewId = params.get('renew');
+    var upgradeId = params.get('upgrade');
     var cfg = params.get('cfg');
-    if (cfg) {
-      applyCfgPreset(cfg);
+
+    if (renewId !== null && renewId !== '') {
+      if (DEMO_LICENSES[renewId]) {
+        state.mode = 'renew';
+        state.targetLicense = DEMO_LICENSES[renewId];
+        state.selectedKeepDeviceIds = state.targetLicense.activeDevices.length
+          ? [state.targetLicense.activeDevices[0].id]
+          : [];
+        applyCfgPreset(cfg || '30d-1pc-seo0');
+      } else {
+        state.mode = 'purchase';
+        state.targetLicense = null;
+        state.renewInvalidId = renewId;
+        applyCfgPreset(cfg || '30d-2pc-seo1');
+      }
+    } else if (upgradeId !== null && upgradeId !== '') {
+      if (DEMO_LICENSES[upgradeId]) {
+        state.mode = 'upgrade';
+        state.targetLicense = DEMO_LICENSES[upgradeId];
+        applyCfgPreset(cfg || state.targetLicense.currentCfg);
+      } else {
+        state.mode = 'purchase';
+        state.targetLicense = null;
+        state.renewInvalidId = upgradeId;
+        applyCfgPreset(cfg || '30d-2pc-seo1');
+      }
     } else {
-      applyCfgPreset('30d-2pc-seo1');
+      applyCfgPreset(cfg || '30d-2pc-seo1');
     }
 
     var sliceParam = params.get('slice');

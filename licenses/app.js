@@ -565,15 +565,7 @@
 
     if (lic.status === "EXPIRED") {
       const renewLink = createEl("a", "btn btn--primary btn--sm", "Продлить");
-      renewLink.href = "../checkout/index.html?cfg=" + encodeURIComponent(lic.renewCfg || "30d-1pc-seo0");
-      renewLink.addEventListener("click", function (evt) {
-        evt.preventDefault();
-        showRouteInfo(
-          "/app/billing/checkout?cfg=" + (lic.renewCfg || "30d-1pc-seo0") + "&renew=" + lic.publicId,
-          "Продление лицензии",
-          "Переход к оформлению продления лицензии " + lic.publicId + ". Со следующего периода можно изменить лимит устройств и модуль SEO."
-        );
-      });
+      renewLink.href = "../checkout/index.html?cfg=" + encodeURIComponent(lic.renewCfg || "30d-1pc-seo0") + "&renew=" + encodeURIComponent(lic.publicId);
       actions.appendChild(renewLink);
     }
 
@@ -881,6 +873,8 @@
         const route = btn.dataset.navRoute;
         if (route === "/app/licenses") {
           openListView(true);
+        } else if (route === "/app/billing") {
+          window.location.href = "../billing/index.html";
         } else {
           showRouteInfo(route);
         }
@@ -1145,21 +1139,13 @@
       evt.preventDefault();
       const lic = getLicenseById(state.selectedId);
       if (!lic) return;
-      showRouteInfo(
-        "/app/billing/checkout?cfg=" + (lic.renewCfg || "30d-1pc-seo0") + "&renew=" + lic.publicId,
-        "Продление лицензии",
-        "Переход в оформление продления для " + lic.publicId + ". Вы сможете изменить количество доп. устройств и модуль SEO со следующего периода."
-      );
+      window.location.href = "../checkout/index.html?cfg=" + encodeURIComponent(lic.renewCfg || "30d-1pc-seo0") + "&renew=" + encodeURIComponent(lic.publicId);
     });
 
     els.actionUpgrade.addEventListener("click", function () {
       const lic = getLicenseById(state.selectedId);
       if (!lic) return;
-      showRouteInfo(
-        "/app/billing/checkout?upgrade=" + lic.publicId,
-        "Докупка устройств / модуля SEO",
-        "Доплата рассчитывается пропорционально остатку текущего периода лицензии " + lic.publicId + "."
-      );
+      window.location.href = "../checkout/index.html?upgrade=" + encodeURIComponent(lic.publicId);
     });
 
     // Поиск помощи (Ctrl+K)

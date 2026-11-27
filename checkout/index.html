@@ -37,6 +37,12 @@
         <span class="demo-bar__label">Каталог:</span>
         <button type="button" class="demo-chip demo-chip--warn" id="demo-price-bump" data-action="toggle-price-bump" aria-pressed="false">Цена тарифа +20%</button>
       </div>
+
+      <div class="demo-bar__group" role="group" aria-label="Режим оформления (#620)">
+        <span class="demo-bar__label">Режим:</span>
+        <button type="button" class="demo-chip" id="demo-mode-purchase" data-action="set-mode" data-value="purchase" aria-pressed="true">Новая покупка</button>
+        <button type="button" class="demo-chip" id="demo-mode-renew" data-action="set-mode" data-value="renew" aria-pressed="false">Продление LIC-A1B2C3D4E5F6 (3→1 ПК)</button>
+      </div>
     </div>
   </div>
 
@@ -51,7 +57,8 @@
     </div>
     <nav class="mobile-header__nav" aria-label="Навигация кабинета">
       <a class="mobile-nav-link" href="../landing/index.html#pricing" id="mobile-pricing-link">Тариф</a>
-      <a class="mobile-nav-link" href="#licenses-anchor" id="mobile-licenses-link">Лицензии</a>
+      <a class="mobile-nav-link" href="../licenses/index.html" id="mobile-licenses-link">Лицензии</a>
+      <a class="mobile-nav-link" href="../billing/index.html" id="mobile-billing-link">Счета</a>
     </nav>
   </header>
 
@@ -68,9 +75,9 @@
 
       <nav class="sidebar__nav">
         <span class="sidebar__section">Подписки и оплата</span>
-        <a class="sidebar__link" href="#licenses-anchor" id="nav-licenses" data-nav="licenses">Мои лицензии</a>
+        <a class="sidebar__link" href="../licenses/index.html" id="nav-licenses">Мои лицензии</a>
         <a class="sidebar__link sidebar__link--active" href="#checkout-anchor" id="nav-checkout" data-nav="checkout" aria-current="page">Оформление подписки</a>
-        <a class="sidebar__link" href="#billing-anchor" id="nav-billing" data-nav="billing">Баланс и счета</a>
+        <a class="sidebar__link" href="../billing/index.html" id="nav-billing">Баланс и счета</a>
 
         <span class="sidebar__section">Справка (открыта всегда)</span>
         <a class="sidebar__link" href="../landing/index.html#pricing" id="nav-pricing">Калькулятор на главной</a>
@@ -88,7 +95,7 @@
     <main class="workspace" id="main-content" tabindex="-1">
       <div class="workspace-top">
         <nav class="breadcrumbs" aria-label="Хлебные крошки">
-          <a href="#billing-anchor" data-nav="billing">Баланс и счета</a>
+          <a href="../billing/index.html">Баланс и счета</a>
           <span aria-hidden="true">/</span>
           <span class="breadcrumbs__current" id="breadcrumb-current">Оформление подписки</span>
         </nav>
@@ -134,9 +141,47 @@
           <p id="checkout-price-bump-text">Счёт ещё не выставлен, поэтому предварительный расчёт ниже пересчитан по новой актуальной цене. После нажатия «Выставить счёт» сумма и состав будут зафиксированы на 24 часа.</p>
         </div>
 
+        <!-- Unknown / XSS ?renew= or ?upgrade= Alert (strictly via textContent) -->
+        <div id="renew-invalid-alert" class="alert alert--err is-hidden" role="alert" style="margin-bottom: 18px;">
+          <p class="alert__title">Лицензия для продления / докупки не найдена</p>
+          <p id="renew-invalid-text"></p>
+        </div>
+
         <div class="checkout-grid">
           <!-- Left Column: Payment Options & Conditions -->
           <div class="checkout-col">
+            <!-- Renew / Upgrade Target License Card (#620) -->
+            <div id="renew-license-card" class="card is-hidden">
+              <div class="card__head">
+                <h2 class="card__title" id="renew-card-title">Продление лицензии</h2>
+                <span class="badge badge--info mono" id="renew-license-id">LIC-A1B2C3D4E5F6</span>
+              </div>
+              <div class="card__body">
+                <div class="kv-list" id="renew-license-kv"></div>
+                <div style="margin-top: 12px;">
+                  <a href="../devices/index.html?id=LIC-A1B2C3D4E5F6" class="btn btn--secondary btn--sm" id="renew-devices-link">Управление устройствами →</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Downgrade Device Selection Card (#620, Q-DEV-1) -->
+            <div id="renew-downgrade-card" class="card is-hidden" role="region" aria-label="Выбор оставляемых устройств при снижении лимита">
+              <div class="card__head">
+                <h2 class="card__title">Снижение лимита устройств со следующего периода</h2>
+                <span class="badge badge--warn tabular" id="renew-keep-counter">Выбрано: 1 из 1</span>
+              </div>
+              <div class="card__body">
+                <div class="alert alert--warn" role="status" style="margin-bottom: 12px;">
+                  <p class="alert__title" id="renew-downgrade-title">Граница периода: 25.12.2026</p>
+                  <p id="renew-downgrade-desc">Со следующего периода лимит устройств уменьшится. Отметьте устройства, которые останутся привязанными; остальные отвяжутся автоматически на границе периода.</p>
+                </div>
+                <p class="form-hint" id="renew-quota-note" style="margin: 0 0 8px;">
+                  Запланированная отвязка при снижении лимита не расходует обычную квоту «3 отвязки за 30 дней» (Q-DEV-1).
+                </p>
+                <div class="downgrade-list" id="renew-downgrade-list"></div>
+              </div>
+            </div>
+
             <!-- Slice 3 Notice -->
             <div id="slice3-info-box" class="alert alert--info">
               <p class="alert__title">Срез 3 (R1-Dev): прямая оплата по ручному счёту</p>
@@ -561,6 +606,7 @@
                 <button type="button" class="btn btn--secondary btn--sm" id="sim-bump-price-btn">Изменить цену тарифа (+20%)</button>
                 <button type="button" class="btn btn--primary btn--sm" id="sim-admin-approve-btn">Подтвердить оплату (админ)</button>
                 <button type="button" class="btn btn--secondary btn--sm" id="sim-admin-reject-btn">Отклонить чек (админ)</button>
+                <a class="btn btn--secondary btn--sm" href="../billing/index.html?invoice=INV-2026-000142" id="sim-open-in-billing-link">Открыть в «Баланс и счета»</a>
                 <button type="button" class="btn btn--ghost btn--sm" id="sim-back-checkout-btn">← Назад к оформлению</button>
               </div>
             </div>

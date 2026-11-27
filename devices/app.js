@@ -1784,14 +1784,7 @@
       if (lic.status !== "ACTIVE") {
         return;
       }
-      openRoutePreview("/app/billing/checkout?upgrade=" + encodeURIComponent(lic.publicId));
-      els.routePreviewTitle.textContent = "Докупка дополнительных устройств";
-      els.routePreviewDesc.textContent =
-        "Переход к пропорциональной докупке слотов до конца текущего оплаченного периода лицензии «" +
-        lic.name +
-        "» (" +
-        lic.publicId +
-        ").";
+      window.location.href = "../checkout/index.html?upgrade=" + encodeURIComponent(lic.publicId);
     });
 
     // Сохранение выбора оставляемых устройств при снижении лимита (§5.2)
@@ -1861,7 +1854,12 @@
     document.querySelectorAll("[data-nav-route]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         closeMobileSidebar();
-        openRoutePreview(btn.getAttribute("data-nav-route"));
+        const route = btn.getAttribute("data-nav-route");
+        if (route === "/app/billing") {
+          window.location.href = "../billing/index.html";
+          return;
+        }
+        openRoutePreview(route);
       });
     });
     els.btnCloseRouteModal.addEventListener("click", closeRoutePreview);

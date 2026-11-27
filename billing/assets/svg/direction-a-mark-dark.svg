@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" role="img" aria-label="Scenor — знак «Маршрут сценария» (тёмный фон)">
+  <title>Scenor — Направление A (тёмный вариант)</title>
+  <defs>
+    <linearGradient id="scenor-a-bg-dark" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E4ED8"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#scenor-a-bg-dark)"/>
+  <path d="M21 17.5H36.5C38.433 17.5 40 19.067 40 21C40 22.933 38.433 24.5 36.5 24.5H25C23.895 24.5 23 25.395 23 26.5C23 27.605 23.895 28.5 25 28.5H38.5C44.299 28.5 49 33.201 49 39C49 44.799 44.299 49.5 38.5 49.5H20.5C18.567 49.5 17 47.933 17 46C17 44.067 18.567 42.5 20.5 42.5H38.5C40.433 42.5 42 40.933 42 39C42 37.067 40.433 35.5 38.5 35.5H25C19.201 35.5 14.5 30.799 14.5 25C14.5 20.858 17.41 17.5 21 17.5Z" fill="#FFFFFF"/>
+  <circle cx="46.5" cy="21" r="4.5" fill="#7DD3FC"/>
+</svg>
