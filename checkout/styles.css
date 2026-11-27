@@ -1232,6 +1232,51 @@ svg {
   border-top: 1px solid var(--border-subtle);
 }
 
+/* File Upload (Receipt / Proof Attachment) */
+.file-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--border-strong);
+  background: var(--bg-surface-alt);
+}
+
+.file-upload__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.file-upload__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.file-upload__name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.file-upload__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.file-upload__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 /* Toast */
 .toast {
   position: fixed;

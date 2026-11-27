@@ -940,15 +940,81 @@
       }
     });
 
+    // Proof file uploader (real <input type="file"> + demo preset)
+    var selectedProofFile = {
+      name: 'receipt_PGF-2026-0142.png',
+      sub: '184 КБ · демо-чек (нажмите «Выбрать файл», чтобы загрузить свой)'
+    };
+
+    function syncProofFileUi() {
+      var nameEl = qs('#proof-file-name');
+      var subEl = qs('#proof-file-sub');
+      var clearBtn = qs('#proof-file-clear-btn');
+      var demoBtn = qs('#proof-file-demo-btn');
+      if (!nameEl || !subEl) return;
+      if (selectedProofFile) {
+        nameEl.textContent = selectedProofFile.name;
+        subEl.textContent = selectedProofFile.sub;
+        clearBtn.classList.remove('is-hidden');
+        demoBtn.classList.add('is-hidden');
+      } else {
+        nameEl.textContent = 'Файл чека не выбран';
+        subEl.textContent = 'Поддерживаются PNG, JPG, PDF до 10 МБ';
+        clearBtn.classList.add('is-hidden');
+        demoBtn.classList.remove('is-hidden');
+      }
+    }
+
+    qs('#proof-file-input').addEventListener('change', function (e) {
+      var errEl = qs('#proof-form-error');
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (f.size > 10 * 1024 * 1024) {
+        errEl.textContent = 'Файл превышает лимит 10 МБ. Выберите другой файл (PNG, JPG или PDF).';
+        errEl.classList.remove('is-hidden');
+        e.target.value = '';
+        return;
+      }
+      errEl.classList.add('is-hidden');
+      var kb = Math.max(1, Math.round(f.size / 1024));
+      selectedProofFile = {
+        name: f.name,
+        sub: kb + ' КБ · выбран с устройства'
+      };
+      syncProofFileUi();
+      showToast('Файл чека прикреплён: ' + f.name);
+    });
+
+    qs('#proof-file-pick-btn').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        qs('#proof-file-input').click();
+      }
+    });
+
+    qs('#proof-file-clear-btn').addEventListener('click', function () {
+      qs('#proof-file-input').value = '';
+      selectedProofFile = null;
+      syncProofFileUi();
+    });
+
+    qs('#proof-file-demo-btn').addEventListener('click', function () {
+      selectedProofFile = {
+        name: 'receipt_PGF-2026-0142.png',
+        sub: '184 КБ · демо-чек (нажмите «Выбрать файл», чтобы загрузить свой)'
+      };
+      syncProofFileUi();
+    });
+
     // Proof submission (K2)
     qs('#proof-form').addEventListener('submit', function (e) {
       e.preventDefault();
       if (!state.invoice) return;
       var tx = (qs('#proof-tx-input').value || '').trim();
-      var file = (qs('#proof-file-input').value || '').trim();
+      var file = selectedProofFile ? selectedProofFile.name : '';
       var errEl = qs('#proof-form-error');
       if (!tx && !file) {
-        errEl.textContent = 'Укажите хэш транзакции или имя файла чека для отправки на проверку.';
+        errEl.textContent = 'Прикрепите файл чека (PNG/JPG/PDF) или укажите хэш транзакции для отправки на проверку.';
         errEl.classList.remove('is-hidden');
         return;
       }

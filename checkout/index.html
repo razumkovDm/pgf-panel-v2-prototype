@@ -446,9 +446,22 @@
                     <input type="text" id="proof-tx-input" class="input mono" value="0x9a4f7c21b8e30d6f1200demo" placeholder="Введите TXID или номер платежа">
                   </div>
                   <div class="form-field">
-                    <label for="proof-file-input">Чек или скриншот перевода (PNG, JPG, PDF)</label>
-                    <input type="text" id="proof-file-input" class="input" value="receipt_PGF-2026-0142.png" placeholder="Имя файла чека (демо)">
-                    <span class="form-hint">После отправки в срок счёт перейдёт в «На проверке», а зафиксированная цена сохранится даже если таймер 24 ч истечёт во время проверки.</span>
+                    <label for="proof-file-input">Чек или скриншот перевода (загрузка файла: PNG, JPG, PDF, до 10 МБ)</label>
+                    <input type="file" id="proof-file-input" class="sr-only" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf">
+                    <div class="file-upload" id="proof-file-box">
+                      <div class="file-upload__row">
+                        <div class="file-upload__meta">
+                          <span class="file-upload__name" id="proof-file-name">receipt_PGF-2026-0142.png</span>
+                          <span class="file-upload__sub" id="proof-file-sub">184 КБ · демо-чек (нажмите «Выбрать файл», чтобы загрузить свой)</span>
+                        </div>
+                        <div class="file-upload__actions">
+                          <label for="proof-file-input" class="btn btn--secondary btn--sm" id="proof-file-pick-btn" tabindex="0">Выбрать файл</label>
+                          <button type="button" class="btn btn--ghost btn--sm" id="proof-file-clear-btn">Убрать</button>
+                          <button type="button" class="btn btn--ghost btn--sm is-hidden" id="proof-file-demo-btn">Демо-чек</button>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="form-hint">Загрузите скриншот или PDF-квитанцию файлом (ссылку вставлять не нужно). После отправки в срок счёт перейдёт в «На проверке», а зафиксированная цена сохранится даже если таймер 24 ч истечёт во время проверки.</span>
                   </div>
                   <div id="proof-form-error" class="alert alert--err is-hidden" role="alert" style="margin-bottom: 12px;"></div>
                   <button type="submit" class="btn btn--primary btn--lg btn--full" id="submit-proof-btn">
