@@ -459,7 +459,19 @@
     qs('#edit-config-link').setAttribute('href', editHref);
     qs('#mobile-pricing-link').setAttribute('href', editHref);
     qs('#nav-pricing').setAttribute('href', editHref);
-    qs('#edit-config-route-hint').innerHTML = 'Калькулятор с выбранным cfg: <code class="mono">/#pricing?cfg=' + state.cfgRaw + '</code>';
+    var routeDisplay = '/?cfg=' + state.cfgRaw + '#pricing';
+    var routeCode = qs('#edit-config-route-code');
+    if (routeCode) {
+      routeCode.textContent = routeDisplay;
+    } else {
+      var routeHint = qs('#edit-config-route-hint');
+      routeHint.textContent = '';
+      routeHint.appendChild(document.createTextNode('Калькулятор с выбранным cfg: '));
+      var codeEl = document.createElement('code');
+      codeEl.className = 'mono';
+      codeEl.textContent = routeDisplay;
+      routeHint.appendChild(codeEl);
+    }
 
     // Inline Configuration Editor sync
     var toggleBtn = qs('#edit-config-toggle-btn');
@@ -539,6 +551,7 @@
     var snap = inv.snapshot;
     var currentCatalog = getCurrentPricing();
     var channel = DEMO_PLAN_CONFIG.channels[inv.channel] || DEMO_PLAN_CONFIG.channels.usdt_trc20;
+    var rejectedAfterExpiry = inv.status === 'REJECTED' && Boolean(inv.timerExpiredAfterProof);
 
     // Stepper
     var steps = qsa('#invoice-stepper .step');
@@ -549,7 +562,7 @@
         el.classList.add('step--done');
       } else if (key === 'awaiting') {
         if (inv.status === 'AWAITING_PAYMENT') el.classList.add('step--active');
-        else if (inv.status === 'EXPIRED') el.classList.add('step--err');
+        else if (inv.status === 'EXPIRED' || rejectedAfterExpiry) el.classList.add('step--err');
         else if (inv.status === 'REJECTED') el.classList.add('step--warn');
         else el.classList.add('step--done');
       } else if (key === 'review') {
@@ -589,11 +602,19 @@
       badge.textContent = 'На проверке';
     } else if (inv.status === 'REJECTED') {
       banner.className = 'alert alert--err';
-      stTitle.textContent = 'Подтверждение отклонено (REJECTED)';
-      stDesc.textContent = 'Причина (демо): неразборчивый скриншот / не найден код платежа ' + inv.paymentCode + '. Пока срок 24 ч не истёк, вы можете прикрепить корректное подтверждение.';
-      badge.className = 'badge badge--err';
-      badge.textContent = 'Отклонён';
-      timerVal.textContent = '24 ч (осталось 22 ч 10 мин)';
+      if (rejectedAfterExpiry) {
+        stTitle.textContent = 'Подтверждение отклонено после истечения срока (REJECTED)';
+        stDesc.textContent = 'Причина (демо): неразборчивый скриншот / не найден код платежа ' + inv.paymentCode + '. Срок действия счёта (24 ч) уже истёк — повторная отправка чека по этому счёту недоступна. Оформите новый счёт по актуальной цене' + (inv.heldTotal > 0 ? ', а резерв баланса (' + formatRub(inv.heldTotal) + ') возвращается на ваш баланс.' : '.');
+        badge.className = 'badge badge--err';
+        badge.textContent = 'Отклонён (срок истёк)';
+        timerVal.textContent = 'Истёк (0 ч 00 мин)';
+      } else {
+        stTitle.textContent = 'Подтверждение отклонено (REJECTED)';
+        stDesc.textContent = 'Причина (демо): неразборчивый скриншот / не найден код платежа ' + inv.paymentCode + '. Пока срок 24 ч не истёк, вы можете прикрепить корректное подтверждение.';
+        badge.className = 'badge badge--err';
+        badge.textContent = 'Отклонён';
+        timerVal.textContent = '24 ч (осталось 22 ч 10 мин)';
+      }
     } else if (inv.status === 'EXPIRED') {
       banner.className = 'alert alert--err';
       stTitle.textContent = 'Счёт истёк без подтверждения (EXPIRED)';
@@ -613,7 +634,7 @@
     // Price lock comparison banner (Risk 1)
     var lockBanner = qs('#invoice-price-lock-banner');
     var catalogChanged = state.priceBumpActive !== snap.priceBumpActive;
-    lockBanner.classList.toggle('is-hidden', !catalogChanged || inv.status === 'EXPIRED' || inv.status === 'LATE_PAYMENT_REVIEW');
+    lockBanner.classList.toggle('is-hidden', !catalogChanged || inv.status === 'EXPIRED' || inv.status === 'LATE_PAYMENT_REVIEW' || rejectedAfterExpiry);
     if (catalogChanged) {
       var newDue = inv.paymentMethod === 'combined'
         ? Math.max(0, currentCatalog.netAfterDiscounts - snap.heldTotal)
@@ -632,15 +653,22 @@
     qs('#invoice-req-amount').textContent = formatRub(inv.amountDue);
 
     // Cards visibility by status
-    var showProofForm = inv.status === 'AWAITING_PAYMENT' || inv.status === 'REJECTED';
+    var showProofForm = inv.status === 'AWAITING_PAYMENT' || (inv.status === 'REJECTED' && !rejectedAfterExpiry);
     qs('#invoice-proof-card').classList.toggle('is-hidden', !showProofForm);
     qs('#invoice-under-review-card').classList.toggle('is-hidden', inv.status !== 'UNDER_REVIEW');
+    qs('#invoice-rejected-expired-card').classList.toggle('is-hidden', !rejectedAfterExpiry);
     qs('#invoice-expired-card').classList.toggle('is-hidden', inv.status !== 'EXPIRED');
     qs('#invoice-late-card').classList.toggle('is-hidden', inv.status !== 'LATE_PAYMENT_REVIEW');
 
     if (inv.status === 'UNDER_REVIEW') {
       qs('#submitted-tx-val').textContent = inv.proofTx || '—';
       qs('#submitted-file-val').textContent = inv.proofFile || '—';
+    }
+
+    if (rejectedAfterExpiry) {
+      qs('#rejected-expired-reserve-note').textContent = inv.heldTotal > 0
+        ? ', а зарезервированные средства баланса (' + formatRub(inv.heldTotal) + ') возвращены на ваш баланс'
+        : '';
     }
 
     if (inv.status === 'EXPIRED') {
@@ -655,7 +683,7 @@
     var expireBtn = qs('#sim-expire-timer-btn');
     approveBtn.disabled = !(inv.status === 'UNDER_REVIEW' || inv.status === 'LATE_PAYMENT_REVIEW');
     rejectBtn.disabled = inv.status !== 'UNDER_REVIEW';
-    expireBtn.disabled = inv.status === 'EXPIRED' || inv.status === 'LATE_PAYMENT_REVIEW';
+    expireBtn.disabled = inv.status === 'EXPIRED' || inv.status === 'LATE_PAYMENT_REVIEW' || rejectedAfterExpiry;
     qs('#sim-bump-price-btn').textContent = state.priceBumpActive
       ? 'Вернуть базовую цену тарифа'
       : 'Изменить цену тарифа (+20%)';
@@ -664,9 +692,15 @@
     renderPills(qs('#invoice-config-pills'), snap.periodLabel, snap.totalDevices, snap.extraDevices, snap.includeSeo, false);
     renderBreakdown(qs('#invoice-breakdown-rows'), snap, { slice: inv.slice, paymentMethod: inv.paymentMethod });
     qs('#invoice-total-amount').textContent = formatRub(inv.amountDue);
-    qs('#invoice-snapshot-note').textContent = inv.heldTotal > 0
-      ? 'Резерв баланса (held_minor): ' + formatRub(inv.heldTotal) + ' закреплён за счётом. Валюта: RUB.'
-      : 'Снимок цены зафиксирован при выставлении счёта. Изменение тарифа в админке его не меняет.';
+    if (inv.status === 'EXPIRED' || rejectedAfterExpiry) {
+      qs('#invoice-snapshot-note').textContent = inv.heldTotal > 0
+        ? 'Счёт закрыт; резерв баланса (held_minor): ' + formatRub(inv.heldTotal) + ' возвращён на ваш баланс.'
+        : 'Счёт закрыт; для новой покупки нужен свежий расчёт по актуальной цене каталога.';
+    } else {
+      qs('#invoice-snapshot-note').textContent = inv.heldTotal > 0
+        ? 'Резерв баланса (held_minor): ' + formatRub(inv.heldTotal) + ' закреплён за счётом. Валюта: RUB.'
+        : 'Снимок цены зафиксирован при выставлении счёта. Изменение тарифа в админке его не меняет.';
+    }
   }
 
   function renderPaidView() {
@@ -1018,12 +1052,21 @@
         errEl.classList.remove('is-hidden');
         return;
       }
+      if (!state.invoice || (state.invoice.status === 'REJECTED' && state.invoice.timerExpiredAfterProof)) return;
       errEl.classList.add('is-hidden');
       state.invoice.proofTx = tx || 'Не указан';
       state.invoice.proofFile = file || 'Не прикреплён';
       state.invoice.status = 'UNDER_REVIEW';
       render();
       showToast('Чек отправлен в срок. Статус счёта: «На проверке» (UNDER_REVIEW).');
+    });
+
+    // Rejected after expiry -> New invoice at current price
+    qs('#rejected-new-invoice-btn').addEventListener('click', function () {
+      state.invoice = null;
+      state.view = 'checkout';
+      render();
+      showToast('Возврат к новому расчёту по актуальной цене каталога.');
     });
 
     // Expired -> New invoice vs Late payment
@@ -1055,7 +1098,7 @@
         state.invoice.timerExpiredAfterProof = true;
         render();
         showToast('Таймер 24 ч истёк, но чек подан в срок — счёт остаётся «На проверке» с сохранённой ценой.');
-      } else if (state.invoice.status === 'AWAITING_PAYMENT' || state.invoice.status === 'REJECTED') {
+      } else if (state.invoice.status === 'AWAITING_PAYMENT' || (state.invoice.status === 'REJECTED' && !state.invoice.timerExpiredAfterProof)) {
         state.invoice.status = 'EXPIRED';
         render();
         showToast('Таймер 24 ч истёк без чека — счёт переведён в EXPIRED.');
@@ -1091,7 +1134,14 @@
       if (!state.invoice || state.invoice.status !== 'UNDER_REVIEW') return;
       state.invoice.status = 'REJECTED';
       render();
-      showToast('Чек отклонён администратором (демо). До истечения срока можно отправить повторно.');
+      if (state.invoice.timerExpiredAfterProof) {
+        showToast(
+          'Чек отклонён после истечения срока 24 ч (демо). Повторная подача закрыта — нужен новый расчёт' +
+          (state.invoice.heldTotal > 0 ? ', резерв баланса возвращён.' : '.')
+        );
+      } else {
+        showToast('Чек отклонён администратором (демо). До истечения срока можно отправить повторно.');
+      }
     });
 
     qs('#sim-back-checkout-btn').addEventListener('click', function () {

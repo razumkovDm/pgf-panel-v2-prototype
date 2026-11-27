@@ -332,7 +332,7 @@
                 </button>
 
                 <p class="form-hint" id="edit-config-route-hint" style="margin: 10px 0 0; text-align: center;">
-                  Калькулятор с выбранным cfg: <code class="mono">/#pricing?cfg=30d-2pc-seo1</code>
+                  Калькулятор с выбранным cfg: <code class="mono" id="edit-config-route-code">/?cfg=30d-2pc-seo1#pricing</code>
                 </p>
               </div>
             </div>
@@ -491,6 +491,25 @@
                     <span class="kv-row__label">Подано до истечения срока</span>
                     <span class="kv-row__value" style="color: var(--status-ok-text);">Да · цена и состав зафиксированы до решения администратора</span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rejected After Expiry Card (§5.1 #590: now >= expires_at -> new invoice, return held_minor) -->
+            <div class="card is-hidden" id="invoice-rejected-expired-card">
+              <div class="card__head">
+                <h2 class="card__title">Подтверждение отклонено после истечения 24 ч (REJECTED)</h2>
+                <span class="badge badge--err">Нужен новый счёт</span>
+              </div>
+              <div class="card__body">
+                <p style="margin: 0 0 12px;">
+                  Администратор отклонил приложенное подтверждение, а 24-часовое окно действия счёта уже завершилось. Повторная загрузка чека для этого счёта недоступна, старая фиксация цены снята<span id="rejected-expired-reserve-note"></span>.
+                </p>
+                <p style="margin: 0 0 14px; color: var(--text-secondary);">
+                  Чтобы завершить покупку, оформите новый расчёт по актуальной цене каталога.
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button type="button" class="btn btn--primary" id="rejected-new-invoice-btn">Новый расчёт по актуальной цене</button>
                 </div>
               </div>
             </div>
