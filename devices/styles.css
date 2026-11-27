@@ -1262,6 +1262,13 @@ select:focus-visible,
   gap: 5px;
 }
 
+.section-card__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
 .device-keep-label {
   display: inline-flex;
   align-items: center;
@@ -1278,11 +1285,21 @@ select:focus-visible,
   width: fit-content;
 }
 
+.device-keep-label--disabled {
+  background: var(--brand-surface-subtle);
+  color: var(--brand-text-muted);
+  cursor: not-allowed;
+}
+
 .device-keep-label input {
   width: 16px;
   height: 16px;
   accent-color: var(--brand-primary);
   cursor: pointer;
+}
+
+.device-keep-label--disabled input {
+  cursor: not-allowed;
 }
 
 .device-row__actions {

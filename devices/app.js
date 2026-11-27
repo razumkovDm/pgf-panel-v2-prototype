@@ -418,7 +418,7 @@
         publicId: "LIC-A1B2C3D4E5F6",
         name: "Рабочая ферма #1",
         status: "ACTIVE",
-        termText: "Текущий период до 25.12.2026 · далее лимит 1 устройство",
+        termText: "Текущий период до 25.12.2026 · далее снижение лимита",
         rightsText: "Права: Desktop, SEO",
         devicesLimit: 3,
         quotaUsed: 1,
@@ -428,8 +428,8 @@
         downgradeWarning: {
           switchDate: "25.12.2026",
           nextLimit: 1,
-          selectedKeepDeviceId: "PC-a1b2c3d4",
-          savedKeepDeviceId: null
+          selectedKeepDeviceIds: ["PC-a1b2c3d4"],
+          savedKeepDeviceIds: null
         },
         nodeLimitActive: false,
         nodeLimitRestored: false,
@@ -449,6 +449,14 @@
             lastSeen: "5 ч назад",
             leaseUntil: "27.11.2026 05:10",
             os: "Windows Server 2022"
+          },
+          {
+            id: "PC-5e4d3c2b",
+            appVersion: "pgF 0.1.0",
+            boundAt: "24.11.2026",
+            lastSeen: "1 ч назад",
+            leaseUntil: "27.11.2026 09:05",
+            os: "Windows 10 x64"
           }
         ],
         history: buildRichHistory("LIC-A1B2C3D4E5F6")
@@ -587,6 +595,7 @@
     activeDevicesCount: document.getElementById("active-devices-count"),
     activeDevicesSubtitle: document.getElementById("active-devices-subtitle"),
     downgradeSaveWrap: document.getElementById("downgrade-save-wrap"),
+    downgradeSelectionCounter: document.getElementById("downgrade-selection-counter"),
     btnSaveKeepChoice: document.getElementById("btn-save-keep-choice"),
     devicesStateContainer: document.getElementById("devices-state-container"),
 
@@ -960,21 +969,44 @@
     // 5. Предупреждение о снижении лимита до границы периода (§5.2)
     if (lic.downgradeWarning) {
       const dw = lic.downgradeWarning;
-      const savedText = dw.savedKeepDeviceId
-        ? "Сохранено: на границе периода (" + dw.switchDate + ") останется " + dw.savedKeepDeviceId + ", остальные ПК будут автоматически отвязаны без расхода квоты 3/30 дн. (Q-DEV-1)."
-        : "Выберите ниже устройство, которое нужно оставить активным — остальные будут автоматически отвязаны в момент переключения периода без расхода квоты 3/30 дн. (Q-DEV-1).";
+      const limitWord = dw.nextLimit === 1 ? "1 устройство" : dw.nextLimit + " устройства";
+      const hasSaved = Array.isArray(dw.savedKeepDeviceIds);
+      const savedList = hasSaved && dw.savedKeepDeviceIds.length > 0 ? dw.savedKeepDeviceIds.join(", ") : "ни одного (все ПК будут отвязаны)";
+      const savedText = hasSaved
+        ? "Сохранено: на границе периода (" + dw.switchDate + ") останутся " + savedList + "; остальные ПК будут автоматически отвязаны без расхода квоты 3/30 дн. (Q-DEV-1)."
+        : "Отметьте чекбоксами ниже до " + dw.nextLimit + " ПК, которые нужно оставить активными — остальные будут автоматически отвязаны в момент переключения периода без расхода квоты 3/30 дн. (Q-DEV-1).";
+
+      const btnLimit1 = el("button", dw.nextLimit === 1 ? "btn btn--primary btn--sm" : "btn btn--secondary btn--sm", "Пример: 3 → 1");
+      btnLimit1.type = "button";
+      btnLimit1.addEventListener("click", function () {
+        dw.nextLimit = 1;
+        dw.selectedKeepDeviceIds = dw.selectedKeepDeviceIds.slice(0, 1);
+        dw.savedKeepDeviceIds = null;
+        renderAll();
+      });
+
+      const btnLimit2 = el("button", dw.nextLimit === 2 ? "btn btn--primary btn--sm" : "btn btn--secondary btn--sm", "Пример: 3 → 2 (мультивыбор)");
+      btnLimit2.type = "button";
+      btnLimit2.addEventListener("click", function () {
+        dw.nextLimit = 2;
+        if (dw.selectedKeepDeviceIds.length < 2 && lic.devices.length >= 2) {
+          dw.selectedKeepDeviceIds = lic.devices.slice(0, 2).map(function (d) { return d.id; });
+        }
+        dw.savedKeepDeviceIds = null;
+        renderAll();
+      });
 
       els.scenarioBanners.appendChild(
         createAlertBox(
-          dw.savedKeepDeviceId ? "ok" : "warn",
-          "Со следующего периода (" + dw.switchDate + ") лимит станет " + dw.nextLimit + " устройство",
+          hasSaved ? "ok" : "warn",
+          "Со следующего периода (" + dw.switchDate + ") лимит станет " + limitWord,
           "Сейчас действует текущий оплаченный лимит (" +
             lic.devicesLimit +
             "). С " +
             dw.switchDate +
             " сверхлимитные устройства потребуется отвязать, иначе при проверке все ПК получат NODE_LIMIT.",
           savedText,
-          [],
+          [btnLimit1, btnLimit2],
           "status"
         )
       );
@@ -1104,17 +1136,29 @@
 
     // state === "filled"
     els.activeDevicesCount.textContent = String(lic.devices.length);
-    els.activeDevicesSubtitle.textContent = isNodeLimitExceeded(lic)
-      ? "Отвяжите лишние ПК до лимита " + lic.devicesLimit + " — квота 3/30 дн. не расходуется"
-      : "ПК с действующей привязкой к этой лицензии";
+    if (lic.downgradeWarning) {
+      els.downgradeSelectionCounter.textContent =
+        "Выбрано: " + lic.downgradeWarning.selectedKeepDeviceIds.length + " из " + lic.downgradeWarning.nextLimit;
+      els.activeDevicesSubtitle.textContent =
+        "Отметьте чекбоксами до " +
+        lic.downgradeWarning.nextLimit +
+        " ПК, которые останутся активными после " +
+        lic.downgradeWarning.switchDate;
+    } else {
+      els.activeDevicesSubtitle.textContent = isNodeLimitExceeded(lic)
+        ? "Отвяжите лишние ПК до лимита " + lic.devicesLimit + " — квота 3/30 дн. не расходуется"
+        : "ПК с действующей привязкой к этой лицензии";
+    }
 
     const list = el("div", "device-list");
     const exceeded = isNodeLimitExceeded(lic);
 
     lic.devices.forEach(function (dev) {
       const isBusy = state.isUnbinding && state.unbindingDeviceId === dev.id;
-      const isKeepSelected = Boolean(
-        lic.downgradeWarning && lic.downgradeWarning.selectedKeepDeviceId === dev.id
+      const dw = lic.downgradeWarning;
+      const isKeepSelected = Boolean(dw && dw.selectedKeepDeviceIds.indexOf(dev.id) !== -1);
+      const isKeepDisabled = Boolean(
+        dw && !isKeepSelected && dw.selectedKeepDeviceIds.length >= dw.nextLimit
       );
 
       let rowClass = "device-row";
@@ -1138,11 +1182,11 @@
 
       if (exceeded) {
         top.appendChild(el("span", "status-badge status-badge--error", "NODE_LIMIT"));
-      } else if (lic.downgradeWarning && lic.downgradeWarning.savedKeepDeviceId) {
-        if (lic.downgradeWarning.savedKeepDeviceId === dev.id) {
-          top.appendChild(el("span", "status-badge status-badge--active", "Остаётся после " + lic.downgradeWarning.switchDate));
+      } else if (dw && Array.isArray(dw.savedKeepDeviceIds)) {
+        if (dw.savedKeepDeviceIds.indexOf(dev.id) !== -1) {
+          top.appendChild(el("span", "status-badge status-badge--active", "Остаётся после " + dw.switchDate));
         } else {
-          top.appendChild(el("span", "status-badge status-badge--expired", "Автоотвязка " + lic.downgradeWarning.switchDate));
+          top.appendChild(el("span", "status-badge status-badge--expired", "Автоотвязка " + dw.switchDate));
         }
       }
       main.appendChild(top);
@@ -1153,21 +1197,42 @@
       meta.appendChild(el("span", "device-meta__item", "Допуск до: " + dev.leaseUntil));
       main.appendChild(meta);
 
-      // Выбор оставляемого устройства при снижении лимита (§5.2)
-      if (lic.downgradeWarning) {
-        const keepLabel = el("label", "device-keep-label");
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = "keep-device-radio";
-        radio.value = dev.id;
-        radio.checked = isKeepSelected;
-        radio.addEventListener("change", function () {
-          lic.downgradeWarning.selectedKeepDeviceId = dev.id;
+      // Универсальный чекбокс выбора оставляемых устройств при снижении лимита (§5.2, работает для 3→1, 10→5 и др.)
+      if (dw) {
+        const keepLabel = el(
+          "label",
+          "device-keep-label" + (isKeepDisabled ? " device-keep-label--disabled" : "")
+        );
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "keep-device-checkbox";
+        checkbox.value = dev.id;
+        checkbox.checked = isKeepSelected;
+        checkbox.disabled = isKeepDisabled;
+        if (isKeepDisabled) {
+          keepLabel.setAttribute(
+            "title",
+            "Уже выбрано максимум устройств (" + dw.nextLimit + "). Снимите галочку с другого ПК, чтобы выбрать этот."
+          );
+        }
+        checkbox.addEventListener("change", function () {
+          if (checkbox.checked) {
+            if (
+              dw.selectedKeepDeviceIds.indexOf(dev.id) === -1 &&
+              dw.selectedKeepDeviceIds.length < dw.nextLimit
+            ) {
+              dw.selectedKeepDeviceIds.push(dev.id);
+            }
+          } else {
+            dw.selectedKeepDeviceIds = dw.selectedKeepDeviceIds.filter(function (id) {
+              return id !== dev.id;
+            });
+          }
           renderDevicesSection();
         });
-        keepLabel.appendChild(radio);
+        keepLabel.appendChild(checkbox);
         keepLabel.appendChild(
-          el("span", "", "Оставить активным со следующего периода (" + lic.downgradeWarning.switchDate + ")")
+          el("span", "", "Оставить активным со следующего периода (" + dw.switchDate + ")")
         );
         main.appendChild(keepLabel);
       }
@@ -1427,6 +1492,16 @@
       lic.devices = lic.devices.filter(function (d) {
         return d.id !== deviceId;
       });
+      if (lic.downgradeWarning) {
+        lic.downgradeWarning.selectedKeepDeviceIds = lic.downgradeWarning.selectedKeepDeviceIds.filter(function (id) {
+          return id !== deviceId;
+        });
+        if (Array.isArray(lic.downgradeWarning.savedKeepDeviceIds)) {
+          lic.downgradeWarning.savedKeepDeviceIds = lic.downgradeWarning.savedKeepDeviceIds.filter(function (id) {
+            return id !== deviceId;
+          });
+        }
+      }
 
       if (!exceeded) {
         lic.quotaUsed = Math.min(lic.quotaLimit, lic.quotaUsed + 1);
@@ -1719,19 +1794,23 @@
         ").";
     });
 
-    // Сохранение выбора оставляемого устройства при снижении лимита (§5.2)
+    // Сохранение выбора оставляемых устройств при снижении лимита (§5.2)
     els.btnSaveKeepChoice.addEventListener("click", function () {
       const lic = getCurrentLicense();
       if (!lic.downgradeWarning) {
         return;
       }
-      lic.downgradeWarning.savedKeepDeviceId = lic.downgradeWarning.selectedKeepDeviceId;
+      const dw = lic.downgradeWarning;
+      dw.savedKeepDeviceIds = dw.selectedKeepDeviceIds.slice(0, dw.nextLimit);
       renderAll();
+      const keptSummary = dw.savedKeepDeviceIds.length > 0
+        ? dw.savedKeepDeviceIds.join(", ")
+        : "ни одного (все ПК будут отвязаны)";
       showToast(
         "Сохранено: после " +
-          lic.downgradeWarning.switchDate +
-          " останется " +
-          lic.downgradeWarning.savedKeepDeviceId +
+          dw.switchDate +
+          " останутся " +
+          keptSummary +
           ". Автоотвязка остальных ПК не расходует квоту 3/30 дн. (Q-DEV-1).",
         "ok"
       );
