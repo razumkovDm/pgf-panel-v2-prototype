@@ -147,7 +147,14 @@
           <p id="renew-invalid-text"></p>
         </div>
 
-        <div class="checkout-grid">
+        <!-- Forbidden ?renew= / ?upgrade= for REVOKED / TRIAL / EXPIRED(upgrade) -->
+        <div id="mode-forbidden-alert" class="alert alert--err is-hidden" role="alert" style="margin-bottom: 18px;">
+          <p class="alert__title" id="mode-forbidden-title"></p>
+          <p id="mode-forbidden-text"></p>
+          <div class="alert__actions" id="mode-forbidden-actions"></div>
+        </div>
+
+        <div class="checkout-grid" id="checkout-grid">
           <!-- Left Column: Payment Options & Conditions -->
           <div class="checkout-col">
             <!-- Renew / Upgrade Target License Card (#620) -->

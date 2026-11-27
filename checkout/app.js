@@ -114,6 +114,7 @@
     targetLicense: null,
     selectedKeepDeviceIds: ['dev-1'],
     renewInvalidId: '',
+    modeForbidden: null,
     slice: 3,         // 3 | 4
     cfgRaw: '30d-2pc-seo1',
     periodDays: 30,
@@ -423,14 +424,17 @@
     navLicenses.classList.toggle('sidebar__link--active', state.view === 'paid');
 
     if (state.view === 'checkout') {
-      if (state.mode === 'renew' && state.targetLicense) {
+      if (state.modeForbidden) {
+        routePill.textContent = '/app/billing/checkout?' + state.modeForbidden.mode + '=' + state.modeForbidden.license.publicId;
+        bc.textContent = state.modeForbidden.mode === 'upgrade' ? 'Докупка недоступна' : 'Продление недоступно';
+        title.textContent = state.modeForbidden.title;
+        subtitle.textContent = 'Выставление счёта для ' + state.modeForbidden.license.publicId + ' (' + state.modeForbidden.license.status + ') заблокировано.';
+      } else if (state.mode === 'renew' && state.targetLicense) {
         routePill.textContent = '/app/billing/checkout?renew=' + state.targetLicense.publicId + '&cfg=' + state.cfgRaw;
         bc.textContent = 'Продление ' + state.targetLicense.publicId;
         title.textContent = 'Продление лицензии «' + state.targetLicense.name + '»';
         if (state.targetLicense.status === 'EXPIRED') {
           subtitle.textContent = 'Выберите срок и лимит устройств для продления лицензии (истекла ' + state.targetLicense.periodEnd + ').';
-        } else if (state.targetLicense.status === 'REVOKED') {
-          subtitle.textContent = 'Лицензия отозвана ' + state.targetLicense.periodEnd + '.';
         } else {
           subtitle.textContent = 'Выберите срок и лимит устройств на следующий оплаченный период (текущий действует до ' + state.targetLicense.periodEnd + ').';
         }
@@ -456,6 +460,48 @@
       title.textContent = 'Оплата подтверждена';
       subtitle.textContent = 'Новая лицензия активирована и доступна в разделе «Мои лицензии».';
     }
+  }
+
+  function getModeRestriction(mode, lic) {
+    if (!lic) return null;
+    if (lic.status === 'REVOKED') {
+      return {
+        mode: mode,
+        license: lic,
+        title: mode === 'upgrade' ? 'Лицензия отозвана — докупка недоступна' : 'Лицензия отозвана — продление недоступно',
+        message: 'Лицензия «' + lic.name + '» (' + lic.publicId + ') необратимо аннулирована (REVOKED, отозвана ' + lic.periodEnd + '). ' +
+          (mode === 'upgrade' ? 'Докупка устройств и SEO отключена (§9 ТЗ).' : 'Активация и продление отключены (§9 ТЗ).') +
+          ' Оформите новую лицензию или обратитесь в поддержку, указав только Public ID.',
+        buyLabel: 'Купить новую лицензию',
+        canRenew: false,
+        showSupport: true
+      };
+    }
+    if (lic.status === 'TRIAL') {
+      return {
+        mode: mode,
+        license: lic,
+        title: mode === 'upgrade' ? 'Докупка опций на пробной лицензии недоступна' : 'Продление пробной лицензии недоступно',
+        message: mode === 'upgrade'
+          ? ('Для пробной лицензии «' + lic.name + '» (' + lic.publicId + ', TRIAL) докупка дополнительных устройств и SEO отключена. Чтобы выбрать нужное число ПК и опции, оформите платную лицензию.')
+          : ('Пробная лицензия «' + lic.name + '» (' + lic.publicId + ', TRIAL до ' + lic.periodEnd + ') не продлевается. Чтобы продолжить работу после пробного периода, оформите платную лицензию.'),
+        buyLabel: 'Купить платную лицензию',
+        canRenew: false,
+        showSupport: true
+      };
+    }
+    if (lic.status === 'EXPIRED' && mode === 'upgrade') {
+      return {
+        mode: mode,
+        license: lic,
+        title: 'Докупка опций для истёкшей лицензии недоступна',
+        message: 'Срок действия лицензии «' + lic.name + '» (' + lic.publicId + ') истёк ' + lic.periodEnd + '. Пропорциональная докупка до конца периода возможна только для активной лицензии — перейдите к продлению с нужными параметрами или оформите новую лицензию.',
+        buyLabel: 'Купить новую лицензию',
+        canRenew: true,
+        showSupport: false
+      };
+    }
+    return null;
   }
 
   function getOrderPurposeText(mode, targetLicense) {
@@ -497,11 +543,78 @@
       invalidAlert.classList.add('is-hidden');
     }
 
+    var forbiddenAlert = qs('#mode-forbidden-alert');
+    var checkoutGrid = qs('#checkout-grid');
+    if (state.modeForbidden && forbiddenAlert) {
+      var fr = state.modeForbidden;
+      forbiddenAlert.classList.remove('is-hidden');
+      qs('#mode-forbidden-title').textContent = fr.title;
+      qs('#mode-forbidden-text').textContent = fr.message;
+      var actionsEl = qs('#mode-forbidden-actions');
+      actionsEl.textContent = '';
+
+      if (fr.canRenew) {
+        var renewBtn = document.createElement('button');
+        renewBtn.type = 'button';
+        renewBtn.className = 'btn btn--primary btn--sm';
+        renewBtn.id = 'mode-forbidden-renew-btn';
+        renewBtn.textContent = 'Перейти к продлению';
+        renewBtn.addEventListener('click', function () {
+          state.mode = 'renew';
+          state.targetLicense = fr.license;
+          state.modeForbidden = null;
+          state.renewInvalidId = '';
+          state.selectedKeepDeviceIds = fr.license.activeDevices.length ? [fr.license.activeDevices[0].id] : [];
+          applyCfgPreset(fr.license.currentCfg || '30d-1pc-seo0');
+          render();
+        });
+        actionsEl.appendChild(renewBtn);
+      }
+
+      var buyBtn = document.createElement('button');
+      buyBtn.type = 'button';
+      buyBtn.className = 'btn ' + (fr.canRenew ? 'btn--secondary' : 'btn--primary') + ' btn--sm';
+      buyBtn.id = 'mode-forbidden-buy-btn';
+      buyBtn.textContent = fr.buyLabel || 'Купить новую лицензию';
+      buyBtn.addEventListener('click', function () {
+        state.mode = 'purchase';
+        state.targetLicense = null;
+        state.modeForbidden = null;
+        state.renewInvalidId = '';
+        applyCfgPreset('30d-2pc-seo1');
+        render();
+      });
+      actionsEl.appendChild(buyBtn);
+
+      var licLink = document.createElement('a');
+      licLink.className = 'btn btn--secondary btn--sm';
+      licLink.setAttribute('href', '../licenses/index.html');
+      licLink.textContent = 'Вернуться в Мои лицензии';
+      actionsEl.appendChild(licLink);
+
+      if (fr.showSupport) {
+        var supportBtn = document.createElement('button');
+        supportBtn.type = 'button';
+        supportBtn.className = 'btn btn--ghost btn--sm';
+        supportBtn.id = 'mode-forbidden-support-btn';
+        supportBtn.textContent = 'Написать в поддержку';
+        supportBtn.addEventListener('click', function () {
+          showToast('Маршрут поддержки: /app/support — укажите только Public ID ' + fr.license.publicId + ', никогда не ключ.');
+        });
+        actionsEl.appendChild(supportBtn);
+      }
+
+      if (checkoutGrid) checkoutGrid.classList.add('is-hidden');
+    } else {
+      if (forbiddenAlert) forbiddenAlert.classList.add('is-hidden');
+      if (checkoutGrid) checkoutGrid.classList.remove('is-hidden');
+    }
+
     var licCard = qs('#renew-license-card');
     var dgCard = qs('#renew-downgrade-card');
     var lic = state.targetLicense;
 
-    if ((state.mode !== 'renew' && state.mode !== 'upgrade') || !lic) {
+    if ((state.mode !== 'renew' && state.mode !== 'upgrade') || !lic || state.modeForbidden) {
       licCard.classList.add('is-hidden');
       dgCard.classList.add('is-hidden');
       return;
@@ -517,9 +630,7 @@
     kv.appendChild(makeRow('Название', lic.name));
     var statusDateText = lic.status === 'EXPIRED'
       ? ('EXPIRED · истекла ' + lic.periodEnd)
-      : (lic.status === 'REVOKED'
-        ? ('REVOKED · отозвана ' + lic.periodEnd)
-        : (lic.status + ' · до ' + lic.periodEnd));
+      : (lic.status + ' · до ' + lic.periodEnd);
     kv.appendChild(makeRow('Статус / срок', statusDateText));
     kv.appendChild(makeRow('Текущая конфигурация', lic.activeDevices.length + ' из ' + lic.currentLimit + ' ПК · ' + lic.rights));
 
@@ -782,7 +893,7 @@
       precalcNote.textContent = 'Сначала выберите оставляемые устройства (' + pr.totalDevices + ' из ' + state.targetLicense.activeDevices.length + ' ПК) в блоке слева.';
     }
 
-    var disableCta = isUnavailable || downgradeIncomplete || (state.slice === 4 && state.paymentMethod === 'balance' && !pr.balanceSufficient);
+    var disableCta = Boolean(state.modeForbidden) || isUnavailable || downgradeIncomplete || (state.slice === 4 && state.paymentMethod === 'balance' && !pr.balanceSufficient);
     ctaBtn.disabled = disableCta;
     ctaBtn.setAttribute('aria-disabled', disableCta ? 'true' : 'false');
   }
@@ -1236,7 +1347,7 @@
 
     // Primary Checkout CTA
     qs('#primary-checkout-btn').addEventListener('click', function () {
-      if (state.unavailableReason) return;
+      if (state.modeForbidden || state.unavailableReason) return;
       var pr = getCurrentPricing();
       if (isDowngradeSelectionIncomplete(pr)) return;
       if (state.slice === 4 && state.paymentMethod === 'balance') {
@@ -1447,6 +1558,7 @@
         state.mode = 'purchase';
         state.targetLicense = null;
         state.renewInvalidId = '';
+        state.modeForbidden = null;
         state.view = 'checkout';
         applyCfgPreset('30d-2pc-seo1');
         render();
@@ -1458,6 +1570,7 @@
         state.mode = 'renew';
         state.targetLicense = DEMO_LICENSES['LIC-A1B2C3D4E5F6'];
         state.renewInvalidId = '';
+        state.modeForbidden = null;
         state.selectedKeepDeviceIds = ['dev-1'];
         state.view = 'checkout';
         applyCfgPreset('30d-1pc-seo0');
@@ -1506,14 +1619,26 @@
     var upgradeId = params.get('upgrade');
     var cfg = params.get('cfg');
 
+    state.modeForbidden = null;
+    state.renewInvalidId = '';
+
     if (renewId !== null && renewId !== '') {
       if (Object.prototype.hasOwnProperty.call(DEMO_LICENSES, renewId)) {
-        state.mode = 'renew';
-        state.targetLicense = DEMO_LICENSES[renewId];
-        state.selectedKeepDeviceIds = state.targetLicense.activeDevices.length
-          ? [state.targetLicense.activeDevices[0].id]
-          : [];
-        applyCfgPreset(cfg || '30d-1pc-seo0');
+        var renewLic = DEMO_LICENSES[renewId];
+        var renewRestriction = getModeRestriction('renew', renewLic);
+        if (renewRestriction) {
+          state.mode = 'purchase';
+          state.targetLicense = null;
+          state.modeForbidden = renewRestriction;
+          applyCfgPreset(cfg || '30d-1pc-seo0');
+        } else {
+          state.mode = 'renew';
+          state.targetLicense = renewLic;
+          state.selectedKeepDeviceIds = renewLic.activeDevices.length
+            ? [renewLic.activeDevices[0].id]
+            : [];
+          applyCfgPreset(cfg || '30d-1pc-seo0');
+        }
       } else {
         state.mode = 'purchase';
         state.targetLicense = null;
@@ -1522,9 +1647,18 @@
       }
     } else if (upgradeId !== null && upgradeId !== '') {
       if (Object.prototype.hasOwnProperty.call(DEMO_LICENSES, upgradeId)) {
-        state.mode = 'upgrade';
-        state.targetLicense = DEMO_LICENSES[upgradeId];
-        applyCfgPreset(cfg || state.targetLicense.currentCfg);
+        var upgradeLic = DEMO_LICENSES[upgradeId];
+        var upgradeRestriction = getModeRestriction('upgrade', upgradeLic);
+        if (upgradeRestriction) {
+          state.mode = 'purchase';
+          state.targetLicense = null;
+          state.modeForbidden = upgradeRestriction;
+          applyCfgPreset(cfg || '30d-2pc-seo1');
+        } else {
+          state.mode = 'upgrade';
+          state.targetLicense = upgradeLic;
+          applyCfgPreset(cfg || upgradeLic.currentCfg);
+        }
       } else {
         state.mode = 'purchase';
         state.targetLicense = null;

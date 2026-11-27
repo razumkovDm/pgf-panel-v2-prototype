@@ -721,6 +721,17 @@
     els.actionDevicesTitle.textContent = "Устройства этой лицензии (" + lic.devicesUsed + " / " + lic.devicesLimit + ") →";
     els.actionSupportId.textContent = lic.publicId;
     els.actionRenew.hidden = isRevoked;
+    var renewTitleEl = els.actionRenew.querySelector(".action-tile__title");
+    var renewDescEl = els.actionRenew.querySelector(".action-tile__desc");
+    if (lic.status === "TRIAL") {
+      if (renewTitleEl) renewTitleEl.textContent = "Купить платную лицензию →";
+      if (renewDescEl) renewDescEl.textContent = "Переход с пробного периода на платную подписку с выбором ПК и SEO";
+      els.actionRenew.setAttribute("href", "../checkout/index.html?cfg=30d-1pc-seo0");
+    } else {
+      if (renewTitleEl) renewTitleEl.textContent = "Продлить лицензию →";
+      if (renewDescEl) renewDescEl.textContent = "Можно изменить доп. устройства и модуль SEO со следующего периода";
+      els.actionRenew.setAttribute("href", "../checkout/index.html?cfg=" + encodeURIComponent(lic.renewCfg || "30d-1pc-seo0") + "&renew=" + encodeURIComponent(lic.publicId));
+    }
     els.actionUpgrade.hidden = lic.status !== "ACTIVE";
   }
 
@@ -1138,7 +1149,11 @@
     els.actionRenew.addEventListener("click", function (evt) {
       evt.preventDefault();
       const lic = getLicenseById(state.selectedId);
-      if (!lic) return;
+      if (!lic || lic.status === "REVOKED") return;
+      if (lic.status === "TRIAL") {
+        window.location.href = "../checkout/index.html?cfg=30d-1pc-seo0";
+        return;
+      }
       window.location.href = "../checkout/index.html?cfg=" + encodeURIComponent(lic.renewCfg || "30d-1pc-seo0") + "&renew=" + encodeURIComponent(lic.publicId);
     });
 
