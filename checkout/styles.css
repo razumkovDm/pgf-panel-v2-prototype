@@ -1271,10 +1271,6 @@ svg {
   .checkout-grid {
     grid-template-columns: 1fr;
   }
-
-  .checkout-col--summary {
-    order: -1;
-  }
 }
 
 @media (max-width: 560px) {
