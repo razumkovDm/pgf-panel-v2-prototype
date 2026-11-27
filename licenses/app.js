@@ -578,16 +578,9 @@
     }
 
     if (lic.status !== "REVOKED") {
-      const devBtn = createEl("button", "btn btn--secondary btn--sm", "Устройства →");
-      devBtn.type = "button";
-      devBtn.addEventListener("click", function () {
-        showRouteInfo(
-          "/app/licenses/" + lic.publicId + "/devices",
-          "Устройства лицензии (" + lic.devicesUsed + " / " + lic.devicesLimit + ")",
-          "Отдельный экран управления устройствами (Макет 4) идёт следующей задачей. Здесь будут список привязанных ПК, lastSeenAt и остаток отвязок."
-        );
-      });
-      actions.appendChild(devBtn);
+      const devLink = createEl("a", "btn btn--secondary btn--sm", "Устройства →");
+      devLink.href = "../devices/index.html?id=" + encodeURIComponent(lic.publicId);
+      actions.appendChild(devLink);
     }
 
     const openBtn = createEl("button", "btn btn--primary btn--sm", "Открыть →");
@@ -1141,15 +1134,11 @@
       }, 420);
     });
 
-    // Карточка: плитки действий
+    // Карточка: плитки действий (переход на экран устройств #619 по решению владельца)
     els.actionDevices.addEventListener("click", function () {
       const lic = getLicenseById(state.selectedId);
       if (!lic) return;
-      showRouteInfo(
-        "/app/licenses/" + lic.publicId + "/devices",
-        "Устройства этой лицензии (" + lic.devicesUsed + " / " + lic.devicesLimit + ")",
-        "Экран устройств (Макет 4) идёт следующей отдельной задачей. Здесь отображаются привязанные ПК, дата последней проверки и отвязка устройств."
-      );
+      window.location.href = "../devices/index.html?id=" + encodeURIComponent(lic.publicId);
     });
 
     els.actionRenew.addEventListener("click", function (evt) {
