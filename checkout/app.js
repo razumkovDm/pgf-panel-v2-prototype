@@ -60,6 +60,40 @@
         { id: 'dev-3', name: 'SRV-03-GAMMA', os: 'Windows Server 2022 · 10.0.4.12', lastSeen: '25.11.2026 09:00' }
       ]
     },
+    'LIC-T9R4M2K8V1P5': {
+      publicId: 'LIC-T9R4M2K8V1P5',
+      name: 'Пробный доступ',
+      status: 'TRIAL',
+      periodEnd: '04.12.2026',
+      rights: 'Desktop',
+      currentCfg: '30d-1pc-seo0',
+      currentLimit: 1,
+      activeDevices: [
+        { id: 'PC-trl10293', name: 'PC-trl10293', os: 'Windows 11 x64', lastSeen: '27.11.2026 (35 мин назад)' }
+      ]
+    },
+    'LIC-G7H8J9K1L2M3': {
+      publicId: 'LIC-G7H8J9K1L2M3',
+      name: 'Тестовый ПК',
+      status: 'EXPIRED',
+      periodEnd: '20.11.2026',
+      rights: 'Desktop',
+      currentCfg: '30d-1pc-seo0',
+      currentLimit: 1,
+      activeDevices: [
+        { id: 'PC-exp44102', name: 'PC-exp44102', os: 'Windows 10 x64', lastSeen: '20.11.2026 (7 дн. назад)' }
+      ]
+    },
+    'LIC-R4V6K8D2N9Q1': {
+      publicId: 'LIC-R4V6K8D2N9Q1',
+      name: 'Старый стенд #2',
+      status: 'REVOKED',
+      periodEnd: '15.11.2026',
+      rights: 'Desktop, SEO',
+      currentCfg: '30d-2pc-seo1',
+      currentLimit: 2,
+      activeDevices: []
+    },
     'LIC-D4E5F6G7H8J9': {
       publicId: 'LIC-D4E5F6G7H8J9',
       name: 'Резервная студия',
@@ -393,7 +427,13 @@
         routePill.textContent = '/app/billing/checkout?renew=' + state.targetLicense.publicId + '&cfg=' + state.cfgRaw;
         bc.textContent = 'Продление ' + state.targetLicense.publicId;
         title.textContent = 'Продление лицензии «' + state.targetLicense.name + '»';
-        subtitle.textContent = 'Выберите срок и лимит устройств на следующий оплаченный период (текущий действует до ' + state.targetLicense.periodEnd + ').';
+        if (state.targetLicense.status === 'EXPIRED') {
+          subtitle.textContent = 'Выберите срок и лимит устройств для продления лицензии (истекла ' + state.targetLicense.periodEnd + ').';
+        } else if (state.targetLicense.status === 'REVOKED') {
+          subtitle.textContent = 'Лицензия отозвана ' + state.targetLicense.periodEnd + '.';
+        } else {
+          subtitle.textContent = 'Выберите срок и лимит устройств на следующий оплаченный период (текущий действует до ' + state.targetLicense.periodEnd + ').';
+        }
       } else if (state.mode === 'upgrade' && state.targetLicense) {
         routePill.textContent = '/app/billing/checkout?upgrade=' + state.targetLicense.publicId;
         bc.textContent = 'Докупка ' + state.targetLicense.publicId;
@@ -475,7 +515,12 @@
     var kv = qs('#renew-license-kv');
     kv.textContent = '';
     kv.appendChild(makeRow('Название', lic.name));
-    kv.appendChild(makeRow('Статус / срок', lic.status + ' · до ' + lic.periodEnd));
+    var statusDateText = lic.status === 'EXPIRED'
+      ? ('EXPIRED · истекла ' + lic.periodEnd)
+      : (lic.status === 'REVOKED'
+        ? ('REVOKED · отозвана ' + lic.periodEnd)
+        : (lic.status + ' · до ' + lic.periodEnd));
+    kv.appendChild(makeRow('Статус / срок', statusDateText));
     kv.appendChild(makeRow('Текущая конфигурация', lic.activeDevices.length + ' из ' + lic.currentLimit + ' ПК · ' + lic.rights));
 
     var newLimit = pr.totalDevices;
@@ -1462,7 +1507,7 @@
     var cfg = params.get('cfg');
 
     if (renewId !== null && renewId !== '') {
-      if (DEMO_LICENSES[renewId]) {
+      if (Object.prototype.hasOwnProperty.call(DEMO_LICENSES, renewId)) {
         state.mode = 'renew';
         state.targetLicense = DEMO_LICENSES[renewId];
         state.selectedKeepDeviceIds = state.targetLicense.activeDevices.length
@@ -1476,7 +1521,7 @@
         applyCfgPreset(cfg || '30d-2pc-seo1');
       }
     } else if (upgradeId !== null && upgradeId !== '') {
-      if (DEMO_LICENSES[upgradeId]) {
+      if (Object.prototype.hasOwnProperty.call(DEMO_LICENSES, upgradeId)) {
         state.mode = 'upgrade';
         state.targetLicense = DEMO_LICENSES[upgradeId];
         applyCfgPreset(cfg || state.targetLicense.currentCfg);
