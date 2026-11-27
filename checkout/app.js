@@ -418,6 +418,35 @@
     }
   }
 
+  function getOrderPurposeText(mode, targetLicense) {
+    if (mode === 'renew' && targetLicense) {
+      return 'Продление лицензии ' + targetLicense.publicId + ' («' + targetLicense.name + '»)';
+    }
+    if (mode === 'upgrade' && targetLicense) {
+      return 'Докупка устройств / SEO для лицензии ' + targetLicense.publicId + ' («' + targetLicense.name + '»)';
+    }
+    return 'Покупка новой лицензии pgF (прямая оплата заказа)';
+  }
+
+  function getSelectedKeptDeviceNames(pr) {
+    if (state.mode !== 'renew' || !state.targetLicense) return [];
+    if (pr.totalDevices >= state.targetLicense.activeDevices.length) return [];
+    var names = [];
+    state.targetLicense.activeDevices.forEach(function (dev) {
+      if (state.selectedKeepDeviceIds.indexOf(dev.id) !== -1) {
+        names.push(dev.name);
+      }
+    });
+    return names;
+  }
+
+  function isDowngradeSelectionIncomplete(pr) {
+    if (state.mode !== 'renew' || !state.targetLicense) return false;
+    var activeCount = state.targetLicense.activeDevices.length;
+    if (pr.totalDevices >= activeCount) return false;
+    return state.selectedKeepDeviceIds.length !== pr.totalDevices;
+  }
+
   function renderRenewAndDowngrade(pr) {
     var invalidAlert = qs('#renew-invalid-alert');
     if (state.renewInvalidId) {
@@ -451,6 +480,7 @@
 
     var newLimit = pr.totalDevices;
     var activeCount = lic.activeDevices.length;
+    var valEl = qs('#renew-downgrade-validation');
     if (state.mode === 'renew' && newLimit < activeCount) {
       dgCard.classList.remove('is-hidden');
       qs('#renew-downgrade-title').textContent =
@@ -463,11 +493,24 @@
       if (state.selectedKeepDeviceIds.length > newLimit) {
         state.selectedKeepDeviceIds = state.selectedKeepDeviceIds.slice(0, newLimit);
       }
-      qs('#renew-keep-counter').textContent = 'Выбрано: ' + state.selectedKeepDeviceIds.length + ' из ' + newLimit;
+      var selCount = state.selectedKeepDeviceIds.length;
+      var counterEl = qs('#renew-keep-counter');
+      counterEl.textContent = 'Выбрано: ' + selCount + ' из ' + newLimit;
+      counterEl.className = 'badge tabular ' + (selCount === newLimit ? 'badge--ok' : (selCount === 0 ? 'badge--err' : 'badge--warn'));
+
+      if (valEl) {
+        if (selCount !== newLimit) {
+          valEl.textContent = 'Выберите ровно ' + newLimit + ' устр. для сохранения на следующем периоде, чтобы продолжить оформление.';
+          valEl.classList.remove('is-hidden');
+        } else {
+          valEl.textContent = '';
+          valEl.classList.add('is-hidden');
+        }
+      }
 
       var listEl = qs('#renew-downgrade-list');
       listEl.textContent = '';
-      var limitReached = state.selectedKeepDeviceIds.length >= newLimit;
+      var limitReached = selCount >= newLimit;
 
       lic.activeDevices.forEach(function (dev) {
         var isChecked = state.selectedKeepDeviceIds.indexOf(dev.id) !== -1;
@@ -508,6 +551,10 @@
       });
     } else {
       dgCard.classList.add('is-hidden');
+      if (valEl) {
+        valEl.textContent = '';
+        valEl.classList.add('is-hidden');
+      }
     }
   }
 
@@ -685,7 +732,12 @@
       precalcNote.textContent = 'Сумма до выставления счёта — предварительный расчёт. После выставления цена, валюта и состав фиксируются на 24 часа.';
     }
 
-    var disableCta = isUnavailable || (state.slice === 4 && state.paymentMethod === 'balance' && !pr.balanceSufficient);
+    var downgradeIncomplete = isDowngradeSelectionIncomplete(pr);
+    if (downgradeIncomplete) {
+      precalcNote.textContent = 'Сначала выберите оставляемые устройства (' + pr.totalDevices + ' из ' + state.targetLicense.activeDevices.length + ' ПК) в блоке слева.';
+    }
+
+    var disableCta = isUnavailable || downgradeIncomplete || (state.slice === 4 && state.paymentMethod === 'balance' && !pr.balanceSufficient);
     ctaBtn.disabled = disableCta;
     ctaBtn.setAttribute('aria-disabled', disableCta ? 'true' : 'false');
   }
@@ -792,6 +844,21 @@
 
     // Requisites
     qs('#invoice-number-label').textContent = '#' + inv.id;
+    var purposeEl = qs('#invoice-purpose-value');
+    if (purposeEl) {
+      purposeEl.textContent = inv.purposeText || 'Покупка новой лицензии pgF (прямая оплата заказа)';
+    }
+    var keptRow = qs('#invoice-kept-devices-row');
+    var keptVal = qs('#invoice-kept-devices-value');
+    if (keptRow && keptVal) {
+      if (inv.keptDevices && inv.keptDevices.length > 0) {
+        keptRow.classList.remove('is-hidden');
+        keptVal.textContent = inv.keptDevices.join(', ');
+      } else {
+        keptRow.classList.add('is-hidden');
+        keptVal.textContent = '';
+      }
+    }
     qs('#invoice-channel-name').textContent = channel.name;
     qs('#invoice-req-label').textContent = channel.reqLabel;
     qs('#invoice-req-address').textContent = channel.address;
@@ -864,6 +931,12 @@
 
     var rows = qs('#paid-summary-rows');
     rows.innerHTML = '';
+    if (res.purposeText && (res.mode === 'renew' || res.mode === 'upgrade')) {
+      rows.appendChild(makeRow('Назначение', res.purposeText));
+    }
+    if (res.keptDevices && res.keptDevices.length > 0) {
+      rows.appendChild(makeRow('Оставляемые устройства', res.keptDevices.join(', ')));
+    }
     rows.appendChild(makeRow('Способ оплаты', res.methodLabel));
     rows.appendChild(makeRow('Итоговая сумма заказа', formatRub(res.totalPaid)));
     if (res.slice === 4) {
@@ -898,6 +971,9 @@
       id: 'INV-2026-000142',
       paymentCode: 'PGF-2026-0142',
       slice: state.slice,
+      mode: state.mode,
+      purposeText: getOrderPurposeText(state.mode, state.targetLicense),
+      keptDevices: getSelectedKeptDeviceNames(pr),
       paymentMethod: state.paymentMethod,
       channel: state.paymentChannel,
       status: 'AWAITING_PAYMENT',
@@ -917,11 +993,18 @@
     var pr = getCurrentPricing();
     state.paidResult = {
       slice: state.slice,
+      mode: state.mode,
+      purposeText: getOrderPurposeText(state.mode, state.targetLicense),
+      keptDevices: getSelectedKeptDeviceNames(pr),
       snapshot: pr,
       totalPaid: pr.netAfterDiscounts,
       methodLabel: 'Внутренний баланс (бонусы ' + formatRub(pr.bonusSpent) + ' + основные ' + formatRub(pr.mainSpent) + ')',
       headline: 'Оплачено с внутреннего баланса',
-      subtext: 'Средства списаны с приоритетом бонусов. Новая лицензия активирована и доступна в «Моих лицензиях».'
+      subtext: state.mode === 'renew' && state.targetLicense
+        ? 'Средства списаны с приоритетом бонусов. Продление лицензии ' + state.targetLicense.publicId + ' оформлено.'
+        : (state.mode === 'upgrade' && state.targetLicense
+          ? 'Средства списаны с приоритетом бонусов. Докупка опций для ' + state.targetLicense.publicId + ' оформлена.'
+          : 'Средства списаны с приоритетом бонусов. Новая лицензия активирована и доступна в «Моих лицензиях».')
     };
     state.view = 'paid';
     render();
@@ -1110,6 +1193,7 @@
     qs('#primary-checkout-btn').addEventListener('click', function () {
       if (state.unavailableReason) return;
       var pr = getCurrentPricing();
+      if (isDowngradeSelectionIncomplete(pr)) return;
       if (state.slice === 4 && state.paymentMethod === 'balance') {
         if (!pr.balanceSufficient) return;
         completeBalancePayment();
@@ -1263,6 +1347,9 @@
       inv.status = 'PAID';
       state.paidResult = {
         slice: inv.slice,
+        mode: inv.mode,
+        purposeText: inv.purposeText,
+        keptDevices: inv.keptDevices || [],
         snapshot: inv.snapshot,
         totalPaid: inv.amountDue + inv.heldTotal,
         methodLabel: inv.heldTotal > 0

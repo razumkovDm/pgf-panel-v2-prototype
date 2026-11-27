@@ -179,6 +179,7 @@
                   Запланированная отвязка при снижении лимита не расходует обычную квоту «3 отвязки за 30 дней» (Q-DEV-1).
                 </p>
                 <div class="downgrade-list" id="renew-downgrade-list"></div>
+                <p class="form-hint is-hidden" id="renew-downgrade-validation" role="alert" style="margin: 10px 0 0; color: var(--status-err-text);"></p>
               </div>
             </div>
 
@@ -434,7 +435,11 @@
                 <div class="kv-list" style="margin-bottom: 14px;">
                   <div class="kv-row">
                     <span class="kv-row__label">Назначение</span>
-                    <span class="kv-row__value">Покупка новой лицензии pgF (прямая оплата заказа)</span>
+                    <span class="kv-row__value" id="invoice-purpose-value">Покупка новой лицензии pgF (прямая оплата заказа)</span>
+                  </div>
+                  <div class="kv-row is-hidden" id="invoice-kept-devices-row">
+                    <span class="kv-row__label">Оставляемые устройства</span>
+                    <span class="kv-row__value mono" id="invoice-kept-devices-value"></span>
                   </div>
                   <div class="kv-row">
                     <span class="kv-row__label">Срок действия счёта</span>

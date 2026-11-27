@@ -129,7 +129,7 @@
         remainingText: "срок 24 ч истёк",
         paymentCode: "PGF-2026-0139",
         channel: "bank_rub",
-        heldMinor: 0,
+        heldMinor: 100000,
         snapshot: {
           grossRub: 2900,
           promoLabel: "",
@@ -144,7 +144,7 @@
         proofTx: "CHK-00112",
         proofFile: "blurry_photo.jpg",
         proofSha: "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
-        rejectReason: "Нечитаемое изображение чека, фактическое поступление не обнаружено. Резерв held_minor возвращён на баланс."
+        rejectReason: "Нечитаемое изображение чека, фактическое поступление не обнаружено."
       },
       {
         id: "INV-2026-000138",
@@ -405,9 +405,20 @@
     }, 3200);
   }
 
+  function isInvoiceVisibleInSlice(inv) {
+    if (!inv) return false;
+    if (state.slice !== 4 && inv.purposeType === "topup") return false;
+    return true;
+  }
+
   function getActiveInvoice() {
     for (var i = 0; i < state.invoices.length; i++) {
-      if (state.invoices[i].id === state.activeInvoiceId) return state.invoices[i];
+      if (state.invoices[i].id === state.activeInvoiceId && isInvoiceVisibleInSlice(state.invoices[i])) {
+        return state.invoices[i];
+      }
+    }
+    for (var j = 0; j < state.invoices.length; j++) {
+      if (isInvoiceVisibleInSlice(state.invoices[j])) return state.invoices[j];
     }
     return state.invoices[0];
   }
@@ -518,6 +529,7 @@
 
     // Filter and render invoices (limit=20 keyset)
     var filtered = state.invoices.filter(function (inv) {
+      if (!isInvoiceVisibleInSlice(inv)) return false;
       return state.statusFilter === "ALL" || inv.status === state.statusFilter;
     });
     var visibleInv = filtered.slice(0, state.invoicesShown);
@@ -659,9 +671,11 @@
 
     var totalToPay = isSlice4 ? inv.snapshot.totalRub : inv.snapshot.grossRub;
     qs("#invoice-total-amount").textContent = formatRub(totalToPay);
-    qs("#invoice-direct-note").textContent = inv.purposeType === "topup" && isSlice4
-      ? "Пополнение основного баланса — после зачисления сработает автопродление просроченных лицензий."
-      : "Прямая оплата заказа — не перехватывается автопродлением других лицензий.";
+    qs("#invoice-direct-note").textContent = isSlice4
+      ? (inv.purposeType === "topup"
+        ? "Пополнение основного баланса — после зачисления сработает автопродление просроченных лицензий."
+        : "Прямая оплата заказа — не перехватывается автопродлением других лицензий.")
+      : "Прямая оплата заказа по зафиксированному расчёту (price_snapshot).";
 
     // Requisites
     var ch = CHANNELS[inv.channel] || CHANNELS.usdt_trc20;
@@ -730,15 +744,21 @@
     } else if (inv.status === "LATE_PAYMENT_REVIEW") {
       banner.className = "alert alert--warn";
       bTitle.textContent = "Поздняя оплата на ручном разборе (LATE_PAYMENT_REVIEW)";
-      bText.textContent = "По Q-BILL-1 чек или перевод после истечения срока 24 ч не исполняется автоматически по старой цене. Администратор проверит поступление и примет единое решение (зачёт на баланс, доплата или возврат).";
+      bText.textContent = isSlice4
+        ? "По Q-BILL-1 чек или перевод после истечения срока 24 ч не исполняется автоматически по старой цене. Администратор проверит поступление и примет единое решение (зачёт на баланс, доплата или возврат)."
+        : "По Q-BILL-1 чек или перевод после истечения срока 24 ч не исполняется автоматически по старой цене. Администратор проверит поступление и примет единое решение (доплата или возврат).";
     } else if (inv.status === "UNDERPAID_REVIEW") {
       banner.className = "alert alert--warn";
       bTitle.textContent = "Недоплата — лицензия не выдаётся (UNDERPAID_REVIEW)";
-      bText.textContent = "Фактически поступило меньше суммы счёта. Администратор зафиксирует фактическую сумму и предложит доплату остатка, зачёт на баланс или возврат (Q-BILL-2).";
+      bText.textContent = isSlice4
+        ? "Фактически поступило меньше суммы счёта. Администратор зафиксирует фактическую сумму и предложит доплату остатка, зачёт на баланс или возврат (Q-BILL-2)."
+        : "Фактически поступило меньше суммы счёта. Администратор зафиксирует фактическую сумму и предложит доплату остатка или возврат (Q-BILL-2).";
     } else if (inv.status === "OVERPAID_REVIEW") {
       banner.className = "alert alert--info";
       bTitle.textContent = "Переплата — заказ исполнен, излишек зафиксирован (OVERPAID_REVIEW)";
-      bText.textContent = "Заказ исполнен по price_snapshot. Излишек зафиксирован администратором для зачисления на основной баланс или возврата (Q-BILL-2).";
+      bText.textContent = isSlice4
+        ? "Заказ исполнен по price_snapshot. Излишек зафиксирован администратором для зачисления на основной баланс или возврата (Q-BILL-2)."
+        : "Заказ исполнен по price_snapshot. Излишек зафиксирован администратором для возврата (Q-BILL-2).";
     } else if (inv.status === "DUPLICATE_PAYMENT_SETTLEMENT") {
       banner.className = "alert alert--error";
       bTitle.textContent = "409 DUPLICATE_PAYMENT_SETTLEMENT / DUPLICATE_PROOF_DETECTED";
@@ -791,6 +811,14 @@
       render();
       return;
     }
+    if (!isInvoiceVisibleInSlice(found)) {
+      qs("#global-invoice-alert").hidden = false;
+      qs("#global-invoice-alert-title").textContent = "Счёт недоступен в Срезе 3";
+      qs("#global-invoice-alert-text").textContent = "Счёт #" + found.id + " относится к операциям, недоступным в режиме прямой оплаты (Срез 3). Выберите счёт заказа из списка.";
+      state.view = "list";
+      render();
+      return;
+    }
     qs("#global-invoice-alert").hidden = true;
     state.activeInvoiceId = found.id;
     state.view = "invoice";
@@ -818,6 +846,16 @@
     qsa("[data-slice]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         state.slice = Number(btn.getAttribute("data-slice"));
+        if (state.slice === 3) {
+          qs("#topup-modal-backdrop").hidden = true;
+          if (state.view === "invoice") {
+            var cur = findInvoiceById(state.activeInvoiceId);
+            if (cur && !isInvoiceVisibleInSlice(cur)) {
+              state.view = "list";
+              qs("#global-invoice-alert").hidden = true;
+            }
+          }
+        }
         render();
       });
     });
@@ -986,7 +1024,8 @@
       }
       var allowed = ["image/png", "image/jpeg", "application/pdf"];
       var extOk = /\.(png|jpe?g|pdf)$/i.test(file.name);
-      if (allowed.indexOf(file.type) === -1 && !extOk) {
+      var mimeOk = !file.type || allowed.indexOf(file.type) !== -1;
+      if (!extOk || !mimeOk) {
         errBox.hidden = false;
         qs("#proof-form-error-text").textContent = "Допустимы только файлы PNG, JPG или PDF.";
         e.target.value = "";
