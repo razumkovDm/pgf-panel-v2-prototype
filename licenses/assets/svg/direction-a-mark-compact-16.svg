@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" fill="none" role="img" aria-label="Scenor — компактный знак 16px">
+  <title>Scenor — Направление A (компактный 16px)</title>
+  <rect x="0.5" y="0.5" width="15" height="15" rx="3.5" fill="#1E4ED8"/>
+  <path d="M5 4H9.5V6H5.5C5.2 6 5 6.2 5 6.5C5 6.8 5.2 7 5.5 7H9.5C11.4 7 12.5 8.1 12.5 9.8C12.5 11.4 11.3 12.5 9.5 12.5H4.5V10.5H9.5C10.1 10.5 10.5 10.2 10.5 9.75C10.5 9.3 10.1 9 9.5 9H5.5C3.9 9 3 7.9 3 6.5C3 5 4 4 5 4Z" fill="#FFFFFF"/>
+  <circle cx="12" cy="5" r="1.4" fill="#38BDF8"/>
+</svg>

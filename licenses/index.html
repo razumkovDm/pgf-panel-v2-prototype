@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мои лицензии — Кабинет Scenor</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/svg/direction-a-mark-compact-16.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Перейти к основному содержимому</a>
+
+  <!-- Панель управления демо-макетом (тёмная поверхность #0D1321, проверка --focus-dark и #94A3B8 без opacity) -->
+  <div class="demo-bar dark-surface" role="region" aria-label="Панель демонстрационных состояний макета">
+    <div class="demo-bar__inner">
+      <div class="demo-bar__group">
+        <span class="demo-bar__label">Макет #614</span>
+        <code class="demo-bar__route" id="demo-route-display">/app/licenses</code>
+      </div>
+
+      <div class="demo-bar__controls">
+        <div class="demo-seg" role="group" aria-label="Срез поставки">
+          <button type="button" class="demo-seg__btn" data-slice="4" aria-pressed="true">Срез 4</button>
+          <button type="button" class="demo-seg__btn" data-slice="3" aria-pressed="false">Срез 3</button>
+        </div>
+
+        <div class="demo-seg" role="group" aria-label="Экран">
+          <button type="button" class="demo-seg__btn" data-view="list" aria-pressed="true">Список</button>
+          <button type="button" class="demo-seg__btn" data-view="detail" aria-pressed="false">Карточка</button>
+        </div>
+
+        <div class="demo-seg" role="group" aria-label="Состояние списка">
+          <button type="button" class="demo-seg__btn" data-list-state="filled" aria-pressed="true">Данные</button>
+          <button type="button" class="demo-seg__btn" data-list-state="loading" aria-pressed="false">Загрузка</button>
+          <button type="button" class="demo-seg__btn" data-list-state="empty" aria-pressed="false">Пусто</button>
+          <button type="button" class="demo-seg__btn" data-list-state="error" aria-pressed="false">Ошибка</button>
+        </div>
+
+        <label class="demo-toggle">
+          <input type="checkbox" id="toggle-conflict-409">
+          <span>409 конфликт</span>
+        </label>
+
+        <label class="demo-toggle">
+          <input type="checkbox" id="toggle-clipboard-fallback">
+          <span>Fallback буфера</span>
+        </label>
+
+        <button type="button" class="demo-action-btn" id="btn-test-bad-id">Тест ?id=bad</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Мобильный оверлей меню -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+
+  <div class="app-shell">
+    <!-- Боковая навигация (тёмная поверхность #0D1321, Направление A Cobalt Flow) -->
+    <aside class="sidebar dark-surface" id="app-sidebar" aria-label="Навигация кабинета">
+      <div class="sidebar__brand">
+        <a href="#main-content" class="brand-lockup-link" id="brand-home-link" aria-label="Scenor — переход к списку лицензий">
+          <img
+            src="./assets/svg/direction-a-lockup-dark-outlined.svg"
+            alt="Scenor"
+            class="brand-lockup-img"
+            width="135"
+            height="36"
+          >
+        </a>
+        <div class="sidebar__brand-meta">
+          <span class="sidebar__subtitle">Кабинет клиента</span>
+          <button type="button" class="sidebar__close-btn" id="btn-close-sidebar" aria-label="Закрыть меню">✕</button>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav" aria-label="Разделы кабинета">
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/app">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L10 3l7 6.5"/><path d="M5 8.5V17h10V8.5"/></svg>
+              </span>
+              <span>Главная</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item nav-item--active" data-nav-route="/app/licenses" aria-current="page" id="nav-licenses">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M7 9h6M7 12h4"/></svg>
+              </span>
+              <span>Мои лицензии</span>
+              <span class="nav-item__badge" id="nav-licenses-count">4</span>
+            </button>
+          </li>
+          <li id="nav-item-billing">
+            <button type="button" class="nav-item" data-nav-route="/app/billing" id="nav-billing-btn">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="2"/><path d="M2.5 8.5h15"/></svg>
+              </span>
+              <span id="nav-billing-label">Баланс и счета</span>
+            </button>
+          </li>
+          <li id="nav-item-referrals">
+            <button type="button" class="nav-item" data-nav-route="/app/referrals">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="7" r="2.5"/><circle cx="14" cy="8" r="2"/><path d="M2.5 16c.5-2.5 2-4 4-4s3.5 1.5 4 4"/><path d="M12.5 15.5c.3-1.7 1.3-2.8 2.8-2.8 1.2 0 2 .8 2.2 2.8"/></svg>
+              </span>
+              <span>Рефералы</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/app/support">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h7A2.5 2.5 0 0 1 16 5.5v6a2.5 2.5 0 0 1-2.5 2.5H9l-3.5 3v-3H6.5A2.5 2.5 0 0 1 4 11.5v-6z"/></svg>
+              </span>
+              <span>Поддержка</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/app/downloads">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5"/><path d="M4 15.5h12"/></svg>
+              </span>
+              <span>Скачать Scenor</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/app/settings">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.7"/><path d="M10 3v2m0 10v2M3 10h2m10 0h2m-2.1-4.9-1.4 1.4M6.5 13.5l-1.4 1.4m0-9.8 1.4 1.4m7 7 1.4 1.4"/></svg>
+              </span>
+              <span>Настройки</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="sidebar__divider" role="separator"></div>
+        <div class="sidebar__section-title">Справка (открыта всегда)</div>
+
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/docs">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3h9A1.5 1.5 0 0 1 16 4.5v11a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 15.5v-11z"/><path d="M7.5 7h5M7.5 10h5M7.5 13h3"/></svg>
+              </span>
+              <span>Документация</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-nav-route="/wiki">
+              <span class="nav-item__icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 9.5v4"/><circle cx="10" cy="6.8" r="0.6" fill="currentColor"/></svg>
+              </span>
+              <span>Wiki и ошибки</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar__footer">
+        <div class="sidebar__footer-title">Scenor Desktop · Windows x64</div>
+        <div class="sidebar__footer-note">В поддержку передавайте только Public ID (<span class="mono">LIC-…</span>), никогда не ключ.</div>
+      </div>
+    </aside>
+
+    <!-- Правая рабочая область -->
+    <div class="app-main-wrap">
+      <!-- Верхняя панель кабинета -->
+      <header class="topbar">
+        <div class="topbar__left">
+          <button type="button" class="topbar__menu-btn" id="btn-open-sidebar" aria-label="Открыть навигацию" aria-controls="app-sidebar" aria-expanded="false">
+            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+          </button>
+
+          <a href="#main-content" class="topbar__mobile-brand" aria-label="Scenor">
+            <img src="./assets/svg/direction-a-lockup-light-outlined.svg" alt="Scenor" width="108" height="28">
+          </a>
+
+          <button type="button" class="help-search-btn" id="btn-open-help-search" aria-label="Поиск помощи, сочетание клавиш Ctrl+K">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5 17 17"/></svg>
+            <span class="help-search-btn__text">Поиск помощи</span>
+            <kbd class="kbd-hint">Ctrl+K</kbd>
+          </button>
+        </div>
+
+        <div class="topbar__right">
+          <button type="button" class="balance-pill" id="header-balance-pill" data-nav-route="/app/billing" title="Перейти в Баланс и счета">
+            <span class="balance-pill__main">Баланс: <strong>6 000 ₽</strong></span>
+            <span class="balance-pill__split">Осн: 4 000 ₽ · Бон: 2 000 ₽</span>
+          </button>
+
+          <div class="user-box">
+            <span class="user-box__email">user@example.com</span>
+            <button type="button" class="btn btn--ghost btn--sm" id="btn-logout">Выйти</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Основное содержимое -->
+      <main class="main-content" id="main-content" tabindex="-1">
+        <!-- Глобальный алерт (например, неизвестный / malformed ?id=...) -->
+        <div class="alert alert--error" id="global-id-alert" role="alert" hidden>
+          <div class="alert__content">
+            <strong class="alert__title" id="global-id-alert-title">Лицензия не найдена</strong>
+            <p class="alert__text" id="global-id-alert-text"></p>
+          </div>
+          <button type="button" class="btn btn--secondary btn--sm" id="btn-dismiss-id-alert">Вернуться к «Моим лицензиям»</button>
+        </div>
+
+        <!-- Информационный баннер Среза 3 (показывается только в режиме Среза 3) -->
+        <div class="slice-banner" id="slice3-banner" hidden>
+          <strong>Режим Среза 3 (R1-Dev):</strong> внутренний баланс и автопродление ещё не введены — оплата и продление выполняются прямым ручным счётом.
+        </div>
+
+        <!-- ==================== ЭКРАН 1: СПИСОК «МОИ ЛИЦЕНЗИИ» (/app/licenses) ==================== -->
+        <section id="view-list" aria-labelledby="list-page-heading">
+          <div class="page-header">
+            <div class="page-header__title-wrap">
+              <h1 class="page-title" id="list-page-heading">
+                Мои лицензии <span class="count-pill" id="list-total-count">4</span>
+              </h1>
+              <p class="page-subtitle">Управляйте лицензионными ключами Scenor, сроками действия и привязанными устройствами.</p>
+            </div>
+            <div class="page-header__actions">
+              <a href="../checkout/index.html?cfg=30d-2pc-seo1" class="btn btn--primary" id="btn-buy-license" data-external-mockup="checkout">
+                + Купить лицензию
+              </a>
+              <button type="button" class="btn btn--secondary" id="btn-trial-cta">Пробный период</button>
+              <button type="button" class="btn btn--secondary" id="btn-transfer-cta">Перенести от реселлера</button>
+            </div>
+          </div>
+
+          <!-- Фильтр и поиск -->
+          <div class="toolbar" id="list-toolbar" aria-label="Фильтр и поиск лицензий">
+            <div class="filter-tabs" role="tablist" aria-label="Фильтр по статусу лицензии" id="status-filter-tabs">
+              <button type="button" class="filter-tab filter-tab--active" role="tab" aria-selected="true" data-status-filter="ALL">Все</button>
+              <button type="button" class="filter-tab" role="tab" aria-selected="false" data-status-filter="ACTIVE">Активные</button>
+              <button type="button" class="filter-tab" role="tab" aria-selected="false" data-status-filter="TRIAL">Пробные</button>
+              <button type="button" class="filter-tab" role="tab" aria-selected="false" data-status-filter="EXPIRED">Истекшие</button>
+              <button type="button" class="filter-tab" role="tab" aria-selected="false" data-status-filter="REVOKED">Отозванные</button>
+            </div>
+
+            <div class="search-field">
+              <label for="license-search-input" class="sr-only">Поиск по названию или Public ID</label>
+              <svg class="search-field__icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5 17 17"/></svg>
+              <input
+                type="search"
+                id="license-search-input"
+                class="search-field__input"
+                placeholder="Поиск по названию или Public ID (LIC-…)"
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <button type="button" class="search-field__clear" id="btn-clear-search" aria-label="Очистить поиск" hidden>✕</button>
+            </div>
+          </div>
+
+          <!-- Состояние 1: Загрузка (скелетоны, без ложного «нет лицензий») -->
+          <div id="state-loading" class="skeleton-stack" role="status" aria-live="polite" aria-busy="true" hidden>
+            <span class="sr-only">Загрузка списка лицензий…</span>
+            <div class="skeleton-card" aria-hidden="true">
+              <div class="skeleton-line skeleton-line--lg"></div>
+              <div class="skeleton-line skeleton-line--md"></div>
+              <div class="skeleton-box"></div>
+              <div class="skeleton-row">
+                <div class="skeleton-line skeleton-line--sm"></div>
+                <div class="skeleton-line skeleton-line--btn"></div>
+              </div>
+            </div>
+            <div class="skeleton-card" aria-hidden="true">
+              <div class="skeleton-line skeleton-line--lg"></div>
+              <div class="skeleton-line skeleton-line--md"></div>
+              <div class="skeleton-box"></div>
+              <div class="skeleton-row">
+                <div class="skeleton-line skeleton-line--sm"></div>
+                <div class="skeleton-line skeleton-line--btn"></div>
+              </div>
+            </div>
+            <div class="skeleton-card" aria-hidden="true">
+              <div class="skeleton-line skeleton-line--lg"></div>
+              <div class="skeleton-line skeleton-line--md"></div>
+              <div class="skeleton-box"></div>
+              <div class="skeleton-row">
+                <div class="skeleton-line skeleton-line--sm"></div>
+                <div class="skeleton-line skeleton-line--btn"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Состояние 2: Пустое состояние -->
+          <div id="state-empty" class="state-card" hidden>
+            <div class="state-card__icon state-card__icon--brand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 10h10M7 14h6"/></svg>
+            </div>
+            <h2 class="state-card__title">У вас пока нет лицензий</h2>
+            <p class="state-card__desc">Оформите подписку по нужной конфигурации устройств и SEO, активируйте пробный период или перенесите лицензию от реселлера.</p>
+            <div class="state-card__actions">
+              <a href="../checkout/index.html?cfg=30d-2pc-seo1" class="btn btn--primary" data-external-mockup="checkout">Выбрать тариф</a>
+              <button type="button" class="btn btn--secondary" data-action="trial">Пробный период</button>
+              <button type="button" class="btn btn--secondary" data-action="transfer">Перенести от реселлера</button>
+            </div>
+          </div>
+
+          <!-- Состояние 3: Ошибка загрузки (не маскируется под пустоту) -->
+          <div id="state-error" class="state-card state-card--error" role="alert" hidden>
+            <div class="state-card__icon state-card__icon--error" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16.2" r="0.8" fill="currentColor"/></svg>
+            </div>
+            <h2 class="state-card__title">Не удалось загрузить лицензии</h2>
+            <p class="state-card__desc">Сервер не ответил вовремя или соединение было прервано. Ваши лицензии и активные устройства не затронуты — попробуйте повторить запрос.</p>
+            <div class="state-card__actions">
+              <button type="button" class="btn btn--primary" id="btn-retry-load">Повторить</button>
+              <button type="button" class="btn btn--secondary" data-nav-route="/wiki">Wiki и ошибки</button>
+            </div>
+          </div>
+
+          <!-- Состояние 4: Заполненный список (или пустой результат фильтра) -->
+          <div id="state-filled">
+            <div class="license-list" id="license-list-container" aria-live="polite"></div>
+
+            <div id="filter-empty-card" class="state-card state-card--compact" hidden>
+              <h2 class="state-card__title">Ничего не найдено</h2>
+              <p class="state-card__desc" id="filter-empty-message"></p>
+              <div class="state-card__actions">
+                <button type="button" class="btn btn--secondary" id="btn-reset-filters">Сбросить фильтры</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ЭКРАН 2: КАРТОЧКА ЛИЦЕНЗИИ (/app/licenses/[id]) ==================== -->
+        <section id="view-detail" aria-labelledby="detail-title" hidden>
+          <div class="detail-back-row">
+            <button type="button" class="back-link" id="btn-back-to-list">
+              ← Назад к «Моим лицензиям»
+            </button>
+            <span class="mono detail-route-badge" id="detail-route-badge">/app/licenses/LIC-A1B2C3D4E5F6</span>
+          </div>
+
+          <!-- Карточка 1: Заголовок, статус, Public ID, источник, личное примечание -->
+          <article class="card detail-card">
+            <div class="detail-head">
+              <div class="detail-head__title-area">
+                <div class="detail-title-row" id="detail-name-view">
+                  <h1 class="detail-title" id="detail-title">Рабочая ферма #1</h1>
+                  <button type="button" class="btn btn--ghost btn--sm" id="btn-edit-name">Ред. название</button>
+                </div>
+
+                <form class="inline-edit-form" id="detail-name-form" hidden>
+                  <label for="input-edit-name" class="sr-only">Название лицензии</label>
+                  <input type="text" id="input-edit-name" class="text-input" maxlength="80" required>
+                  <div class="inline-edit-form__actions">
+                    <button type="submit" class="btn btn--primary btn--sm">Сохранить</button>
+                    <button type="button" class="btn btn--secondary btn--sm" id="btn-cancel-name">Отмена</button>
+                  </div>
+                </form>
+
+                <div class="detail-meta-row">
+                  <span class="meta-item">
+                    Public ID: <code class="mono meta-code" id="detail-public-id">LIC-A1B2C3D4E5F6</code>
+                    <button type="button" class="mini-copy-btn" id="btn-copy-public-id" aria-label="Скопировать Public ID">Копировать ID</button>
+                  </span>
+                  <span class="meta-dot" aria-hidden="true">·</span>
+                  <span class="meta-item">Источник: <strong id="detail-source">Прямая покупка</strong></span>
+                </div>
+                <p class="security-hint">В поддержку передавайте только Public ID — никогда не отправляйте лицензионный ключ.</p>
+              </div>
+
+              <div class="detail-head__status">
+                <span class="status-badge" id="detail-status-badge">ACTIVE</span>
+              </div>
+            </div>
+
+            <div class="note-block">
+              <div class="note-block__view" id="detail-note-view">
+                <div class="note-block__content">
+                  <span class="note-block__label">Личное примечание:</span>
+                  <span class="note-block__text" id="detail-note-text"></span>
+                </div>
+                <button type="button" class="btn btn--ghost btn--sm" id="btn-edit-note">Изменить</button>
+              </div>
+
+              <form class="inline-edit-form inline-edit-form--column" id="detail-note-form" hidden>
+                <label for="input-edit-note" class="field-label">Личное примечание (видно только вам)</label>
+                <textarea id="input-edit-note" class="text-input text-input--textarea" rows="2" maxlength="200" placeholder="Например: Основной сервер Google/Яндекс"></textarea>
+                <div class="inline-edit-form__actions">
+                  <button type="submit" class="btn btn--primary btn--sm">Сохранить примечание</button>
+                  <button type="button" class="btn btn--secondary btn--sm" id="btn-cancel-note">Отмена</button>
+                </div>
+              </form>
+            </div>
+          </article>
+
+          <!-- Карточка 2: Срок действия, права, лимит устройств, автопродление (Срез 4) -->
+          <article class="card detail-card">
+            <h2 class="card-section-title">Параметры подписки</h2>
+
+            <div class="params-grid">
+              <div class="param-box">
+                <span class="param-box__label">Срок действия</span>
+                <strong class="param-box__value" id="detail-term">до 25.12.2026 (осталось 30 дн.)</strong>
+              </div>
+
+              <div class="param-box">
+                <span class="param-box__label">Права лицензии</span>
+                <div class="entitlement-pills" id="detail-entitlements"></div>
+              </div>
+
+              <div class="param-box">
+                <span class="param-box__label">Лимит устройств</span>
+                <strong class="param-box__value" id="detail-devices-limit">2 / 3 устройства</strong>
+              </div>
+            </div>
+
+            <!-- Спец-баннер для TRIAL -->
+            <div class="info-banner info-banner--trial" id="detail-trial-banner" hidden>
+              <strong>Пробный период:</strong> самостоятельная смена или отвязка устройства на триале недоступна. Для работы на нескольких ПК оформите платную лицензию.
+            </div>
+
+            <!-- Спец-баннер для REVOKED -->
+            <div class="info-banner info-banner--error" id="detail-revoked-banner" hidden>
+              <strong>Лицензия отозвана:</strong> активация в Scenor Desktop, замена ключа и продление недоступны. Если это ошибка, обратитесь в поддержку и укажите Public ID.
+            </div>
+
+            <!-- Блок автопродления (Срез 4; в Срезе 3 скрыт полностью) -->
+            <div class="autorenew-box" id="detail-autorenew-section">
+              <div class="autorenew-box__row">
+                <div class="autorenew-box__status">
+                  <span class="autorenew-pill" id="detail-autorenew-pill">● Автопродление включено</span>
+                  <p class="autorenew-box__desc" id="detail-autorenew-desc">Следующее списание: 25.12.2026 с внутреннего баланса по актуальной цене.</p>
+                </div>
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-toggle-autorenew">Выключить</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 3: Текущий лицензионный ключ (ТЗ 70 / §4.3 #590) -->
+          <article class="card detail-card" aria-labelledby="key-section-heading">
+            <div class="key-header">
+              <div>
+                <h2 class="card-section-title" id="key-section-heading">Текущий лицензионный ключ</h2>
+                <p class="key-subtitle">Ключ доступен вам постоянно в авторизованном кабинете (политика ТЗ 70).</p>
+              </div>
+              <div class="key-badges">
+                <span class="status-badge" id="detail-key-status-badge">Ключ: ACTIVE</span>
+                <span class="rev-badge mono" id="detail-key-revision">Ревизия #1</span>
+              </div>
+            </div>
+
+            <!-- Результат / конфликт замены ключа -->
+            <div class="alert alert--success" id="key-rotated-banner" role="status" hidden>
+              <div class="alert__content">
+                <strong class="alert__title">Ключ заменён на месте</strong>
+                <p class="alert__text" id="key-rotated-text"></p>
+              </div>
+            </div>
+
+            <div class="alert alert--error" id="key-conflict-banner" role="alert" hidden>
+              <div class="alert__content">
+                <strong class="alert__title">409 REVISION_CONFLICT — карточка обновлена автоматически</strong>
+                <p class="alert__text" id="key-conflict-text"></p>
+              </div>
+            </div>
+
+            <!-- Fallback-баннер при недоступности Clipboard API -->
+            <div class="alert alert--warn" id="key-clipboard-fallback-banner" role="status" hidden>
+              <div class="alert__content">
+                <strong class="alert__title">Автоматическое копирование недоступно</strong>
+                <p class="alert__text">Ключ выделен в поле ниже — нажмите <kbd class="kbd-inline">Ctrl+C</kbd> (или <kbd class="kbd-inline">⌘+C</kbd>), чтобы скопировать его вручную.</p>
+              </div>
+            </div>
+
+            <div class="key-box">
+              <label for="detail-key-input" class="sr-only">Текущий лицензионный ключ</label>
+              <input
+                type="text"
+                id="detail-key-input"
+                class="key-box__input mono"
+                readonly
+                value="PGF-7K9M-4P2X-8Q5N-3W6R"
+                aria-label="Текущий лицензионный ключ"
+              >
+              <div class="key-box__actions">
+                <button type="button" class="btn btn--primary" id="btn-copy-key">Копировать ключ</button>
+                <button type="button" class="btn btn--secondary" id="btn-replace-key">Заменить ключ</button>
+              </div>
+            </div>
+
+            <p class="key-hint">Подсказка: замена ключа обновит ключ на месте; старый ключ будет отклонён, а оплаченный срок и привязанные устройства сохранятся.</p>
+          </article>
+
+          <!-- Карточка 4: Действия по этой лицензии -->
+          <article class="card detail-card" aria-labelledby="actions-section-heading">
+            <h2 class="card-section-title" id="actions-section-heading">Действия по этой лицензии</h2>
+
+            <div class="actions-grid">
+              <button type="button" class="action-tile action-tile--primary" id="action-devices">
+                <span class="action-tile__title" id="action-devices-title">Устройства этой лицензии (2 / 3) →</span>
+                <span class="action-tile__desc">Просмотр привязанных ПК, последней активности и отвязки (/app/licenses/[id]/devices)</span>
+              </button>
+
+              <a href="../checkout/index.html?cfg=30d-2pc-seo1" class="action-tile" id="action-renew" data-external-mockup="checkout">
+                <span class="action-tile__title">Продлить лицензию →</span>
+                <span class="action-tile__desc">Можно изменить доп. устройства и модуль SEO со следующего периода</span>
+              </a>
+
+              <button type="button" class="action-tile" id="action-upgrade">
+                <span class="action-tile__title">Докупить устройства / SEO →</span>
+                <span class="action-tile__desc">Расчёт пропорционально остатку текущего оплаченного периода</span>
+              </button>
+
+              <button type="button" class="action-tile" data-nav-route="/app/downloads">
+                <span class="action-tile__title">Скачать Scenor →</span>
+                <span class="action-tile__desc">Актуальный установщик Windows x64 и контрольная сумма SHA-256 (/app/downloads)</span>
+              </button>
+
+              <button type="button" class="action-tile" data-nav-route="/docs/activation">
+                <span class="action-tile__title">Как активировать →</span>
+                <span class="action-tile__desc">Пошаговое руководство по вводу ключа в Scenor Desktop (/docs/activation)</span>
+              </button>
+
+              <button type="button" class="action-tile" data-nav-route="/app/support" id="action-support">
+                <span class="action-tile__title">Написать в поддержку →</span>
+                <span class="action-tile__desc">В обращении укажите только Public ID (<span class="mono" id="action-support-id">LIC-…</span>), без ключа</span>
+              </button>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Модальное окно: Подтверждение замены ключа (ТЗ 70 / §4.3) -->
+  <div class="modal-backdrop" id="modal-replace-key" role="dialog" aria-modal="true" aria-labelledby="modal-replace-title" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-replace-title">Заменить лицензионный ключ?</h2>
+        <button type="button" class="modal__close" data-close-modal="modal-replace-key" aria-label="Закрыть окно">✕</button>
+      </div>
+      <div class="modal__body">
+        <p>Для лицензии <strong id="modal-replace-license-name"></strong> (<code class="mono" id="modal-replace-public-id"></code>) будет выпущен новый ключ на месте.</p>
+        <ul class="modal-list">
+          <li>Прежний ключ немедленно перестанет приниматься сервером (<code class="mono">KEY_REJECTED</code>).</li>
+          <li>Оплаченный срок действия и привязанные устройства (<strong id="modal-replace-devices"></strong>) сохранятся без потерь.</li>
+          <li>После замены введите новый ключ в Scenor Desktop на ваших устройствах.</li>
+        </ul>
+        <div class="modal-tech-box mono">
+          <div>expectedRotationCounter: <span id="modal-expected-rev">1</span></div>
+          <div>idempotencyKey: <span id="modal-idem-key">rot-demo-0001</span></div>
+        </div>
+        <label class="modal-checkbox">
+          <input type="checkbox" id="modal-simulate-409">
+          <span>Смоделировать <code>409 REVISION_CONFLICT</code> (ключ уже изменён в другой сессии)</span>
+        </label>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secondary" data-close-modal="modal-replace-key" id="btn-cancel-replace">Отмена</button>
+        <button type="button" class="btn btn--danger" id="btn-confirm-replace">Заменить ключ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно: Быстрый поиск помощи (Ctrl+K) -->
+  <div class="modal-backdrop" id="modal-help-search" role="dialog" aria-modal="true" aria-labelledby="modal-help-title" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-help-title">Поиск помощи (/docs и /wiki)</h2>
+        <button type="button" class="modal__close" data-close-modal="modal-help-search" aria-label="Закрыть поиск помощи">✕</button>
+      </div>
+      <div class="modal__body">
+        <label for="help-search-input" class="sr-only">Запрос по документации и Wiki</label>
+        <input type="search" id="help-search-input" class="text-input" placeholder="Например: активация, KEY_REJECTED, NODE_LIMIT…">
+        <div class="help-results" id="help-results-list"></div>
+      </div>
+      <div class="modal__footer">
+        <span class="modal__hint">Документация и Wiki открыты всегда без авторизации.</span>
+        <button type="button" class="btn btn--secondary" data-close-modal="modal-help-search">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно: Информация о смежном маршруте / действии -->
+  <div class="modal-backdrop" id="modal-info" role="dialog" aria-modal="true" aria-labelledby="modal-info-title" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-info-title">Переход в смежный раздел</h2>
+        <button type="button" class="modal__close" data-close-modal="modal-info" aria-label="Закрыть окно">✕</button>
+      </div>
+      <div class="modal__body">
+        <p id="modal-info-desc"></p>
+        <div class="modal-tech-box mono" id="modal-info-route"></div>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--primary" data-close-modal="modal-info">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Тост-уведомления -->
+  <div class="toast-region" id="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
